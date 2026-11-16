@@ -3,18 +3,6 @@
 from __future__ import annotations
 
 import httpx
-import pytest
-
-from foood.app import create_app
-
-
-@pytest.fixture
-async def client():
-    app = create_app()
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://test"
-    ) as client:
-        yield client
 
 
 async def test_health(client: httpx.AsyncClient) -> None:
