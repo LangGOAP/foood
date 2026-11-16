@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from foood.cart import Cart
+    from foood.deliveries import Delivery, Earning, Rating
     from foood.drivers import Driver
     from foood.models import MenuCategory, MenuItem, Restaurant
     from foood.orders import Order
@@ -100,6 +101,9 @@ class Store:
     menu_items: dict[str, MenuItem] = field(default_factory=dict)
     carts: dict[str, Cart] = field(default_factory=dict)
     drivers: dict[str, Driver] = field(default_factory=dict)
+    deliveries: dict[str, Delivery] = field(default_factory=dict)
+    earnings: list[Earning] = field(default_factory=list)
+    ratings: dict[str, Rating] = field(default_factory=dict)  # keyed by delivery id
     orders: dict[str, Order] = field(default_factory=dict)
     payments: dict[str, Payment] = field(default_factory=dict)
     refunds: dict[str, Refund] = field(default_factory=dict)  # keyed by payment id
