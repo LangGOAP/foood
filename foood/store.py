@@ -16,11 +16,14 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from foood.cart import Cart
+    from foood.drivers import Driver
     from foood.models import MenuCategory, MenuItem, Restaurant
     from foood.orders import Order
     from foood.payments import Payment, Refund
 
 PASSWORD = "password123"
+#: the Delivery Plus E2E stack's test-only default, so the apps' Maestro flows run unchanged
+QA_PASSWORD = "Qa-Only-Passw0rd!"
 DEMO_CODE = "123456"
 ACCESS_TTL = timedelta(minutes=15)
 REFRESH_TTL = timedelta(days=30)
@@ -96,6 +99,7 @@ class Store:
     categories: dict[str, MenuCategory] = field(default_factory=dict)
     menu_items: dict[str, MenuItem] = field(default_factory=dict)
     carts: dict[str, Cart] = field(default_factory=dict)
+    drivers: dict[str, Driver] = field(default_factory=dict)
     orders: dict[str, Order] = field(default_factory=dict)
     payments: dict[str, Payment] = field(default_factory=dict)
     refunds: dict[str, Refund] = field(default_factory=dict)  # keyed by payment id
@@ -187,11 +191,29 @@ def seed_demo(store: Store) -> Store:
     )
     store.add_user("admin@example.com", PASSWORD, "Platform Admin", "ADMIN")
     store.add_user("demo.driver@example.com", PASSWORD, "Demo Driver", "DRIVER")
-    store.add_user("driver@example.com", PASSWORD, "Base Driver", "DRIVER")
+    store.add_user(
+        "driver@example.com", PASSWORD, "Base Driver", "DRIVER", phone="+20 101 000 2030"
+    )
+    # the accounts the apps' Maestro business flows sign in with
+    store.add_user(
+        "qa.customer@delivery-plus.test",
+        QA_PASSWORD,
+        "QA Customer",
+        "CUSTOMER",
+        phone="+20 110 000 0001",
+        phone_verified_at=now(),
+        address="1 Test Street, Apt 1",
+    )
+    store.add_user("qa.customer2@delivery-plus.test", QA_PASSWORD, "QA Other", "CUSTOMER")
+    store.add_user(
+        "qa.driver@delivery-plus.test", QA_PASSWORD, "QA Driver", "DRIVER", phone="+20 110 000 0002"
+    )
+    store.add_user("qa.admin@delivery-plus.test", QA_PASSWORD, "QA Admin", "ADMIN")
     for name in RESTAURANT_NAMES:
         full_name = "Restaurant Owner" if name == "Burger Palace" else f"{name} Owner"
         store.add_user(owner_email(name), PASSWORD, full_name, "RESTAURANT_OWNER")
-    from foood.seed import seed_restaurants
+    from foood.seed import seed_drivers, seed_restaurants
 
     seed_restaurants(store)
+    seed_drivers(store)
     return store

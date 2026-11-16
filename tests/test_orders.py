@@ -4,16 +4,9 @@ from __future__ import annotations
 
 import uuid
 
-from tests.support import assert_conforms
+from tests.support import assert_conforms, login
 
-PASSWORD = "password123"
 QA_OWNER = "qa.restaurant@delivery-plus.test"
-
-
-async def _login(client, email: str) -> dict[str, str]:
-    response = await client.post("/api/auth/login", json={"email": email, "password": PASSWORD})
-    assert response.status_code == 200, response.text
-    return {"Authorization": f"Bearer {response.json()['accessToken']}"}
 
 
 async def _menu(client, name: str) -> dict:
@@ -43,7 +36,7 @@ async def _place(client, headers: dict[str, str], **body) -> dict:
 
 
 async def test_quote_then_order_from_the_cart(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
+    sara = await login(client, "demo.customer@example.com")
     empty = await client.get("/api/orders/quote", headers=sara)
     assert empty.status_code == 200 and empty.json()["totalAmount"] == "0.00"
     menu = await _fill_cart(client, sara)
@@ -85,7 +78,7 @@ async def test_quote_then_order_from_the_cart(client) -> None:
 
 
 async def test_order_refusals(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
+    sara = await login(client, "demo.customer@example.com")
     empty = await client.post("/api/orders", json={}, headers=sara)
     assert empty.status_code == 400
     menu = await _fill_cart(client, sara)
@@ -95,7 +88,7 @@ async def test_order_refusals(client) -> None:
         headers=sara,
     )
     assert far.status_code == 409 and far.json()["error"] == "OutOfDeliveryArea"
-    owner = await _login(client, QA_OWNER)
+    owner = await login(client, QA_OWNER)
     await client.patch(
         f"/api/restaurants/{menu['restaurantId']}/status", json={"status": "BUSY"}, headers=owner
     )
@@ -140,7 +133,7 @@ async def test_unverified_phone_and_missing_address_are_refused(client) -> None:
 
 
 async def test_customer_cancels_while_allowed(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
+    sara = await login(client, "demo.customer@example.com")
     await _fill_cart(client, sara)
     order = await _place(client, sara)
     cancelled = await client.patch(
@@ -162,8 +155,8 @@ async def test_customer_cancels_while_allowed(client) -> None:
 
 
 async def test_kitchen_board_transitions_and_summary(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
-    owner = await _login(client, QA_OWNER)
+    sara = await login(client, "demo.customer@example.com")
+    owner = await login(client, QA_OWNER)
     menu = await _fill_cart(client, sara)
     order = await _place(client, sara)
     rid = menu["restaurantId"]
@@ -206,8 +199,8 @@ async def test_kitchen_board_transitions_and_summary(client) -> None:
 
 
 async def test_kitchen_rejects_with_a_reason(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
-    owner = await _login(client, QA_OWNER)
+    sara = await login(client, "demo.customer@example.com")
+    owner = await login(client, QA_OWNER)
     await _fill_cart(client, sara)
     order = await _place(client, sara)
     from foood.orders import confirm_paid

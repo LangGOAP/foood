@@ -13,6 +13,7 @@ from foood import __version__
 from foood.auth import router as auth_router
 from foood.cart import router as cart_router
 from foood.catalog import router as catalog_router
+from foood.drivers import router as drivers_router
 from foood.errors import install_error_handlers
 from foood.orders import router as orders_router
 from foood.payments import install as install_payments
@@ -30,6 +31,7 @@ def create_app(store: Store | None = None) -> FastAPI:
     app.include_router(cart_router)
     app.include_router(orders_router)
     app.include_router(payments_router)
+    app.include_router(drivers_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

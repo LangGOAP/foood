@@ -5,7 +5,7 @@ from __future__ import annotations
 import jwt
 import pytest
 
-from tests.support import assert_conforms
+from tests.support import assert_conforms, password_for
 
 PASSWORD = "password123"
 
@@ -29,7 +29,7 @@ async def _login(client, email: str, password: str = PASSWORD, app_id: str = "cu
     ],
 )
 async def test_demo_accounts_log_in(client, email: str, role: str) -> None:
-    response = await _login(client, email)
+    response = await _login(client, email, password_for(email))
     body = assert_conforms("POST", "/api/auth/login", response)
     assert response.status_code == 200
     assert body["email"] == email and body["role"] == role
