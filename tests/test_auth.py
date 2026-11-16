@@ -98,15 +98,22 @@ async def test_me_endpoints(client) -> None:
     assert profile.status_code == 200
     body = profile.json()
     assert body["fullName"] == "Sara Demo" and body["address"].startswith("742 Evergreen")
-    assert body["phoneVerifiedAt"] is None
+    assert body["phoneVerifiedAt"] is not None  # the demo customer can order straight away
     updated = await client.patch("/api/users/me", json={"address": "1 New St"}, headers=headers)
     assert updated.status_code == 200 and updated.json()["address"] == "1 New St"
     assert (await client.get("/api/users/me")).status_code == 401
 
 
 async def test_phone_verification_with_the_demo_code(client) -> None:
-    session = (await _login(client, "demo.customer@example.com")).json()
-    headers = {"Authorization": f"Bearer {session['accessToken']}"}
+    registered = await client.post(
+        "/api/auth/register",
+        json={"email": "fresh@example.com", "password": "secret12", "fullName": "Fresh One"},
+    )
+    headers = {"Authorization": f"Bearer {registered.json()['accessToken']}"}
+    assert (await client.get("/api/users/me", headers=headers)).json()["phoneVerifiedAt"] is None
+    no_phone = await client.post("/api/users/me/phone/verification", json={}, headers=headers)
+    assert no_phone.status_code == 400
+    await client.patch("/api/users/me", json={"phone": "+20 100 000 0001"}, headers=headers)
     started = await client.post("/api/users/me/phone/verification", json={}, headers=headers)
     assert started.status_code == 202
     assert set(started.json()) >= {"phone", "expiresAt", "resendAvailableAt"}

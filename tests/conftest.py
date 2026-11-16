@@ -16,4 +16,5 @@ async def client() -> AsyncIterator[httpx.AsyncClient]:
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app), base_url="http://test"
     ) as client:
+        client.store = app.state.store  # type: ignore[attr-defined]  # tests reach the domain directly
         yield client
