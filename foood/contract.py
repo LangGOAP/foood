@@ -79,6 +79,20 @@ CLAIMED: frozenset[tuple[str, str]] = frozenset(
         ("GET", "/api/drivers/me/application"),
         ("GET", "/api/drivers/{id}"),
         ("PATCH", "/api/drivers/{id}/verification"),
+        ("POST", "/api/deliveries"),
+        ("POST", "/api/deliveries/{id}/assign"),
+        ("POST", "/api/deliveries/{id}/pickup"),
+        ("POST", "/api/deliveries/{id}/start"),
+        ("POST", "/api/deliveries/{id}/complete"),
+        ("POST", "/api/deliveries/{id}/cancel"),
+        ("GET", "/api/deliveries/me/current"),
+        ("GET", "/api/deliveries/me/earnings"),
+        ("GET", "/api/deliveries/me/history"),
+        ("GET", "/api/deliveries/me/rating-summary"),
+        ("POST", "/api/deliveries/{id}/rating"),
+        ("GET", "/api/deliveries/{id}/rating"),
+        ("GET", "/api/deliveries/by-order/{orderId}"),
+        ("GET", "/api/deliveries/{id}"),
     }
 )
 
