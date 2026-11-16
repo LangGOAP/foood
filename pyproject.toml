@@ -26,6 +26,7 @@ dev = [
     "black>=24.8",
     "mypy>=1.11",
     "jsonschema>=4.23",
+    "pytest-timeout>=2.4.0",
 ]
 
 [build-system]
@@ -40,6 +41,7 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "--strict-markers -q"
+timeout = 60  # a hung stream must fail, not stall CI
 
 [tool.ruff]
 line-length = 100

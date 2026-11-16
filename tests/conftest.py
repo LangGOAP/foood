@@ -18,3 +18,26 @@ async def client() -> AsyncIterator[httpx.AsyncClient]:
     ) as client:
         client.store = app.state.store  # type: ignore[attr-defined]  # tests reach the domain directly
         yield client
+
+
+@pytest.fixture
+async def live() -> AsyncIterator[httpx.AsyncClient]:
+    """A real uvicorn server for what the ASGI transport cannot do: streamed responses."""
+    import asyncio
+    import socket
+
+    import uvicorn
+
+    app = create_app(simulate=False)
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
+    task = asyncio.create_task(server.serve())
+    while not server.started:
+        await asyncio.sleep(0.01)
+    async with httpx.AsyncClient(base_url=f"http://127.0.0.1:{port}") as client:
+        client.store = app.state.store  # type: ignore[attr-defined]
+        yield client
+    server.should_exit = True
+    await task
