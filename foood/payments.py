@@ -3,7 +3,8 @@
 Nothing is charged anywhere. The outcome of ``process`` comes from the
 ``charge`` hook on the store (always approved by default), which the scenario
 engine replaces to decline cards on cue. ``simulateFailure`` is the Delivery
-Plus test hook, honoured only when ``PAYMENT_TEST_HOOKS=true``.
+Plus test hook, honoured only when ``PAYMENT_TEST_HOOKS=true``. What a
+completed or failed payment means for the order is the order engine's call.
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ from pydantic import BaseModel
 from foood.auth import CurrentUser, StoreDep
 from foood.errors import ApiError
 from foood.models import money, new_id
-from foood.orders import Order, confirm_paid, fail_payment, get_order, transition
+from foood.orders import get_order, transition
 from foood.store import Store, iso, now
 
 router = APIRouter(prefix="/api", tags=["payments"])
@@ -102,21 +103,6 @@ def refund_payment(store: Store, payment: Payment, reason: str) -> Refund:
     return refund
 
 
-def _refund_on_cancel(order: Order, previous: str, store: Store) -> None:
-    if order.status != "CANCELLED":
-        return
-    payment = payment_for_order(store, order.id)
-    if payment is not None and payment.status == "COMPLETED":
-        refund_payment(store, payment, "ORDER_CANCELLED")
-
-
-def install(store: Store) -> None:
-    """Refund automatically when a paid order is cancelled."""
-    store.subscribe(
-        "order.status", lambda order, previous: _refund_on_cancel(order, previous, store)
-    )
-
-
 # --- routes -------------------------------------------------------------------------
 
 
@@ -195,11 +181,10 @@ async def process_payment(
     payment.status = status
     payment.failure_reason = reason
     payment.updated_at = now()
-    store.publish("payment.processed", payment=payment)  # the outcome, then its consequence
-    if status == "COMPLETED":
-        confirm_paid(store, payment.order_id)
-    else:
-        fail_payment(store, payment.order_id, "PAYMENT_FAILED")
+    order = get_order(store, payment.order_id)
+    order.payment_status = status  # a fact about the order; what follows is the engine's call
+    order.updated_at = now()
+    store.publish("payment.processed", payment=payment)
     return payment.to_json()
 
 

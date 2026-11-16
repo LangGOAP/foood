@@ -27,6 +27,15 @@ async def _fill_cart(client, headers: dict[str, str], restaurant: str = "QA") ->
     return menu
 
 
+async def _pay(client, headers: dict[str, str], order_id: str) -> None:
+    payment = await client.post("/api/payments", json={"orderId": order_id}, headers=headers)
+    assert payment.status_code == 201, payment.text
+    processed = await client.post(
+        f"/api/payments/{payment.json()['id']}/process", json={}, headers=headers
+    )
+    assert processed.status_code == 201 and processed.json()["status"] == "COMPLETED"
+
+
 async def _place(client, headers: dict[str, str], **body) -> dict:
     response = await client.post(
         "/api/orders", json=body, headers={**headers, "Idempotency-Key": str(uuid.uuid4())}
@@ -171,10 +180,7 @@ async def test_kitchen_board_transitions_and_summary(client) -> None:
         f"/api/orders/{order['id']}/status", json={"status": "PREPARING"}, headers=owner
     )
     assert early.status_code == 409 and early.json()["error"] == "InvalidTransition"
-    # payments are issue #7; confirm through the domain function the payment service will call
-    from foood.orders import confirm_paid
-
-    confirm_paid(client.store, order["id"])
+    await _pay(client, sara, order["id"])
     preparing = await client.patch(
         f"/api/orders/{order['id']}/status", json={"status": "PREPARING"}, headers=owner
     )
@@ -203,9 +209,7 @@ async def test_kitchen_rejects_with_a_reason(client) -> None:
     owner = await login(client, QA_OWNER)
     await _fill_cart(client, sara)
     order = await _place(client, sara)
-    from foood.orders import confirm_paid
-
-    confirm_paid(client.store, order["id"])
+    await _pay(client, sara, order["id"])
     rejected = await client.patch(
         f"/api/orders/{order['id']}/status",
         json={"status": "CANCELLED", "reason": "Out of buns"},

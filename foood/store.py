@@ -145,6 +145,8 @@ class Store:
     speed_factors: dict[str, float] = field(default_factory=dict)
     #: the loaded scenario's engine, if any
     engine: Engine | None = None
+    #: order id -> what the order engine decided and why
+    decisions: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
 
     def subscribe(self, event: str, listener: Callable[..., None]) -> None:
         self.listeners.setdefault(event, []).append(listener)

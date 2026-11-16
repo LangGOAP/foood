@@ -11,13 +11,19 @@ app = typer.Typer(no_args_is_help=True, add_completion=False)
 
 
 SCENARIO_HELP = "A bundled scenario name (see scenarios/) or a path to a TOML file."
+ENGINE_HELP = "The order engine that decides the lifecycle (see foood/engine.py)."
 
 
-def _select_scenario(scenario: str | None) -> None:
+def _select(scenario: str | None, engine: str | None) -> None:
     if scenario:
         from foood.scenario import resolve
 
         os.environ["FOOOD_SCENARIO"] = str(resolve(scenario))
+    if engine:
+        from foood.engine import make_engine
+
+        make_engine(engine)  # fail early on a typo
+        os.environ["FOOOD_ENGINE"] = engine
 
 
 @app.command()
@@ -26,9 +32,10 @@ def serve(
     port: int = 3000,
     reload: bool = False,
     scenario: str | None = typer.Option(None, help=SCENARIO_HELP),
+    engine: str | None = typer.Option(None, help=ENGINE_HELP),
 ) -> None:
     """Run the API on the port the Delivery Plus apps expect (3000)."""
-    _select_scenario(scenario)
+    _select(scenario, engine)
     uvicorn.run("foood.app:create_app", host=host, port=port, reload=reload, factory=True)
 
 
@@ -39,11 +46,12 @@ def up(
     apps: bool = typer.Option(True, help="Export and serve the three Delivery Plus apps."),
     rebuild: bool = typer.Option(False, help="Re-export the apps even when the build is current."),
     scenario: str | None = typer.Option(None, help=SCENARIO_HELP),
+    engine: str | None = typer.Option(None, help=ENGINE_HELP),
 ) -> None:
     """Start the API with the demo seed and the customer, driver and restaurant apps."""
     from foood.launch import up as launch
 
-    _select_scenario(scenario)
+    _select(scenario, engine)
     launch(host, port, apps, rebuild)
 
 

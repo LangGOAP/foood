@@ -1,10 +1,10 @@
 """Deliveries, dispatch, the driver's run, earnings and ratings.
 
-A delivery is created the moment the kitchen marks an order READY_FOR_PICKUP
-and is handed to the longest-idle verified driver who is online. When nobody
-is, it waits (the customer sees "Finding a driver") and the next driver to go
-online takes it. The ``dispatch`` hook on the store lets the scenario engine,
-or a planner, choose differently.
+The order engine creates a delivery when the kitchen marks an order
+READY_FOR_PICKUP and calls ``dispatch_pending`` to hand it to the longest-idle
+verified driver who is online. When nobody is, it waits (the customer sees
+"Finding a driver") and the next driver to go online takes it. The ``dispatch``
+hook on the store lets the scenario engine, or a planner, choose differently.
 """
 
 from __future__ import annotations
@@ -159,15 +159,19 @@ def choose_driver(store: Store, delivery: Delivery) -> Driver | None:
     return queue[0] if queue else None
 
 
-def dispatch_pending(store: Store) -> None:
+def dispatch_pending(store: Store) -> list[tuple[Delivery, Driver]]:
+    """Hand every waiting delivery to a driver while there are drivers; returns the pairs."""
     waiting = sorted(
         (d for d in store.deliveries.values() if d.status == "CREATED"), key=lambda d: d.created_at
     )
+    assigned: list[tuple[Delivery, Driver]] = []
     for delivery in waiting:
         driver = choose_driver(store, delivery)
         if driver is None:
-            return
+            break
         assign(store, delivery, driver)
+        assigned.append((delivery, driver))
+    return assigned
 
 
 def _release(store: Store, delivery: Delivery) -> None:
@@ -244,50 +248,38 @@ def cancel_delivery(store: Store, delivery: Delivery, reason: str | None, by: st
 
 
 def drop(store: Store, delivery: Delivery, reason: str | None = None) -> Delivery:
-    """The driver walks away. Before pickup the order goes back to the queue and the
-    driver offline; after pickup the food is gone with them, so the order is cancelled."""
+    """The driver walks away. Before pickup the delivery is back to CREATED and the
+    driver offline; after pickup the food is gone with them, so the delivery is cancelled
+    and the driver compensated. What becomes of the order is the engine's decision."""
     if delivery.status not in ACTIVE or delivery.driver_id is None:
         raise ApiError(
             409, f"A {delivery.status} delivery has no driver to drop", error="InvalidTransition"
         )
     driver = store.drivers[delivery.driver_id]
+    moment = now()
     if delivery.status == "DRIVER_ASSIGNED":
         delivery.driver_id = None
         delivery.assigned_at = None
         delivery.status = "CREATED"
-        delivery.updated_at = now()
+        delivery.updated_at = moment
         driver.set_status("OFFLINE")
         order = get_order(store, delivery.order_id)
         if order.status == "DRIVER_ASSIGNED":
             transition(store, order, "READY_FOR_PICKUP")
-        store.publish("delivery.dropped", delivery=delivery, driver=driver, reason=reason)
-        store.publish("delivery.status", delivery=delivery)
-        dispatch_pending(store)
-        return delivery
-    cancelled = cancel_delivery(store, delivery, reason or "The driver dropped the job", "SYSTEM")
-    driver.set_status("OFFLINE")
-    store.publish("delivery.dropped", delivery=delivery, driver=driver, reason=reason)
-    return cancelled
-
-
-def _on_order_status(store: Store, order: Order, previous: str) -> None:
-    if order.status == "READY_FOR_PICKUP" and delivery_for_order(store, order.id) is None:
-        create_delivery(store, order)
-        dispatch_pending(store)
-    elif order.status == "CANCELLED":
-        delivery = delivery_for_order(store, order.id)
-        if delivery is not None and delivery.status not in {"DELIVERED", "CANCELLED"}:
-            delivery.status = "CANCELLED"
-            delivery.cancelled_at = delivery.updated_at = now()
-            _release(store, delivery)
-            store.publish("delivery.status", delivery=delivery)
-
-
-def install(store: Store) -> None:
-    store.subscribe(
-        "order.status", lambda order, previous: _on_order_status(store, order, previous)
-    )
-    store.subscribe("driver.available", lambda driver: dispatch_pending(store))
+        stage = "before_pickup"
+    else:
+        delivery.status = "CANCELLED"
+        delivery.cancelled_at = delivery.updated_at = moment
+        store.earnings.append(
+            Earning(
+                driver.id, delivery.id, delivery.order_id, "CANCELLATION_COMPENSATION", DRIVER_PAY
+            )
+        )
+        driver.set_status("OFFLINE")
+        stage = "after_pickup"
+    store.publish("delivery.status", delivery=delivery)
+    store.publish("delivery.dropped", delivery=delivery, driver=driver, reason=reason, stage=stage)
+    return delivery
 
 
 # --- views ----------------------------------------------------------------------------------

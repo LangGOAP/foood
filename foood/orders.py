@@ -147,8 +147,6 @@ def transition(store: Store, order: Order, status: str, **changes: Any) -> Order
     order.status = status
     for attr, value in changes.items():
         setattr(order, attr, value)
-    if status == "CANCELLED" and order.payment_status == "COMPLETED":
-        order.payment_status = "REFUNDED"
     order.updated_at = now()
     store.publish("order.status", order=order, previous=previous)
     return order
