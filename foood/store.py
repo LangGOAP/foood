@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from foood.deliveries import Delivery, Earning, Rating
     from foood.drivers import Driver
     from foood.models import MenuCategory, MenuItem, Restaurant
+    from foood.notifications import Notification
     from foood.orders import Order
     from foood.payments import Payment, Refund
     from foood.tracking import Location
@@ -108,6 +109,7 @@ class Store:
     earnings: list[Earning] = field(default_factory=list)
     ratings: dict[str, Rating] = field(default_factory=dict)  # keyed by delivery id
     locations: dict[str, Location] = field(default_factory=dict)  # keyed by driver user id
+    notifications: list[Notification] = field(default_factory=list)
     watchers: dict[str, list[asyncio.Queue[dict[str, Any]]]] = field(default_factory=dict)
     orders: dict[str, Order] = field(default_factory=dict)
     payments: dict[str, Payment] = field(default_factory=dict)

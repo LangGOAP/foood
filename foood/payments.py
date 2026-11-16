@@ -195,11 +195,11 @@ async def process_payment(
     payment.status = status
     payment.failure_reason = reason
     payment.updated_at = now()
+    store.publish("payment.processed", payment=payment)  # the outcome, then its consequence
     if status == "COMPLETED":
         confirm_paid(store, payment.order_id)
     else:
         fail_payment(store, payment.order_id, "PAYMENT_FAILED")
-    store.publish("payment.processed", payment=payment)
     return payment.to_json()
 
 

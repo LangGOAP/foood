@@ -97,6 +97,9 @@ CLAIMED: frozenset[tuple[str, str]] = frozenset(
         ("GET", "/api/tracking/driver/{userId}"),
         ("GET", "/api/tracking/delivery/{deliveryId}"),
         ("GET", "/api/tracking/delivery/{deliveryId}/stream"),
+        ("GET", "/api/notifications"),
+        ("PATCH", "/api/notifications/{id}/read"),
+        ("PATCH", "/api/notifications/read-all"),
     }
 )
 
