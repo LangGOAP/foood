@@ -1,0 +1,26 @@
+# The restaurant side misbehaves: a rejection, a cancellation after cooking started, a slow kitchen.
+name = "kitchen-trouble"
+description = "Order 1 is rejected, order 2 is accepted then cancelled, order 3 takes four minutes."
+seed = 2
+
+[kitchen]
+autopilot = true
+start_after = 5
+ready_after = 45
+
+[[inject]]
+order = 1
+failure = "restaurant_rejects"
+after_seconds = 8
+reason = "We are out of buns"
+
+[[inject]]
+order = 2
+failure = "accepts_then_cancels"
+after_seconds = 20
+reason = "The last portion of pasta just went out"
+
+[[inject]]
+order = 3
+failure = "prep_overrun"
+after_seconds = 240

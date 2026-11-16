@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterator
 
 import httpx
 import pytest
 
 from foood.app import create_app
+from foood.store import CLOCK
+
+
+@pytest.fixture(autouse=True)
+def _real_time() -> Iterator[None]:
+    CLOCK.reset()
+    yield
+    CLOCK.reset()
 
 
 @pytest.fixture

@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from foood.notifications import Notification
     from foood.orders import Order
     from foood.payments import Payment, Refund
+    from foood.scenario import Engine
     from foood.tracking import Location
 
 PASSWORD = "password123"
@@ -53,8 +54,27 @@ def owner_email(restaurant: str) -> str:
     return f"{slug}.owner@example.com"
 
 
+@dataclass
+class Clock:
+    """Wall time plus an offset the scenario engine and the tests can move."""
+
+    offset: timedelta = timedelta(0)
+
+    def now(self) -> datetime:
+        return datetime.now(UTC) + self.offset
+
+    def advance(self, seconds: float) -> None:
+        self.offset += timedelta(seconds=seconds)
+
+    def reset(self) -> None:
+        self.offset = timedelta(0)
+
+
+CLOCK = Clock()
+
+
 def now() -> datetime:
-    return datetime.now(UTC)
+    return CLOCK.now()
 
 
 def iso(moment: datetime) -> str:
@@ -119,6 +139,12 @@ class Store:
     listeners: dict[str, list[Callable[..., None]]] = field(default_factory=dict)
     #: replaceable decision points (``charge``, later dispatch and timing) for the scenario engine
     hooks: dict[str, Callable[..., Any]] = field(default_factory=dict)
+    #: called once per simulator tick (timers of the scenario engine)
+    tickers: list[Callable[[], None]] = field(default_factory=list)
+    #: simulated-phone speed multipliers per driver user id (courier delays)
+    speed_factors: dict[str, float] = field(default_factory=dict)
+    #: the loaded scenario's engine, if any
+    engine: Engine | None = None
 
     def subscribe(self, event: str, listener: Callable[..., None]) -> None:
         self.listeners.setdefault(event, []).append(listener)

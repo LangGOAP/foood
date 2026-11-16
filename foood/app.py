@@ -8,6 +8,7 @@ against it unchanged.
 from __future__ import annotations
 
 import asyncio
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -27,14 +28,23 @@ from foood.notifications import router as notifications_router
 from foood.orders import router as orders_router
 from foood.payments import install as install_payments
 from foood.payments import router as payments_router
+from foood.scenario import Scenario, load
+from foood.scenario import install as install_scenario
+from foood.scenario import router as scenario_router
 from foood.store import Store, seed_demo
 from foood.tracking import install as install_tracking
 from foood.tracking import router as tracking_router
 from foood.tracking import run_simulator
 
 
-def create_app(store: Store | None = None, simulate: bool = True) -> FastAPI:
-    """Build the service; ``simulate`` runs the driver-phone simulator while it serves."""
+def create_app(
+    store: Store | None = None, simulate: bool = True, scenario: Scenario | None = None
+) -> FastAPI:
+    """Build the service.
+
+    ``simulate`` runs the driver-phone simulator (and the scenario timers) while it
+    serves; ``scenario`` injects failures, defaulting to ``FOOOD_SCENARIO`` when set.
+    """
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -59,6 +69,10 @@ def create_app(store: Store | None = None, simulate: bool = True) -> FastAPI:
     install_payments(app.state.store)
     install_deliveries(app.state.store)
     install_tracking(app.state.store)
+    if scenario is None and os.environ.get("FOOOD_SCENARIO"):
+        scenario = load(os.environ["FOOOD_SCENARIO"])
+    if scenario is not None:
+        install_scenario(app.state.store, scenario)
     install_error_handlers(app)
     app.include_router(auth_router)
     app.include_router(catalog_router)
@@ -69,6 +83,7 @@ def create_app(store: Store | None = None, simulate: bool = True) -> FastAPI:
     app.include_router(deliveries_router)
     app.include_router(tracking_router)
     app.include_router(notifications_router)
+    app.include_router(scenario_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

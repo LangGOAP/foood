@@ -1,0 +1,9 @@
+# Nothing goes wrong. The kitchen runs itself so the demo needs nobody in the restaurant app.
+name = "happy-path"
+description = "Every order is cooked, dispatched and delivered without incident."
+seed = 1
+
+[kitchen]
+autopilot = true
+start_after = 5
+ready_after = 45
