@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Annotated, Any
 
 import jwt
@@ -11,7 +12,8 @@ from pydantic import BaseModel, EmailStr, Field
 from foood.errors import ApiError
 from foood.store import ACCESS_TTL, DEMO_CODE, Store, User, iso, now
 
-SECRET = "foood-dev-secret"  # a demo platform; override with FOOOD_JWT_SECRET in production
+# A demo platform: the signing key is public. FOOOD_JWT_SECRET overrides it.
+SECRET = os.environ.get("FOOOD_JWT_SECRET", "foood-dev-secret-not-for-production-use-0001")
 ALGORITHM = "HS256"
 
 router = APIRouter(prefix="/api", tags=["auth"])

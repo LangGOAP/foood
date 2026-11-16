@@ -11,6 +11,10 @@ import secrets
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from foood.models import MenuCategory, MenuItem, Restaurant
 
 PASSWORD = "password123"
 DEMO_CODE = "123456"
@@ -84,6 +88,9 @@ class RefreshSession:
 @dataclass
 class Store:
     users: dict[str, User] = field(default_factory=dict)
+    restaurants: dict[str, Restaurant] = field(default_factory=dict)
+    categories: dict[str, MenuCategory] = field(default_factory=dict)
+    menu_items: dict[str, MenuItem] = field(default_factory=dict)
     refresh: dict[str, RefreshSession] = field(default_factory=dict)
     consumed: dict[str, str] = field(default_factory=dict)  # rotated token -> family
     revoked_families: set[str] = field(default_factory=set)
@@ -160,4 +167,7 @@ def seed_demo(store: Store) -> Store:
     for name in RESTAURANT_NAMES:
         full_name = "Restaurant Owner" if name == "Burger Palace" else f"{name} Owner"
         store.add_user(owner_email(name), PASSWORD, full_name, "RESTAURANT_OWNER")
+    from foood.seed import seed_restaurants
+
+    seed_restaurants(store)
     return store
