@@ -12,7 +12,7 @@ the store so dispatch, notifications and the scenario engine can react.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -30,6 +30,7 @@ router = APIRouter(prefix="/api", tags=["orders"])
 
 DELIVERY_FEE = Decimal("3.00")
 CURRENCY = "EGP"
+DUPLICATE_WINDOW = timedelta(seconds=60)
 
 PROGRESS = [
     "CREATED",
@@ -48,7 +49,7 @@ TRANSITIONS: dict[str, set[str]] = {
     "CONFIRMED": {"PREPARING", "CANCELLED"},
     "PREPARING": {"READY_FOR_PICKUP", "CANCELLED"},
     "READY_FOR_PICKUP": {"DRIVER_ASSIGNED", "CANCELLED"},
-    "DRIVER_ASSIGNED": {"PICKED_UP", "CANCELLED"},
+    "DRIVER_ASSIGNED": {"PICKED_UP", "READY_FOR_PICKUP", "CANCELLED"},  # back when a driver drops
     "PICKED_UP": {"DELIVERED", "CANCELLED"},
 }
 CUSTOMER_CANCELLABLE = {"CREATED", "PAYMENT_PENDING", "CONFIRMED"}
@@ -201,6 +202,21 @@ def place_order(
     changes = reconcile(cart, store)
     if changes:
         raise cart_changed(changes)
+    wanted = sorted((i.menu_item_id, i.quantity) for i in cart.items)
+    for earlier in store.orders.values():
+        if (
+            earlier.customer_id == user.id
+            and earlier.restaurant_id == restaurant.id
+            and earlier.status in {"CREATED", "PAYMENT_PENDING"}
+            and now() - earlier.created_at < DUPLICATE_WINDOW
+            and sorted((i.menu_item_id, i.quantity) for i in earlier.items) == wanted
+        ):
+            raise ApiError(
+                409,
+                "You placed this exact order a moment ago and it is still waiting for payment",
+                error="DuplicateOrder",
+                details={"orderId": earlier.id},
+            )
     order = Order(
         customer_id=user.id,
         restaurant_id=restaurant.id,

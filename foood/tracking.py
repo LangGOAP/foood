@@ -219,7 +219,7 @@ def simulate_step(store: Store, seconds: float = SIM_TICK_SECONDS) -> None:
             if moment - current.received_at < REAL_REPORT_GRACE:
                 continue  # a real device is sharing; leave it alone
         target = _destination(store, delivery)
-        step = step_km
+        step = step_km * store.speed_factors.get(driver.user_id, 1.0)
         if current is None:
             restaurant = store.restaurants[delivery.restaurant_id]
             # appear SIM_START_KM south-west of the restaurant, then drive in
@@ -237,10 +237,12 @@ def simulate_step(store: Store, seconds: float = SIM_TICK_SECONDS) -> None:
 
 
 async def run_simulator(store: Store, tick: float = SIM_TICK_SECONDS) -> None:
-    """Background task started with the server; one step per tick."""
+    """Background task started with the server: the phones move, then the timers run."""
     while True:
         await asyncio.sleep(tick)
         simulate_step(store, tick)
+        for ticker in list(store.tickers):
+            ticker()
 
 
 # --- routes -----------------------------------------------------------------------------------

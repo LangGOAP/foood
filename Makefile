@@ -18,8 +18,10 @@ test:
 serve:
 	uv run foood serve --reload
 
-up:  ## API on :3000 plus the three apps on :8081-:8083 (exports them on first run)
-	uv run foood up
+SCENARIO ?=
+
+up:  ## API on :3000 plus the three apps on :8081-:8083 (exports them on first run); SCENARIO=name injects failures
+	uv run foood up $(if $(SCENARIO),--scenario $(SCENARIO),)
 
 down:  ## stop a foood up left running in another terminal
 	-pkill -f "foood up" 2>/dev/null || true

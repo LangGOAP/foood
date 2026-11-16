@@ -1,0 +1,16 @@
+# Money misbehaves: a declined card and a double-submitted order.
+name = "payment-trouble"
+description = "Order 1's card is declined; order 2 is submitted twice."
+seed = 4
+
+[kitchen]
+autopilot = true
+
+[[inject]]
+order = 1
+failure = "payment_declines"
+reason = "Insufficient funds"
+
+[[inject]]
+order = 2
+failure = "duplicate_submission"

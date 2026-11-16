@@ -56,6 +56,33 @@ app's kitchen board, dispatch to an online driver, the driver app's pickup and
 drop-off, live tracking and notifications. `CONTRACT.md` lists which of the
 Delivery Plus API operations are implemented.
 
+## Break it on purpose
+
+```bash
+make up SCENARIO=kitchen-trouble      # or: uv run foood up --scenario kitchen-trouble
+```
+
+A scenario is a TOML file in `scenarios/` that can put the kitchen on autopilot
+(no one needs to sit in the restaurant app) and inject failures by order
+number: the *n*-th order placed after the server starts. Each injection is a
+flag on a simulator the platform already has, so with no scenario loaded
+nothing behaves differently. The bundled ones:
+
+| Scenario | What happens |
+|---|---|
+| `happy-path` | The kitchen cooks every order itself; nothing goes wrong. |
+| `kitchen-trouble` | Order 1 is rejected, order 2 is accepted then cancelled when an item runs out, order 3 takes four minutes. |
+| `delivery-trouble` | Order 1 waits 90 s for a driver, order 2's driver drops it before pickup, order 3's after pickup, order 4's courier crawls. |
+| `payment-trouble` | Order 1's card is declined; order 2 is submitted twice and the duplicate is refused. |
+
+The failures available to a scenario file are `restaurant_rejects`,
+`accepts_then_cancels`, `prep_overrun`, `payment_declines`, `no_driver`,
+`driver_drops` (before or after pickup), `courier_delay` and
+`duplicate_submission`; `foood/scenario.py` documents their fields.
+`GET /api/_scenario` shows what the loaded scenario has fired so far, and the
+tests in `tests/test_scenario.py` prove each failure ends in a consistent
+state across the order, its payment and its delivery.
+
 ## Credits
 
 The mobile apps and the public API contract are the work of the

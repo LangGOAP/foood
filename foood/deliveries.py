@@ -237,6 +237,33 @@ def cancel_delivery(store: Store, delivery: Delivery, reason: str | None, by: st
     return delivery
 
 
+def drop(store: Store, delivery: Delivery, reason: str | None = None) -> Delivery:
+    """The driver walks away. Before pickup the order goes back to the queue and the
+    driver offline; after pickup the food is gone with them, so the order is cancelled."""
+    if delivery.status not in ACTIVE or delivery.driver_id is None:
+        raise ApiError(
+            409, f"A {delivery.status} delivery has no driver to drop", error="InvalidTransition"
+        )
+    driver = store.drivers[delivery.driver_id]
+    if delivery.status == "DRIVER_ASSIGNED":
+        delivery.driver_id = None
+        delivery.assigned_at = None
+        delivery.status = "CREATED"
+        delivery.updated_at = now()
+        driver.set_status("OFFLINE")
+        order = get_order(store, delivery.order_id)
+        if order.status == "DRIVER_ASSIGNED":
+            transition(store, order, "READY_FOR_PICKUP")
+        store.publish("delivery.dropped", delivery=delivery, driver=driver, reason=reason)
+        store.publish("delivery.status", delivery=delivery)
+        dispatch_pending(store)
+        return delivery
+    cancelled = cancel_delivery(store, delivery, reason or "The driver dropped the job", "SYSTEM")
+    driver.set_status("OFFLINE")
+    store.publish("delivery.dropped", delivery=delivery, driver=driver, reason=reason)
+    return cancelled
+
+
 def _on_order_status(store: Store, order: Order, previous: str) -> None:
     if order.status == "READY_FOR_PICKUP" and delivery_for_order(store, order.id) is None:
         create_delivery(store, order)

@@ -208,6 +208,10 @@ def export_app(app: App, api_url: str, force: bool = False) -> Path:
 
 def banner(api_url: str, apps: list[App]) -> str:
     lines = ["", "foood is up", "", f"  API            {api_url}  (docs at {api_url}/docs)"]
+    if os.environ.get("FOOOD_SCENARIO"):
+        lines.append(
+            f"  scenario       {os.environ['FOOOD_SCENARIO']}  (status at {api_url}/api/_scenario)"
+        )
     for app in apps:
         lines.append(f"  {app.name:<14} http://localhost:{app.port}")
     lines += ["", "  Sign in with"]

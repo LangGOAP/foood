@@ -1,0 +1,33 @@
+# The last mile misbehaves: nobody to dispatch, drivers who walk away, a slow courier.
+name = "delivery-trouble"
+description = "Order 1 waits 90 s for a driver, order 2's driver drops it before pickup, order 3's after pickup, order 4's courier crawls."
+seed = 3
+
+[kitchen]
+autopilot = true
+start_after = 5
+ready_after = 30
+
+[[inject]]
+order = 1
+failure = "no_driver"
+for_seconds = 90
+
+[[inject]]
+order = 2
+failure = "driver_drops"
+after = "assigned"
+after_seconds = 10
+
+[[inject]]
+order = 3
+failure = "driver_drops"
+after = "pickup"
+after_seconds = 15
+reason = "Scooter broke down on the bridge"
+
+[[inject]]
+order = 4
+failure = "courier_delay"
+factor = 0.2
+for_seconds = 180
