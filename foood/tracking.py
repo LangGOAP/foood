@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import os
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -197,6 +198,12 @@ def _destination(store: Store, delivery: Delivery) -> tuple[float, float]:
     return restaurant.latitude + SIM_DROP_OFFSET[0], restaurant.longitude + SIM_DROP_OFFSET[1]
 
 
+def simulated_phones_win() -> bool:
+    """``FOOOD_SIMULATED_PHONES=true`` (set by ``foood up``): browsers cannot move, so the
+    simulated phone keeps driving even while a web build reports its fixed position."""
+    return os.environ.get("FOOOD_SIMULATED_PHONES", "").lower() in {"1", "true", "yes"}
+
+
 def simulate_step(store: Store, seconds: float = SIM_TICK_SECONDS) -> None:
     """Move every active delivery's driver whose real phone is silent."""
     moment = now()
@@ -208,19 +215,20 @@ def simulate_step(store: Store, seconds: float = SIM_TICK_SECONDS) -> None:
         if driver is None:
             continue
         current = store.locations.get(driver.user_id)
-        if current is not None and not current.simulated:
+        if current is not None and not current.simulated and not simulated_phones_win():
             if moment - current.received_at < REAL_REPORT_GRACE:
                 continue  # a real device is sharing; leave it alone
         target = _destination(store, delivery)
+        step = step_km
         if current is None:
             restaurant = store.restaurants[delivery.restaurant_id]
             # appear SIM_START_KM south-west of the restaurant, then drive in
             lat_offset = SIM_START_KM / 111.0 / math.sqrt(2)
             lng_offset = lat_offset / max(math.cos(math.radians(restaurant.latitude)), 1e-6)
             origin = (restaurant.latitude - lat_offset, restaurant.longitude - lng_offset)
-            position = _step_towards(origin, target, step_km)
+            position = _step_towards(origin, target, step)
         else:
-            position = _step_towards((current.latitude, current.longitude), target, step_km)
+            position = _step_towards((current.latitude, current.longitude), target, step)
         location = Location(
             driver.user_id, *position, recorded_at=moment, received_at=moment, simulated=True
         )

@@ -1,4 +1,4 @@
-.PHONY: install lint format test serve contract
+.PHONY: install lint format test serve up down contract
 
 install:
 	uv sync
@@ -17,5 +17,12 @@ test:
 
 serve:
 	uv run foood serve --reload
+
+up:  ## API on :3000 plus the three apps on :8081-:8083 (exports them on first run)
+	uv run foood up
+
+down:  ## stop a foood up left running in another terminal
+	-pkill -f "foood up" 2>/dev/null || true
+
 contract:
 	uv run python scripts/contract_table.py

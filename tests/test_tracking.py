@@ -231,3 +231,16 @@ def test_simulated_phone_idles_without_deliveries() -> None:
     store = Store()
     simulate_step(store)
     assert store.locations == {}
+
+
+async def test_simulated_phones_can_outrank_fixed_browser_positions(client, monkeypatch) -> None:
+    from foood.tracking import simulate_step
+
+    sara, driver, order, delivery = await _assigned(client)
+    await client.post(
+        "/api/tracking/location", json={"latitude": 30.0, "longitude": 31.0}, headers=driver
+    )
+    monkeypatch.setenv("FOOOD_SIMULATED_PHONES", "true")
+    simulate_step(client.store)
+    moved = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
+    assert (moved["location"]["latitude"], moved["location"]["longitude"]) != (30.0, 31.0)
