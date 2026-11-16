@@ -9,13 +9,15 @@ from __future__ import annotations
 
 import secrets
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from foood.cart import Cart
     from foood.models import MenuCategory, MenuItem, Restaurant
+    from foood.orders import Order
 
 PASSWORD = "password123"
 DEMO_CODE = "123456"
@@ -93,6 +95,19 @@ class Store:
     categories: dict[str, MenuCategory] = field(default_factory=dict)
     menu_items: dict[str, MenuItem] = field(default_factory=dict)
     carts: dict[str, Cart] = field(default_factory=dict)
+    orders: dict[str, Order] = field(default_factory=dict)
+    #: (user id, Idempotency-Key) -> id of the resource that request created
+    idempotency: dict[tuple[str, str], str] = field(default_factory=dict)
+    listeners: dict[str, list[Callable[..., None]]] = field(default_factory=dict)
+
+    def subscribe(self, event: str, listener: Callable[..., None]) -> None:
+        self.listeners.setdefault(event, []).append(listener)
+
+    def publish(self, event: str, **payload: Any) -> None:
+        """Tell the other modules (dispatch, notifications, scenarios) what just happened."""
+        for listener in self.listeners.get(event, []):
+            listener(**payload)
+
     refresh: dict[str, RefreshSession] = field(default_factory=dict)
     consumed: dict[str, str] = field(default_factory=dict)  # rotated token -> family
     revoked_families: set[str] = field(default_factory=set)
@@ -162,6 +177,7 @@ def seed_demo(store: Store) -> Store:
         "Sara Demo",
         "CUSTOMER",
         phone="+20 101 234 5678",
+        phone_verified_at=now(),
         address="742 Evergreen Terrace, Apt 3B",
     )
     store.add_user("demo.driver@example.com", PASSWORD, "Demo Driver", "DRIVER")
