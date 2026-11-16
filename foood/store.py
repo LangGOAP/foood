@@ -15,12 +15,15 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    import asyncio
+
     from foood.cart import Cart
     from foood.deliveries import Delivery, Earning, Rating
     from foood.drivers import Driver
     from foood.models import MenuCategory, MenuItem, Restaurant
     from foood.orders import Order
     from foood.payments import Payment, Refund
+    from foood.tracking import Location
 
 PASSWORD = "password123"
 #: the Delivery Plus E2E stack's test-only default, so the apps' Maestro flows run unchanged
@@ -104,6 +107,8 @@ class Store:
     deliveries: dict[str, Delivery] = field(default_factory=dict)
     earnings: list[Earning] = field(default_factory=list)
     ratings: dict[str, Rating] = field(default_factory=dict)  # keyed by delivery id
+    locations: dict[str, Location] = field(default_factory=dict)  # keyed by driver user id
+    watchers: dict[str, list[asyncio.Queue[dict[str, Any]]]] = field(default_factory=dict)
     orders: dict[str, Order] = field(default_factory=dict)
     payments: dict[str, Payment] = field(default_factory=dict)
     refunds: dict[str, Refund] = field(default_factory=dict)  # keyed by payment id

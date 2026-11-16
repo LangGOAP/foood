@@ -7,6 +7,10 @@ against it unchanged.
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from foood import __version__
@@ -21,13 +25,28 @@ from foood.orders import router as orders_router
 from foood.payments import install as install_payments
 from foood.payments import router as payments_router
 from foood.store import Store, seed_demo
+from foood.tracking import install as install_tracking
+from foood.tracking import router as tracking_router
+from foood.tracking import run_simulator
 
 
-def create_app(store: Store | None = None) -> FastAPI:
-    app = FastAPI(title="foood", version=__version__, docs_url="/docs")
+def create_app(store: Store | None = None, simulate: bool = True) -> FastAPI:
+    """Build the service; ``simulate`` runs the driver-phone simulator while it serves."""
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        task = asyncio.create_task(run_simulator(app.state.store)) if simulate else None
+        try:
+            yield
+        finally:
+            if task is not None:
+                task.cancel()
+
+    app = FastAPI(title="foood", version=__version__, docs_url="/docs", lifespan=lifespan)
     app.state.store = store if store is not None else seed_demo(Store())
     install_payments(app.state.store)
     install_deliveries(app.state.store)
+    install_tracking(app.state.store)
     install_error_handlers(app)
     app.include_router(auth_router)
     app.include_router(catalog_router)
@@ -36,6 +55,7 @@ def create_app(store: Store | None = None) -> FastAPI:
     app.include_router(payments_router)
     app.include_router(drivers_router)
     app.include_router(deliveries_router)
+    app.include_router(tracking_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
