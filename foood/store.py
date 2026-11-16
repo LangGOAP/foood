@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from foood.cart import Cart
     from foood.models import MenuCategory, MenuItem, Restaurant
     from foood.orders import Order
+    from foood.payments import Payment, Refund
 
 PASSWORD = "password123"
 DEMO_CODE = "123456"
@@ -96,9 +97,13 @@ class Store:
     menu_items: dict[str, MenuItem] = field(default_factory=dict)
     carts: dict[str, Cart] = field(default_factory=dict)
     orders: dict[str, Order] = field(default_factory=dict)
+    payments: dict[str, Payment] = field(default_factory=dict)
+    refunds: dict[str, Refund] = field(default_factory=dict)  # keyed by payment id
     #: (user id, Idempotency-Key) -> id of the resource that request created
     idempotency: dict[tuple[str, str], str] = field(default_factory=dict)
     listeners: dict[str, list[Callable[..., None]]] = field(default_factory=dict)
+    #: replaceable decision points (``charge``, later dispatch and timing) for the scenario engine
+    hooks: dict[str, Callable[..., Any]] = field(default_factory=dict)
 
     def subscribe(self, event: str, listener: Callable[..., None]) -> None:
         self.listeners.setdefault(event, []).append(listener)
@@ -180,6 +185,7 @@ def seed_demo(store: Store) -> Store:
         phone_verified_at=now(),
         address="742 Evergreen Terrace, Apt 3B",
     )
+    store.add_user("admin@example.com", PASSWORD, "Platform Admin", "ADMIN")
     store.add_user("demo.driver@example.com", PASSWORD, "Demo Driver", "DRIVER")
     store.add_user("driver@example.com", PASSWORD, "Base Driver", "DRIVER")
     for name in RESTAURANT_NAMES:
