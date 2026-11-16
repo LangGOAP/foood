@@ -1,4 +1,4 @@
-.PHONY: install lint format test serve
+.PHONY: install lint format test serve contract
 
 install:
 	uv sync
@@ -17,3 +17,5 @@ test:
 
 serve:
 	uv run foood serve --reload
+contract:
+	uv run python scripts/contract_table.py
