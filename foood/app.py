@@ -19,14 +19,14 @@ from foood import __version__
 from foood.auth import router as auth_router
 from foood.cart import router as cart_router
 from foood.catalog import router as catalog_router
-from foood.deliveries import install as install_deliveries
 from foood.deliveries import router as deliveries_router
 from foood.drivers import router as drivers_router
+from foood.engine import OrderEngine, make_engine
+from foood.engine import router as engine_router
 from foood.errors import install_error_handlers
 from foood.notifications import install as install_notifications
 from foood.notifications import router as notifications_router
 from foood.orders import router as orders_router
-from foood.payments import install as install_payments
 from foood.payments import router as payments_router
 from foood.scenario import Scenario, load
 from foood.scenario import install as install_scenario
@@ -38,10 +38,14 @@ from foood.tracking import run_simulator
 
 
 def create_app(
-    store: Store | None = None, simulate: bool = True, scenario: Scenario | None = None
+    store: Store | None = None,
+    simulate: bool = True,
+    scenario: Scenario | None = None,
+    engine: OrderEngine | None = None,
 ) -> FastAPI:
     """Build the service.
 
+    ``engine`` decides the order lifecycle (``FOOOD_ENGINE``, default hand-wired);
     ``simulate`` runs the driver-phone simulator (and the scenario timers) while it
     serves; ``scenario`` injects failures, defaulting to ``FOOOD_SCENARIO`` when set.
     """
@@ -66,8 +70,8 @@ def create_app(
     )
     # listeners run in subscription order: the customer hears about a stage before its side effects
     install_notifications(app.state.store)
-    install_payments(app.state.store)
-    install_deliveries(app.state.store)
+    app.state.engine = engine or make_engine(os.environ.get("FOOOD_ENGINE", "hand-wired"))
+    app.state.engine.install(app.state.store)
     install_tracking(app.state.store)
     if scenario is None and os.environ.get("FOOOD_SCENARIO"):
         scenario = load(os.environ["FOOOD_SCENARIO"])
@@ -84,6 +88,7 @@ def create_app(
     app.include_router(tracking_router)
     app.include_router(notifications_router)
     app.include_router(scenario_router)
+    app.include_router(engine_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

@@ -56,6 +56,16 @@ app's kitchen board, dispatch to an online driver, the driver app's pickup and
 drop-off, live tracking and notifications. `CONTRACT.md` lists which of the
 Delivery Plus API operations are implemented.
 
+## The engine
+
+The platform records facts and publishes them: a payment completed, the kitchen is
+ready, a driver dropped the job. What happens next to the order is decided in one
+place, the order engine (`foood/engine.py`). `main` ships `hand-wired`, fixed
+reactions with one anticipated fallback per failure; the `langgraph` and `langgoap`
+branches add theirs and change nothing else. `foood up --engine hand-wired` picks
+one, and `GET /api/_engine?orderId=...` lists the decisions taken for an order and
+why.
+
 ## Break it on purpose
 
 ```bash
