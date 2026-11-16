@@ -12,6 +12,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from foood import __version__
 from foood.auth import router as auth_router
@@ -46,6 +47,13 @@ def create_app(store: Store | None = None, simulate: bool = True) -> FastAPI:
 
     app = FastAPI(title="foood", version=__version__, docs_url="/docs", lifespan=lifespan)
     app.state.store = store if store is not None else seed_demo(Store())
+    app.add_middleware(  # the apps run as web builds on other local ports
+        CORSMiddleware,
+        allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     # listeners run in subscription order: the customer hears about a stage before its side effects
     install_notifications(app.state.store)
     install_payments(app.state.store)

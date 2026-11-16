@@ -231,3 +231,39 @@ def test_simulated_phone_idles_without_deliveries() -> None:
     store = Store()
     simulate_step(store)
     assert store.locations == {}
+
+
+async def test_simulated_phones_can_outrank_fixed_browser_positions(client, monkeypatch) -> None:
+    from foood.tracking import simulate_step
+
+    sara, driver, order, delivery = await _assigned(client)
+    await client.post(
+        "/api/tracking/location", json={"latitude": 30.0, "longitude": 31.0}, headers=driver
+    )
+    monkeypatch.setenv("FOOOD_SIMULATED_PHONES", "true")
+    simulate_step(client.store)
+    moved = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
+    assert (moved["location"]["latitude"], moved["location"]["longitude"]) != (30.0, 31.0)
+
+
+async def test_browser_reports_do_not_reset_a_simulated_phone_on_a_delivery(
+    client, monkeypatch
+) -> None:
+    """A web build can only report its fixed position; while the platform drives the phone, that
+    report must not send the driver back to the start every few seconds (#41)."""
+    from foood.tracking import simulate_step
+
+    sara, driver, order, delivery = await _assigned(client)
+    monkeypatch.setenv("FOOOD_SIMULATED_PHONES", "true")
+    fixed = {"latitude": 37.7, "longitude": -122.5}
+    await client.post("/api/tracking/location", json=fixed, headers=driver)
+    simulate_step(client.store)
+    simulate_step(client.store)
+    driven = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
+    where = (driven["location"]["latitude"], driven["location"]["longitude"])
+    assert where != (37.7, -122.5)
+    again = await client.post("/api/tracking/location", json=fixed, headers=driver)
+    assert again.status_code == 201
+    assert (again.json()["latitude"], again.json()["longitude"]) == where
+    kept = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
+    assert (kept["location"]["latitude"], kept["location"]["longitude"]) == where

@@ -24,11 +24,37 @@ Prerequisites: [uv](https://docs.astral.sh/uv/) and Node 22 or newer.
 git clone --recurse-submodules https://github.com/LangGOAP/foood
 cd foood
 make install
-make serve        # API on http://localhost:3000, docs at /docs
+make up
 ```
 
-The apps live in `apps/` as git submodules of the Delivery Plus repositories
-and read the API address from `EXPO_PUBLIC_API_BASE_URL`.
+`make up` (also `uv run foood up`) starts the API on http://localhost:3000 with
+the demo seed and serves the three apps as web builds:
+
+| App | URL | Sign in |
+|---|---|---|
+| customer | http://localhost:8081 | `demo.customer@example.com` / `password123` |
+| driver | http://localhost:8082 | `driver@example.com` / `password123` |
+| restaurant | http://localhost:8083 | `owner@example.com` / `password123` (Burger Palace) |
+
+The first run installs the apps' dependencies and exports each app with
+`expo export --platform web` against the API address, which takes a few
+minutes; later runs reuse the builds in `build/web/` until the address changes
+(`foood up --rebuild` forces a new export). The restaurant used by the apps'
+own end-to-end flows, QA Kitchen, belongs to `qa.restaurant@delivery-plus.test`
+with the password `Qa-Only-Passw0rd!`, and `admin@example.com` / `password123`
+can refund payments and cancel deliveries.
+
+`make serve` runs the API alone with auto-reload; `make down` stops a
+`foood up` left running in another terminal. The apps live in `apps/` as git
+submodules of the Delivery Plus repositories and read the API address from
+`EXPO_PUBLIC_API_BASE_URL`; the web builds get fixed browser positions so no
+app asks for geolocation, and the API's simulated driver phone moves the
+driver on the customer's map because a browser window cannot.
+
+Every order placed in the customer app flows through payment, the restaurant
+app's kitchen board, dispatch to an online driver, the driver app's pickup and
+drop-off, live tracking and notifications. `CONTRACT.md` lists which of the
+Delivery Plus API operations are implemented.
 
 ## Credits
 
