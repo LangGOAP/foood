@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import jsonschema
+import pytest
+
 from foood.app import create_app
-from foood.contract import CLAIMED, load_contract, operations
+from foood.contract import CLAIMED, load_contract, operations, resolve_refs
 
 
 def _routes() -> set[tuple[str, str]]:
@@ -47,3 +50,14 @@ def test_no_contract_route_is_served_without_being_claimed() -> None:
         if path in contract_paths and (method, path) not in CLAIMED
     )
     assert unclaimed == []
+
+
+def test_nullable_fields_accept_null() -> None:
+    """OpenAPI 3.0 ``nullable`` must be honoured, or every optional field would fail."""
+    schema = resolve_refs(
+        {"type": "object", "properties": {"x": {"type": "string", "nullable": True}}}
+    )
+    jsonschema.validate({"x": None}, schema)
+    jsonschema.validate({"x": "ok"}, schema)
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate({"x": 1}, schema)

@@ -35,6 +35,23 @@ CLAIMED: frozenset[tuple[str, str]] = frozenset(
         ("PATCH", "/api/users/me"),
         ("POST", "/api/users/me/phone/verification"),
         ("POST", "/api/users/me/phone/verify"),
+        ("GET", "/api/restaurants"),
+        ("GET", "/api/restaurants/me"),
+        ("POST", "/api/restaurants"),
+        ("GET", "/api/restaurants/{id}"),
+        ("PATCH", "/api/restaurants/{id}"),
+        ("POST", "/api/restaurants/{id}/submit"),
+        ("PATCH", "/api/restaurants/{id}/status"),
+        ("GET", "/api/menus/restaurants/{restaurantId}/menu"),
+        ("GET", "/api/menus/menu-items/{id}"),
+        ("PATCH", "/api/menus/menu-items/{id}/availability"),
+        ("POST", "/api/menus/menu-items"),
+        ("PATCH", "/api/menus/menu-items/{id}"),
+        ("DELETE", "/api/menus/menu-items/{id}"),
+        ("POST", "/api/menus/categories"),
+        ("PATCH", "/api/menus/categories/{id}"),
+        ("DELETE", "/api/menus/categories/{id}"),
+        ("PATCH", "/api/menus/restaurants/{restaurantId}/categories/order"),
     }
 )
 
@@ -72,7 +89,11 @@ def response_schema(method: str, path: str, status: int) -> dict[str, Any] | Non
 
 
 def resolve_refs(schema: Any) -> Any:
-    """Inline every ``$ref`` so ``jsonschema`` can validate without a resolver."""
+    """Inline every ``$ref`` and translate OpenAPI 3.0 ``nullable`` for ``jsonschema``.
+
+    The contract is OpenAPI 3.0, where ``{"type": "string", "nullable": true}`` admits
+    ``null``; plain JSON Schema needs ``{"type": ["string", "null"]}``.
+    """
     root = load_contract()
 
     def _resolve(node: Any, seen: tuple[str, ...]) -> Any:
@@ -85,7 +106,13 @@ def resolve_refs(schema: Any) -> Any:
                 for part in ref.removeprefix("#/").split("/"):
                     target = target[part]
                 return _resolve(target, (*seen, ref))
-            return {key: _resolve(value, seen) for key, value in node.items()}
+            out = {key: _resolve(value, seen) for key, value in node.items() if key != "nullable"}
+            if node.get("nullable") and "type" in out:
+                types = out["type"] if isinstance(out["type"], list) else [out["type"]]
+                out["type"] = [*types, "null"] if "null" not in types else types
+            elif node.get("nullable"):
+                out = {"anyOf": [out, {"type": "null"}]}
+            return out
         if isinstance(node, list):
             return [_resolve(item, seen) for item in node]
         return node
