@@ -2,20 +2,23 @@
 
 from __future__ import annotations
 
-from fastapi.routing import APIRoute
-
 from foood.app import create_app
 from foood.contract import CLAIMED, load_contract, operations
 
 
 def _routes() -> set[tuple[str, str]]:
+    """Every (METHOD, path) the app serves, read from its own OpenAPI document.
+
+    FastAPI registers included routers lazily, so walking ``app.routes`` right
+    after ``create_app()`` misses them; the generated document does not.
+    """
     app = create_app()
-    found: set[tuple[str, str]] = set()
-    for route in app.routes:
-        if isinstance(route, APIRoute):
-            for method in route.methods:
-                found.add((method, route.path))
-    return found
+    return {
+        (method.upper(), path)
+        for path, methods in app.openapi()["paths"].items()
+        for method in methods
+        if method in {"get", "post", "put", "patch", "delete"}
+    }
 
 
 def test_contract_file_is_the_delivery_plus_public_api() -> None:

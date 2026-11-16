@@ -1,4 +1,4 @@
-"""Response validation against the contract, for the endpoint tests to reuse."""
+"""Helpers shared by the endpoint tests."""
 
 from __future__ import annotations
 
@@ -6,19 +6,8 @@ from typing import Any
 
 import httpx
 import jsonschema
-import pytest
 
-from foood.app import create_app
 from foood.contract import resolve_refs, response_schema
-
-
-@pytest.fixture
-async def client():
-    app = create_app()
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://test"
-    ) as client:
-        yield client
 
 
 def assert_conforms(method: str, path: str, response: httpx.Response) -> Any:

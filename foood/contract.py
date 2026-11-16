@@ -18,7 +18,25 @@ from typing import Any
 CONTRACT_PATH = Path(__file__).resolve().parents[1] / "contracts" / "delivery-plus-public.json"
 
 #: (method, path) pairs, exactly as they appear in the contract.
-CLAIMED: frozenset[tuple[str, str]] = frozenset()
+CLAIMED: frozenset[tuple[str, str]] = frozenset(
+    {
+        ("POST", "/api/auth/register"),
+        ("POST", "/api/auth/login"),
+        ("POST", "/api/auth/refresh"),
+        ("POST", "/api/auth/logout"),
+        ("POST", "/api/auth/logout-all"),
+        ("GET", "/api/auth/me"),
+        ("POST", "/api/auth/password/change"),
+        ("POST", "/api/auth/password/forgot"),
+        ("POST", "/api/auth/password/reset"),
+        ("POST", "/api/auth/verify-email"),
+        ("POST", "/api/auth/resend-verification"),
+        ("GET", "/api/users/me"),
+        ("PATCH", "/api/users/me"),
+        ("POST", "/api/users/me/phone/verification"),
+        ("POST", "/api/users/me/phone/verify"),
+    }
+)
 
 
 @dataclass(frozen=True)
