@@ -52,6 +52,12 @@ CLAIMED: frozenset[tuple[str, str]] = frozenset(
         ("PATCH", "/api/menus/categories/{id}"),
         ("DELETE", "/api/menus/categories/{id}"),
         ("PATCH", "/api/menus/restaurants/{restaurantId}/categories/order"),
+        ("GET", "/api/cart"),
+        ("DELETE", "/api/cart"),
+        ("POST", "/api/cart/items"),
+        ("PATCH", "/api/cart/items/{menuItemId}"),
+        ("DELETE", "/api/cart/items/{menuItemId}"),
+        ("POST", "/api/cart/validate"),
     }
 )
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -20,18 +22,29 @@ _REASONS = {
 class ApiError(HTTPException):
     """An HTTP error with the gateway's body; ``error`` is the short reason the apps switch on."""
 
-    def __init__(self, status_code: int, message: str, error: str | None = None) -> None:
+    def __init__(
+        self,
+        status_code: int,
+        message: str,
+        error: str | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> None:
         super().__init__(status_code=status_code, detail=message)
         self.error = error or _REASONS.get(status_code, "Error")
+        self.details = details
 
 
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def _api_error(_: Request, exc: ApiError) -> JSONResponse:
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={"statusCode": exc.status_code, "error": exc.error, "message": exc.detail},
-        )
+        body: dict[str, Any] = {
+            "statusCode": exc.status_code,
+            "error": exc.error,
+            "message": exc.detail,
+        }
+        if exc.details is not None:
+            body["details"] = exc.details
+        return JSONResponse(status_code=exc.status_code, content=body)
 
     @app.exception_handler(HTTPException)
     async def _http_error(_: Request, exc: HTTPException) -> JSONResponse:

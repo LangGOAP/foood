@@ -6,8 +6,9 @@ import os
 from typing import Annotated, Any
 
 import jwt
+from email_validator import EmailNotValidError, validate_email
 from fastapi import APIRouter, Depends, Header, Request, Response
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import AfterValidator, BaseModel, Field
 
 from foood.errors import ApiError
 from foood.store import ACCESS_TTL, DEMO_CODE, Store, User, iso, now
@@ -63,12 +64,26 @@ def current_user(
     return user
 
 
+def _email(value: str) -> str:
+    """Syntax-only check that also admits reserved domains such as ``.test``.
+
+    The Delivery Plus seeds use ``@delivery-plus.test`` accounts, which a strict
+    validator refuses; deliverability is nobody's concern on a demo platform.
+    """
+    try:
+        return validate_email(value, check_deliverability=False, test_environment=True).normalized
+    except EmailNotValidError as exc:
+        raise ValueError(str(exc)) from exc
+
+
+Email = Annotated[str, AfterValidator(_email)]
+
 CurrentUser = Annotated[User, Depends(current_user)]
 StoreDep = Annotated[Store, Depends(get_store)]
 
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
+    email: Email
     password: str = Field(min_length=8)
     fullName: str = Field(min_length=1)
     phone: str | None = None
@@ -77,7 +92,7 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: Email
     password: str
     appId: str | None = None
 
@@ -92,22 +107,22 @@ class ChangePasswordRequest(BaseModel):
 
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: Email
 
 
 class ResetPasswordRequest(BaseModel):
-    email: EmailStr
+    email: Email
     code: str
     newPassword: str = Field(min_length=8)
 
 
 class VerifyEmailRequest(BaseModel):
-    email: EmailStr
+    email: Email
     token: str
 
 
 class ResendVerificationRequest(BaseModel):
-    email: EmailStr
+    email: Email
 
 
 class UpdateProfileRequest(BaseModel):
