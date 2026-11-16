@@ -6,13 +6,7 @@ import uuid
 
 import pytest
 
-PASSWORD = "password123"
-
-
-async def _login(client, email: str) -> dict[str, str]:
-    response = await client.post("/api/auth/login", json={"email": email, "password": PASSWORD})
-    assert response.status_code == 200, response.text
-    return {"Authorization": f"Bearer {response.json()['accessToken']}"}
+from tests.support import login
 
 
 async def _order(client, headers: dict[str, str]) -> dict:
@@ -28,7 +22,7 @@ async def _order(client, headers: dict[str, str]) -> dict:
 
 
 async def test_checkout_pays_and_confirms_the_order(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
+    sara = await login(client, "demo.customer@example.com")
     order = await _order(client, sara)
     key = str(uuid.uuid4())
     created = await client.post(
@@ -57,8 +51,8 @@ async def test_checkout_pays_and_confirms_the_order(client) -> None:
 
 
 async def test_payment_refusals(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
-    driver = await _login(client, "demo.driver@example.com")
+    sara = await login(client, "demo.customer@example.com")
+    driver = await login(client, "demo.driver@example.com")
     missing = await client.post("/api/payments", json={"orderId": "nope"}, headers=sara)
     assert missing.status_code == 404
     order = await _order(client, sara)
@@ -78,7 +72,7 @@ async def test_payment_refusals(client) -> None:
 
 async def test_declined_card_cancels_the_order(client, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PAYMENT_TEST_HOOKS", "true")
-    sara = await _login(client, "demo.customer@example.com")
+    sara = await login(client, "demo.customer@example.com")
     order = await _order(client, sara)
     payment = (
         await client.post("/api/payments", json={"orderId": order["id"]}, headers=sara)
@@ -110,8 +104,8 @@ def test_charge_hook_decides_the_outcome() -> None:
 
 
 async def test_cancelling_a_paid_order_refunds_it(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
-    admin = await _login(client, "admin@example.com")
+    sara = await login(client, "demo.customer@example.com")
+    admin = await login(client, "admin@example.com")
     order = await _order(client, sara)
     payment = (
         await client.post("/api/payments", json={"orderId": order["id"]}, headers=sara)
@@ -137,8 +131,8 @@ async def test_cancelling_a_paid_order_refunds_it(client) -> None:
 
 
 async def test_admin_refunds_a_completed_payment(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
-    admin = await _login(client, "admin@example.com")
+    sara = await login(client, "demo.customer@example.com")
+    admin = await login(client, "admin@example.com")
     order = await _order(client, sara)
     payment = (
         await client.post("/api/payments", json={"orderId": order["id"]}, headers=sara)

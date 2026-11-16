@@ -5,15 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from foood.models import MenuItem
-from tests.support import assert_conforms
-
-PASSWORD = "password123"
-
-
-async def _login(client, email: str) -> dict[str, str]:
-    response = await client.post("/api/auth/login", json={"email": email, "password": PASSWORD})
-    assert response.status_code == 200, response.text
-    return {"Authorization": f"Bearer {response.json()['accessToken']}"}
+from tests.support import assert_conforms, login
 
 
 async def _menu(client, name: str) -> dict:
@@ -23,7 +15,7 @@ async def _menu(client, name: str) -> dict:
 
 
 async def test_empty_cart_then_add_update_remove(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
+    sara = await login(client, "demo.customer@example.com")
     empty = await client.get("/api/cart", headers=sara)
     body = assert_conforms("GET", "/api/cart", empty)
     assert body["items"] == [] and body["restaurantId"] is None and body["total"] == 0
@@ -63,7 +55,7 @@ async def test_empty_cart_then_add_update_remove(client) -> None:
 
 
 async def test_cart_rejects_bad_adds(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
+    sara = await login(client, "demo.customer@example.com")
     qa = await _menu(client, "QA")
     missing = await client.post(
         "/api/cart/items", json={"menuItemId": "nope", "quantity": 1}, headers=sara
@@ -93,8 +85,8 @@ async def test_cart_rejects_bad_adds(client) -> None:
 
 
 async def test_validate_reports_and_applies_menu_changes(client) -> None:
-    sara = await _login(client, "demo.customer@example.com")
-    owner = await _login(client, "qa.restaurant@delivery-plus.test")
+    sara = await login(client, "demo.customer@example.com")
+    owner = await login(client, "qa.restaurant@delivery-plus.test")
     qa = await _menu(client, "QA")
     for name in ("QA Burger", "QA Pasta", "QA Fries"):
         await client.post(

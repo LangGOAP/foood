@@ -4,15 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from tests.support import assert_conforms
-
-PASSWORD = "password123"
-
-
-async def _token(client, email: str) -> dict[str, str]:
-    response = await client.post("/api/auth/login", json={"email": email, "password": PASSWORD})
-    assert response.status_code == 200, response.text
-    return {"Authorization": f"Bearer {response.json()['accessToken']}"}
+from tests.support import assert_conforms, login
 
 
 async def test_restaurant_list_conforms_and_pages(client) -> None:
@@ -20,7 +12,7 @@ async def test_restaurant_list_conforms_and_pages(client) -> None:
     body = assert_conforms("GET", "/api/restaurants", response)
     assert response.status_code == 200
     assert body["page"] == 1 and body["limit"] == 3 and len(body["items"]) == 3
-    assert body["total"] == 7 and body["totalPages"] == 3  # six demo restaurants + QA Kitchen
+    assert body["total"] == 8 and body["totalPages"] == 3  # six demo restaurants + two QA ones
     names = {r["name"] for r in (await client.get("/api/restaurants?limit=50")).json()["items"]}
     assert {"Burger Palace", "Pizza Napoli", "Cairo Kitchen", "Green Bowl", "QA Kitchen"} <= names
 
@@ -39,7 +31,7 @@ async def test_search_status_and_distance(client) -> None:
     found = (await client.get("/api/restaurants?search=pizza")).json()["items"]
     assert [r["name"] for r in found] == ["Pizza Napoli"]
     closed = (await client.get("/api/restaurants?status=CLOSED")).json()["items"]
-    assert [r["name"] for r in closed] == ["Green Bowl"]
+    assert [r["name"] for r in closed] == ["Green Bowl", "QA Night Cafe"]
     near = (await client.get("/api/restaurants?lat=30.0444&lng=31.2357&limit=50")).json()["items"]
     assert near[0]["name"] == "Burger Palace" and near[0]["distanceKm"] == pytest.approx(
         0, abs=0.01
@@ -62,7 +54,7 @@ async def test_qa_kitchen_menu_has_the_sold_out_item(client) -> None:
 
 
 async def test_owner_sees_and_controls_their_restaurant(client) -> None:
-    owner = await _token(client, "owner@example.com")
+    owner = await login(client, "owner@example.com")
     mine = (await client.get("/api/restaurants/me", headers=owner)).json()
     assert [r["name"] for r in mine] == ["Burger Palace"]
     rid = mine[0]["id"]
@@ -71,19 +63,19 @@ async def test_owner_sees_and_controls_their_restaurant(client) -> None:
     )
     assert busy.status_code == 200 and busy.json()["status"] == "BUSY"
     assert (await client.get(f"/api/restaurants/{rid}")).json()["status"] == "BUSY"
-    customer = await _token(client, "demo.customer@example.com")
+    customer = await login(client, "demo.customer@example.com")
     forbidden = await client.patch(
         f"/api/restaurants/{rid}/status", json={"status": "OPEN"}, headers=customer
     )
     assert forbidden.status_code == 403
-    other = await _token(client, "pizza.napoli.owner@example.com")
+    other = await login(client, "pizza.napoli.owner@example.com")
     assert (
         await client.patch(f"/api/restaurants/{rid}/status", json={"status": "OPEN"}, headers=other)
     ).status_code == 403
 
 
 async def test_owner_toggles_availability_and_edits_the_menu(client) -> None:
-    owner = await _token(client, "owner@example.com")
+    owner = await login(client, "owner@example.com")
     rid = (await client.get("/api/restaurants/me", headers=owner)).json()[0]["id"]
     menu = (await client.get(f"/api/menus/restaurants/{rid}/menu")).json()
     fries = next(i for i in menu["items"] if i["name"] == "Fries")
@@ -122,7 +114,7 @@ async def test_owner_toggles_availability_and_edits_the_menu(client) -> None:
 
 
 async def test_new_restaurant_is_a_draft_until_submitted(client) -> None:
-    headers = await _token(client, "demo.customer@example.com")
+    headers = await login(client, "demo.customer@example.com")
     register = await client.post(
         "/api/auth/register",
         json={

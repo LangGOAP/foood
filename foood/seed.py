@@ -9,8 +9,9 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
+from foood.drivers import Driver
 from foood.models import MenuCategory, MenuItem, Restaurant
-from foood.store import PASSWORD, Store, owner_email
+from foood.store import PASSWORD, QA_PASSWORD, Store, owner_email
 
 Item = tuple[str, str, str] | tuple[str, str, str, bool]  # name, description, price[, available]
 
@@ -145,7 +146,24 @@ RESTAURANTS: list[dict[str, Any]] = [
             "Drinks": [("QA Soup", "Always sold out", "5.00", False)],
         },
     },
+    {
+        "name": "QA Night Cafe",
+        "description": "Closed restaurant for UI tests",
+        "address": "2 Test Street",
+        "latitude": 30.031,
+        "longitude": 31.241,
+        "status": "CLOSED",
+        "cuisine": ["Test"],
+        "owner_email": "qa.restaurant2@delivery-plus.test",
+        "categories": {"Drinks": [("QA Coffee", "Always $3.00", "3.00")]},
+    },
 ]
+
+#: email -> (vehicle type, licence plate); all verified, offline until they go online in the app
+DRIVERS: dict[str, tuple[str, str]] = {
+    "driver@example.com": ("Scooter", "DMO-2030"),
+    "qa.driver@delivery-plus.test": ("Bicycle", "QA-0001"),
+}
 
 
 def seed_restaurants(store: Store) -> None:
@@ -153,7 +171,8 @@ def seed_restaurants(store: Store) -> None:
         email = spec.get("owner_email") or owner_email(spec["name"])
         owner = store.user_by_email(email)
         if owner is None:
-            owner = store.add_user(email, PASSWORD, f"{spec['name']} Owner", "RESTAURANT_OWNER")
+            password = QA_PASSWORD if email.endswith("@delivery-plus.test") else PASSWORD
+            owner = store.add_user(email, password, f"{spec['name']} Owner", "RESTAURANT_OWNER")
         restaurant = Restaurant(
             name=spec["name"],
             owner_id=owner.id,
@@ -186,3 +205,12 @@ def _add_item(store: Store, restaurant_id: str, category_id: str | None, item: I
         available=bool(available),
     )
     store.menu_items[menu_item.id] = menu_item
+
+
+def seed_drivers(store: Store) -> None:
+    for email, (vehicle_type, plate) in DRIVERS.items():
+        user = store.user_by_email(email)
+        assert user is not None, email
+        driver = Driver(user_id=user.id, vehicle_type=vehicle_type, license_plate=plate)
+        driver.verify("VERIFIED", None)
+        store.drivers[driver.id] = driver
