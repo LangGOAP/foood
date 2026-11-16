@@ -14,6 +14,7 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from foood.cart import Cart
     from foood.models import MenuCategory, MenuItem, Restaurant
 
 PASSWORD = "password123"
@@ -91,6 +92,7 @@ class Store:
     restaurants: dict[str, Restaurant] = field(default_factory=dict)
     categories: dict[str, MenuCategory] = field(default_factory=dict)
     menu_items: dict[str, MenuItem] = field(default_factory=dict)
+    carts: dict[str, Cart] = field(default_factory=dict)
     refresh: dict[str, RefreshSession] = field(default_factory=dict)
     consumed: dict[str, str] = field(default_factory=dict)  # rotated token -> family
     revoked_families: set[str] = field(default_factory=set)

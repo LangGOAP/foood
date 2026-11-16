@@ -25,6 +25,7 @@ async def _login(client, email: str, password: str = PASSWORD, app_id: str = "cu
         ("driver@example.com", "DRIVER"),
         ("owner@example.com", "RESTAURANT_OWNER"),
         ("pizza.napoli.owner@example.com", "RESTAURANT_OWNER"),
+        ("qa.restaurant@delivery-plus.test", "RESTAURANT_OWNER"),
     ],
 )
 async def test_demo_accounts_log_in(client, email: str, role: str) -> None:

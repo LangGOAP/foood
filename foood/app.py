@@ -11,6 +11,7 @@ from fastapi import FastAPI
 
 from foood import __version__
 from foood.auth import router as auth_router
+from foood.cart import router as cart_router
 from foood.catalog import router as catalog_router
 from foood.errors import install_error_handlers
 from foood.store import Store, seed_demo
@@ -22,6 +23,7 @@ def create_app(store: Store | None = None) -> FastAPI:
     install_error_handlers(app)
     app.include_router(auth_router)
     app.include_router(catalog_router)
+    app.include_router(cart_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
