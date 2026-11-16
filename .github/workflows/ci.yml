@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main, llm, langgraph, langgoap]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - run: make lint
+      - run: make test
+      - name: Contract table is current
+        run: |
+          uv run python scripts/contract_table.py
+          git diff --exit-code -- CONTRACT.md
