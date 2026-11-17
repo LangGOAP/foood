@@ -65,6 +65,15 @@ other branches add their engines and change nothing else. `foood up --engine
 <name>` selects one, and `GET /api/_engine?orderId=...` lists the decisions
 taken for an order with their reasons.
 
+## Support console
+
+The customer app has no approval screen; an engine that needs a person asks
+support. http://localhost:3000/support (sign in as `admin@example.com`) lists
+the open questions with their options or form, the recent orders with the
+decisions taken for each, and the loaded scenario's log. A question unanswered
+by its deadline takes the default the engine declared. The hand-wired engine
+never asks; the LangGraph and LangGOAP engines do.
+
 ## Break it on purpose
 
 ```bash

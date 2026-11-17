@@ -32,6 +32,8 @@ from foood.scenario import Scenario, load
 from foood.scenario import install as install_scenario
 from foood.scenario import router as scenario_router
 from foood.store import Store, seed_demo
+from foood.support import install as install_support
+from foood.support import router as support_router
 from foood.tracking import install as install_tracking
 from foood.tracking import router as tracking_router
 from foood.tracking import run_simulator
@@ -73,6 +75,7 @@ def create_app(
     app.state.engine = engine or make_engine(os.environ.get("FOOOD_ENGINE", "hand-wired"))
     app.state.engine.install(app.state.store)
     install_tracking(app.state.store)
+    install_support(app.state.store)
     if scenario is None and os.environ.get("FOOOD_SCENARIO"):
         scenario = load(os.environ["FOOOD_SCENARIO"])
     if scenario is not None:
@@ -89,6 +92,7 @@ def create_app(
     app.include_router(notifications_router)
     app.include_router(scenario_router)
     app.include_router(engine_router)
+    app.include_router(support_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

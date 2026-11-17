@@ -92,7 +92,8 @@ def test_parse_rejects_bad_files() -> None:
 
 
 async def test_without_a_scenario_nothing_is_wired(client) -> None:
-    assert client.store.engine is None and client.store.tickers == [] and client.store.hooks == {}
+    assert client.store.engine is None and client.store.hooks == {}
+    assert len(client.store.tickers) == 1  # only support's deadline sweep, never a scenario timer
     assert (await client.get("/api/_scenario")).json() == {"name": None, "log": []}
 
 
