@@ -42,6 +42,8 @@ RESTAURANT_NAMES = [
     "Taco Fiesta",
     "Sakura Sushi",
     "Green Bowl",
+    "Luigi's Pizzeria",
+    "Smash Bros Burgers",
 ]
 
 
@@ -93,6 +95,9 @@ class User:
     address: str | None = None
     avatar_url: str | None = None
     phone_verified_at: datetime | None = None
+    #: may the platform re-order the same items elsewhere without asking, and up to what
+    #: increase of the subtotal, in percent? None means always ask.
+    substitution_policy: dict[str, Any] | None = None
     created_at: datetime = field(default_factory=now)
     updated_at: datetime = field(default_factory=now)
 
@@ -230,6 +235,7 @@ def seed_demo(store: Store) -> Store:
         phone="+20 101 234 5678",
         phone_verified_at=now(),
         address="742 Evergreen Terrace, Apt 3B",
+        substitution_policy={"allow": True, "max_increase_pct": 10},
     )
     store.add_user("admin@example.com", PASSWORD, "Platform Admin", "ADMIN")
     store.add_user("demo.driver@example.com", PASSWORD, "Demo Driver", "DRIVER")
@@ -245,6 +251,7 @@ def seed_demo(store: Store) -> Store:
         phone="+20 110 000 0001",
         phone_verified_at=now(),
         address="1 Test Street, Apt 1",
+        substitution_policy={"allow": False},
     )
     store.add_user("qa.customer2@delivery-plus.test", QA_PASSWORD, "QA Other", "CUSTOMER")
     store.add_user(

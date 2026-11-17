@@ -9,9 +9,10 @@ from tests.support import assert_conforms, login
 
 
 async def _menu(client, name: str) -> dict:
-    restaurants = (await client.get(f"/api/restaurants?search={name}")).json()["items"]
-    menu = (await client.get(f"/api/menus/restaurants/{restaurants[0]['id']}/menu")).json()
-    return {"restaurantId": restaurants[0]["id"], **{i["name"]: i for i in menu["items"]}}
+    found = (await client.get(f"/api/restaurants?search={name}&limit=50")).json()["items"]
+    restaurant = next(r for r in found if r["name"] == name)
+    menu = (await client.get(f"/api/menus/restaurants/{restaurant['id']}/menu")).json()
+    return {"restaurantId": restaurant["id"], **{i["name"]: i for i in menu["items"]}}
 
 
 async def test_empty_cart_then_add_update_remove(client) -> None:
@@ -19,7 +20,7 @@ async def test_empty_cart_then_add_update_remove(client) -> None:
     empty = await client.get("/api/cart", headers=sara)
     body = assert_conforms("GET", "/api/cart", empty)
     assert body["items"] == [] and body["restaurantId"] is None and body["total"] == 0
-    qa = await _menu(client, "QA")
+    qa = await _menu(client, "QA Kitchen")
     added = await client.post(
         "/api/cart/items", json={"menuItemId": qa["QA Burger"]["id"], "quantity": 2}, headers=sara
     )
@@ -56,7 +57,7 @@ async def test_empty_cart_then_add_update_remove(client) -> None:
 
 async def test_cart_rejects_bad_adds(client) -> None:
     sara = await login(client, "demo.customer@example.com")
-    qa = await _menu(client, "QA")
+    qa = await _menu(client, "QA Kitchen")
     missing = await client.post(
         "/api/cart/items", json={"menuItemId": "nope", "quantity": 1}, headers=sara
     )
@@ -72,7 +73,7 @@ async def test_cart_rejects_bad_adds(client) -> None:
     await client.post(
         "/api/cart/items", json={"menuItemId": qa["QA Burger"]["id"], "quantity": 1}, headers=sara
     )
-    pizza = await _menu(client, "Pizza")
+    pizza = await _menu(client, "Pizza Napoli")
     other = await client.post(
         "/api/cart/items",
         json={"menuItemId": pizza["Margherita"]["id"], "quantity": 1},
@@ -87,7 +88,7 @@ async def test_cart_rejects_bad_adds(client) -> None:
 async def test_validate_reports_and_applies_menu_changes(client) -> None:
     sara = await login(client, "demo.customer@example.com")
     owner = await login(client, "qa.restaurant@delivery-plus.test")
-    qa = await _menu(client, "QA")
+    qa = await _menu(client, "QA Kitchen")
     for name in ("QA Burger", "QA Pasta", "QA Fries"):
         await client.post(
             "/api/cart/items", json={"menuItemId": qa[name]["id"], "quantity": 2}, headers=sara

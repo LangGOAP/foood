@@ -147,6 +147,52 @@ RESTAURANTS: list[dict[str, Any]] = [
         },
     },
     {
+        "name": "Luigi's Pizzeria",
+        "address": "52 Via Roma Ave",
+        "latitude": 30.0631,
+        "longitude": 31.2205,
+        "status": "OPEN",
+        "cuisine": ["Pizza", "Italian"],
+        "categories": {
+            "Pizza": [
+                ("Margherita", "Tomato, mozzarella, basil", "12.00"),
+                ("Diavola", "Spicy salami", "14.00"),
+            ],
+            "Desserts": [("Tiramisu", "The classic", "7.00")],
+        },
+    },
+    {
+        "name": "Smash Bros Burgers",
+        "address": "130 Main St",
+        "latitude": 30.0451,
+        "longitude": 31.2362,
+        "status": "OPEN",
+        "cuisine": ["Burgers"],
+        "categories": {
+            "Mains": [("Classic Burger", "Smashed patty, pickles, sauce", "13.50")],
+            "Sides": [("Fries", "Crinkle cut", "4.25")],
+            "Drinks": [("Cola", "330ml can", "1.99")],
+        },
+    },
+    {
+        "name": "QA Bistro",
+        "description": "Second deterministic restaurant: QA Kitchen's menu at other prices",
+        "address": "102 QA Avenue",
+        "latitude": 30.032,
+        "longitude": 31.243,
+        "status": "OPEN",
+        "cuisine": ["Test"],
+        "owner_email": "qa.restaurant3@delivery-plus.test",
+        "categories": {
+            "Mains": [
+                ("QA Burger", "Always $11.00", "11.00"),
+                ("QA Pasta", "Always $13.00", "13.00"),
+            ],
+            "Sides": [("QA Fries", "Always $3.50", "3.50")],
+            "Drinks": [("QA Soup", "Always $5.00", "5.00")],
+        },
+    },
+    {
         "name": "QA Night Cafe",
         "description": "Closed restaurant for UI tests",
         "address": "2 Test Street",

@@ -28,6 +28,7 @@ from foood.notifications import install as install_notifications
 from foood.notifications import router as notifications_router
 from foood.orders import router as orders_router
 from foood.payments import router as payments_router
+from foood.replacements import router as replacements_router
 from foood.scenario import Scenario, load
 from foood.scenario import install as install_scenario
 from foood.scenario import router as scenario_router
@@ -93,6 +94,7 @@ def create_app(
     app.include_router(scenario_router)
     app.include_router(engine_router)
     app.include_router(support_router)
+    app.include_router(replacements_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
