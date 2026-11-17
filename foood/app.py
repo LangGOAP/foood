@@ -25,6 +25,7 @@ from foood.drivers import router as drivers_router
 from foood.engine import OrderEngine, make_engine
 from foood.engine import router as engine_router
 from foood.errors import install_error_handlers
+from foood.mapview import router as map_router
 from foood.notifications import install as install_notifications
 from foood.notifications import router as notifications_router
 from foood.orders import router as orders_router
@@ -95,6 +96,7 @@ def create_app(
     app.include_router(scenario_router)
     app.include_router(engine_router)
     app.include_router(support_router)
+    app.include_router(map_router)
     app.include_router(replacements_router)
     app.include_router(credits_router)
 

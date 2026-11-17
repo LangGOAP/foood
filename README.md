@@ -78,6 +78,11 @@ recent orders with the decisions taken for each, and the loaded scenario's log.
 A question unanswered by its deadline takes the default the engine declared. The
 hand-wired engine never asks; the LangGraph and LangGOAP engines do.
 
+The whole evening is on one map at http://localhost:3000/map: the kitchens, every
+order's door with the line from its kitchen coloured by its status, and the drivers
+where their phones last reported, redrawn every two seconds from `GET /api/_map`
+(not part of the contract, like `/api/_engine`).
+
 ## Recovery actions
 
 Engines recover with platform actions that exist whatever the engine. So far:
