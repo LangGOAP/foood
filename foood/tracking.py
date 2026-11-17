@@ -30,7 +30,7 @@ from foood.catalog import distance_km
 from foood.deliveries import ACTIVE, Delivery, current_delivery, delivery_for_order
 from foood.drivers import driver_of
 from foood.errors import ApiError
-from foood.orders import get_order
+from foood.orders import RIDE_SPEED_KMH, get_order
 from foood.store import Store, User, iso, now
 
 router = APIRouter(prefix="/api", tags=["tracking"])
@@ -39,7 +39,7 @@ STALE_AFTER = timedelta(seconds=90)
 MAX_AGE = timedelta(minutes=10)
 MAX_SKEW = timedelta(seconds=60)
 ETA_VALID = timedelta(seconds=60)
-AVERAGE_SPEED_KMH = 20.0
+AVERAGE_SPEED_KMH = RIDE_SPEED_KMH
 HEARTBEAT_SECONDS = 15
 SIM_TICK_SECONDS = 5
 SIM_START_KM = 1.5  # where a simulated phone first appears, relative to the restaurant
