@@ -141,6 +141,20 @@ decisions with its tokens. The model is `FOOOD_LLM_MODEL` (default
 `FOOOD_LLM_PRICE_IN` and `FOOOD_LLM_PRICE_OUT` (USD per million tokens) to price
 the costs; otherwise only tokens are reported.
 
+### Ordering in a sentence
+
+```bash
+uv run foood ask "two QA burgers and fries to the office, ring twice"
+```
+
+`POST /api/orders/intake` (outside the Delivery Plus contract) runs a small
+LangGraph: a model reads the sentence against the open kitchens' menus into a
+structured request, a deterministic step matches it to real menu items and turns
+anything unclear into a question instead of an order (several kitchens could
+make it, a dish nobody has, a sold-out item), and the order is placed through
+the app's own endpoint; the same limits apply. The order appears in the customer
+app like any other, with the intake call's tokens on its decisions.
+
 ## Support console
 
 The customer app has no approval screen; an engine that needs a person asks
