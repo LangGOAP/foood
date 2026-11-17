@@ -267,6 +267,11 @@ def up(host: str, port: int, with_apps: bool, rebuild: bool) -> None:
 
     api_url = f"http://localhost:{port}"
     os.environ.setdefault("FOOOD_SIMULATED_PHONES", "true")
+    if os.environ.get("FOOOD_ENGINE") == "langgraph":
+        BUILD.parent.mkdir(parents=True, exist_ok=True)
+        os.environ.setdefault(
+            "FOOOD_CHECKPOINTS", str(BUILD.parent / "langgraph-checkpoints.sqlite")
+        )
     servers = []
     if with_apps:
         for app in APPS:

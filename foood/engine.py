@@ -9,6 +9,7 @@ branches add theirs here, and nothing else about the platform changes.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, Protocol
 
 from fastapi import APIRouter, Request
@@ -135,7 +136,7 @@ class NullEngine:
         return None
 
 
-ENGINES: dict[str, type[OrderEngine]] = {"hand-wired": HandWiredEngine, "null": NullEngine}
+ENGINES: dict[str, Callable[[], OrderEngine]] = {"hand-wired": HandWiredEngine, "null": NullEngine}
 
 
 def make_engine(name: str) -> OrderEngine:
@@ -143,10 +144,20 @@ def make_engine(name: str) -> OrderEngine:
         from foood.agent_engine import from_env
 
         return from_env()
+    if name == "langgraph":
+        import os
+        from pathlib import Path
+
+        from foood.graph_engine import LangGraphEngine
+
+        path = os.environ.get("FOOOD_CHECKPOINTS")
+        return LangGraphEngine(Path(path) if path else None)
     try:
         return ENGINES[name]()
     except KeyError:
-        raise ValueError(f"unknown engine {name!r}; one of {sorted(ENGINES) + ['llm']}") from None
+        raise ValueError(
+            f"unknown engine {name!r}; one of {sorted(ENGINES) + ['llm', 'langgraph']}"
+        ) from None
 
 
 @router.get("/_engine")

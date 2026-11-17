@@ -68,7 +68,7 @@ branches add theirs and change nothing else. `foood up --engine hand-wired` pick
 one, and `GET /api/_engine?orderId=...` lists the decisions taken for an order and
 why.
 
-## One frontier model (this branch)
+## One frontier model (the `llm` branch)
 
 `foood up --engine llm` gives the platform one model, the frontier model of its
 family (`FOOOD_LLM_MODEL`, default `gpt-5.4`, with `OPENAI_API_KEY` from the
@@ -115,6 +115,20 @@ for the situation (`foood/messages.py`): the kitchen's reason in plain words,
 the card that paid, the credit added. Any error, an empty or overlong answer,
 or no model leaves the template from `main` in place, and each phrasing call is
 recorded on the order's decisions with its tokens.
+
+## The LangGraph engine (this branch)
+
+`foood up --engine langgraph` runs the lifecycle as a LangGraph `StateGraph`,
+one thread per order, drawn in [`foood/langgraph_engine.mmd`](foood/langgraph_engine.mmd).
+Action nodes (`confirm`, `dispatch`, `cleanup`) call the same domain functions
+the hand-wired engine calls; wait nodes interrupt until the platform publishes
+the event they need (a payment outcome, the kitchen's status, a driver, a
+pickup, the drop-off), and the engine resumes them with the event. Every
+failure routes to `recover`, the fork. A SQLite checkpointer
+(`FOOOD_CHECKPOINTS`, `build/langgraph-checkpoints.sqlite` under `foood up`)
+keeps every thread, so a new engine process resumes each order where it
+paused. With the model disabled, `recover` applies the hand-wired reaction
+and the bench numbers match `main` exactly.
 
 ## Support, the human in the loop
 
