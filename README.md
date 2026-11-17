@@ -74,6 +74,19 @@ decisions taken for each, and the loaded scenario's log. A question unanswered
 by its deadline takes the default the engine declared. The hand-wired engine
 never asks; the LangGraph and LangGOAP engines do.
 
+## Recovery actions
+
+Recovery actions are platform functions available to every engine. Replacement
+orders (`foood/replacements.py`): when a kitchen fails, the open restaurants
+that carry the same items inside the customer's reach are ranked with the price
+difference, and a replacement is created with the payment carried over, a
+cheaper kitchen refunding the difference and a dearer one waived; the customer's
+substitution policy says whether a dearer kitchen needs support's approval.
+Sister restaurants exist for this: QA Bistro next to QA Kitchen (owner
+`qa.restaurant3@delivery-plus.test`), Luigi's Pizzeria next to Pizza Napoli and
+Smash Bros Burgers next to Burger Palace. Support can do it by hand with `POST
+/api/orders/{id}/replacement`.
+
 ## Break it on purpose
 
 ```bash

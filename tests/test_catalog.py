@@ -12,7 +12,7 @@ async def test_restaurant_list_conforms_and_pages(client) -> None:
     body = assert_conforms("GET", "/api/restaurants", response)
     assert response.status_code == 200
     assert body["page"] == 1 and body["limit"] == 3 and len(body["items"]) == 3
-    assert body["total"] == 8 and body["totalPages"] == 3  # six demo restaurants + two QA ones
+    assert body["total"] == 11 and body["totalPages"] == 4  # eight demo restaurants + three QA ones
     names = {r["name"] for r in (await client.get("/api/restaurants?limit=50")).json()["items"]}
     assert {"Burger Palace", "Pizza Napoli", "Cairo Kitchen", "Green Bowl", "QA Kitchen"} <= names
 
@@ -40,7 +40,7 @@ async def test_search_status_and_distance(client) -> None:
 
 
 async def test_qa_kitchen_menu_has_the_sold_out_item(client) -> None:
-    items = (await client.get("/api/restaurants?search=QA")).json()["items"]
+    items = (await client.get("/api/restaurants?search=QA Kitchen")).json()["items"]
     qa = items[0]
     assert qa["description"] == "Deterministic restaurant for UI tests"
     menu = (await client.get(f"/api/menus/restaurants/{qa['id']}/menu")).json()

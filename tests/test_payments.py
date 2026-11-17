@@ -10,7 +10,7 @@ from tests.support import login
 
 
 async def _order(client, headers: dict[str, str]) -> dict:
-    restaurants = (await client.get("/api/restaurants?search=QA")).json()["items"]
+    restaurants = (await client.get("/api/restaurants?search=QA Kitchen")).json()["items"]
     menu = (await client.get(f"/api/menus/restaurants/{restaurants[0]['id']}/menu")).json()
     burger = next(i for i in menu["items"] if i["name"] == "QA Burger")
     await client.post(

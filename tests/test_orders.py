@@ -10,14 +10,17 @@ QA_OWNER = "qa.restaurant@delivery-plus.test"
 
 
 async def _menu(client, name: str) -> dict:
-    restaurants = (await client.get(f"/api/restaurants?search={name}")).json()["items"]
-    menu = (await client.get(f"/api/menus/restaurants/{restaurants[0]['id']}/menu")).json()
-    return {"restaurantId": restaurants[0]["id"], **{i["name"]: i for i in menu["items"]}}
+    found = (await client.get(f"/api/restaurants?search={name}&limit=50")).json()["items"]
+    restaurant = next(r for r in found if r["name"] == name)
+    menu = (await client.get(f"/api/menus/restaurants/{restaurant['id']}/menu")).json()
+    return {"restaurantId": restaurant["id"], **{i["name"]: i for i in menu["items"]}}
 
 
-async def _fill_cart(client, headers: dict[str, str], restaurant: str = "QA") -> dict:
+async def _fill_cart(client, headers: dict[str, str], restaurant: str = "QA Kitchen") -> dict:
     menu = await _menu(client, restaurant)
-    first, second = ("QA Burger", "QA Fries") if restaurant == "QA" else ("Margherita", "Tiramisu")
+    first, second = (
+        ("QA Burger", "QA Fries") if restaurant == "QA Kitchen" else ("Margherita", "Tiramisu")
+    )
     await client.post(
         "/api/cart/items", json={"menuItemId": menu[first]["id"], "quantity": 2}, headers=headers
     )

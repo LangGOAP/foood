@@ -58,6 +58,11 @@ TEXTS: dict[str, tuple[str, str, str]] = {
         "Refund issued",
         "We refunded {amount} for your order {id}.",
     ),
+    "order.replaced": (
+        "ORDER_REPLACED",
+        "Another kitchen has your order",
+        "{restaurant} will make your order {id} instead: {reason}",
+    ),
     "order.promise_moved": (
         "PROMISE_MOVED",
         "New delivery time",
@@ -83,6 +88,7 @@ class Notification:
             amount=self.params.get("amount", ""),
             time=self.params.get("time", ""),
             reason=self.params.get("reason", ""),
+            restaurant=self.params.get("restaurant", ""),
         )
         if self.message_key == "order.cancelled":
             who = (
@@ -167,8 +173,25 @@ def _on_promise(store: Store, order: Order, reason: str) -> None:
     )
 
 
+def _on_replaced(store: Store, original: Order, replacement: Order, reason: str) -> None:
+    restaurant = store.restaurants.get(replacement.restaurant_id)
+    notify(
+        store,
+        replacement.customer_id,
+        "order.replaced",
+        orderId=replacement.id,
+        originalOrderId=original.id,
+        restaurant=restaurant.name if restaurant else "Another kitchen",
+        reason=reason,
+    )
+
+
 def install(store: Store) -> None:
     store.subscribe("payment.processed", lambda payment: _on_payment(store, payment))
+    store.subscribe(
+        "order.replaced",
+        lambda original, replacement, reason: _on_replaced(store, original, replacement, reason),
+    )
     store.subscribe(
         "order.promise", lambda order, previous, reason: _on_promise(store, order, reason)
     )

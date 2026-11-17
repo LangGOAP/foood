@@ -93,6 +93,8 @@ class Order:
     cancelled_by: str | None = None
     cancellation_reason: str | None = None
     cancellation_note: str | None = None
+    replaces_order_id: str | None = None
+    replaced_by_order_id: str | None = None
     promise_minutes: int = DEFAULT_RIDE_MINUTES + PROMISE_MARGIN_MINUTES
     promised_at: datetime | None = None
     promise_revisions: list[dict[str, str]] = field(default_factory=list)
@@ -141,6 +143,8 @@ class Order:
             "cancelledBy": self.cancelled_by,
             "cancellationReason": self.cancellation_reason,
             "cancellationNote": self.cancellation_note,
+            "replacesOrderId": self.replaces_order_id,
+            "replacedByOrderId": self.replaced_by_order_id,
             "promiseMinutes": self.promise_minutes,
             "promisedAt": iso(self.promised_at) if self.promised_at else None,
             "promiseBreached": self.promise_breached,
