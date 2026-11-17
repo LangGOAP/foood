@@ -50,7 +50,7 @@ async def test_quote_then_order_from_the_cart(client) -> None:
     assert empty.status_code == 200 and empty.json()["totalAmount"] == "0.00"
     menu = await _fill_cart(client, sara)
     quote = (await client.get("/api/orders/quote", headers=sara)).json()
-    assert quote == {
+    assert {k: quote[k] for k in ("subtotalAmount", "deliveryFee", "totalAmount", "currency")} == {
         "subtotalAmount": "24.00",
         "deliveryFee": "3.00",
         "totalAmount": "27.00",

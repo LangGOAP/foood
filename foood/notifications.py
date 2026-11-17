@@ -58,6 +58,11 @@ TEXTS: dict[str, tuple[str, str, str]] = {
         "Refund issued",
         "We refunded {amount} for your order {id}.",
     ),
+    "order.promise_moved": (
+        "PROMISE_MOVED",
+        "New delivery time",
+        "Your order {id} is now expected by {time}: {reason}",
+    ),
 }
 
 
@@ -72,15 +77,19 @@ class Notification:
 
     def to_json(self) -> dict[str, Any]:
         kind, title, template = TEXTS[self.message_key]
+        short_id = self.params.get("orderId", "")[:8]
         message = template.format(
-            id=self.params.get("orderId", "")[:8], amount=self.params.get("amount", "")
+            id=short_id,
+            amount=self.params.get("amount", ""),
+            time=self.params.get("time", ""),
+            reason=self.params.get("reason", ""),
         )
         if self.message_key == "order.cancelled":
             who = (
                 "Delivery Plus" if self.params.get("cancelledBy") == "SYSTEM" else "The restaurant"
             )
             note = self.params.get("note")
-            message = f"{who} cancelled your order {self.params.get('orderId', '')[:8]}"
+            message = f"{who} cancelled your order {short_id}"
             message += f": {note}" if note else "."
         return {
             "id": self.id,
@@ -145,8 +154,24 @@ def _on_delivery_status(store: Store, delivery: Delivery) -> None:
         notify(store, delivery.customer_id, "delivery.delivered", orderId=delivery.order_id)
 
 
+def _on_promise(store: Store, order: Order, reason: str) -> None:
+    assert order.promised_at is not None
+    notify(
+        store,
+        order.customer_id,
+        "order.promise_moved",
+        orderId=order.id,
+        promisedAt=iso(order.promised_at),
+        time=order.promised_at.strftime("%H:%M"),
+        reason=reason,
+    )
+
+
 def install(store: Store) -> None:
     store.subscribe("payment.processed", lambda payment: _on_payment(store, payment))
+    store.subscribe(
+        "order.promise", lambda order, previous, reason: _on_promise(store, order, reason)
+    )
     store.subscribe(
         "order.status", lambda order, previous: _on_order_status(store, order, previous)
     )

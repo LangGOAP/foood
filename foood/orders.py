@@ -23,7 +23,7 @@ from foood.auth import CurrentUser, StoreDep
 from foood.cart import cart_changed, cart_of, reconcile
 from foood.catalog import distance_km, owned_restaurant, page_of
 from foood.errors import ApiError
-from foood.models import money, new_id
+from foood.models import Restaurant, money, new_id
 from foood.store import Store, User, iso, now
 
 router = APIRouter(prefix="/api", tags=["orders"])
@@ -31,6 +31,10 @@ router = APIRouter(prefix="/api", tags=["orders"])
 DELIVERY_FEE = Decimal("3.00")
 CURRENCY = "EGP"
 DUPLICATE_WINDOW = timedelta(seconds=60)
+#: the promise: the kitchen's prep time, a ride at city speed, and a margin (simulator constants)
+RIDE_SPEED_KMH = 20.0
+DEFAULT_RIDE_MINUTES = 9  # about 3 km when the drop-off has no coordinates yet
+PROMISE_MARGIN_MINUTES = 5
 
 PROGRESS = [
     "CREATED",
@@ -89,9 +93,27 @@ class Order:
     cancelled_by: str | None = None
     cancellation_reason: str | None = None
     cancellation_note: str | None = None
+    promise_minutes: int = DEFAULT_RIDE_MINUTES + PROMISE_MARGIN_MINUTES
+    promised_at: datetime | None = None
+    promise_revisions: list[dict[str, str]] = field(default_factory=list)
+    delivered_at: datetime | None = None
     id: str = field(default_factory=new_id)
     created_at: datetime = field(default_factory=now)
     updated_at: datetime = field(default_factory=now)
+
+    def __post_init__(self) -> None:
+        if self.promised_at is None:
+            self.promised_at = self.created_at + timedelta(minutes=self.promise_minutes)
+
+    @property
+    def promise_breached(self) -> bool:
+        """Past the promise while still on the way, or delivered after it. Never for cancelled."""
+        assert self.promised_at is not None
+        if self.status == "DELIVERED":
+            return self.delivered_at is not None and self.delivered_at > self.promised_at
+        if self.status in TERMINAL:
+            return False
+        return now() > self.promised_at
 
     @property
     def subtotal(self) -> Decimal:
@@ -119,6 +141,11 @@ class Order:
             "cancelledBy": self.cancelled_by,
             "cancellationReason": self.cancellation_reason,
             "cancellationNote": self.cancellation_note,
+            "promiseMinutes": self.promise_minutes,
+            "promisedAt": iso(self.promised_at) if self.promised_at else None,
+            "promiseBreached": self.promise_breached,
+            "promiseRevisions": list(self.promise_revisions),
+            "deliveredAt": iso(self.delivered_at) if self.delivered_at else None,
             "createdAt": iso(self.created_at),
             "updatedAt": iso(self.updated_at),
         }
@@ -129,6 +156,29 @@ class Order:
 
 
 # --- domain operations (also used by payments, dispatch and the scenario engine) ---
+
+
+def promise_minutes(restaurant: Restaurant, latitude: float | None, longitude: float | None) -> int:
+    """Prep time plus the ride at city speed (a default ride without coordinates) plus a margin."""
+    if latitude is None or longitude is None:
+        ride = DEFAULT_RIDE_MINUTES
+    else:
+        km = distance_km(restaurant.latitude, restaurant.longitude, latitude, longitude)
+        ride = int(round(km / RIDE_SPEED_KMH * 60))
+    return restaurant.prep_minutes + ride + PROMISE_MARGIN_MINUTES
+
+
+def revise_promise(store: Store, order: Order, promised_at: datetime, reason: str) -> Order:
+    """Move the promise (a replacement order, a re-dispatch) and tell the customer."""
+    assert order.promised_at is not None
+    previous = order.promised_at
+    order.promised_at = promised_at.replace(microsecond=0)
+    order.promise_revisions.append(
+        {"from": iso(previous), "to": iso(order.promised_at), "reason": reason}
+    )
+    order.updated_at = now()
+    store.publish("order.promise", order=order, previous=previous, reason=reason)
+    return order
 
 
 def get_order(store: Store, order_id: str) -> Order:
@@ -147,6 +197,8 @@ def transition(store: Store, order: Order, status: str, **changes: Any) -> Order
     order.status = status
     for attr, value in changes.items():
         setattr(order, attr, value)
+    if status == "DELIVERED":
+        order.delivered_at = now()
     order.updated_at = now()
     store.publish("order.status", order=order, previous=previous)
     return order
@@ -223,6 +275,7 @@ def place_order(
         delivery_notes=delivery_notes,
         delivery_latitude=latitude,
         delivery_longitude=longitude,
+        promise_minutes=promise_minutes(restaurant, latitude, longitude),
     )
     store.orders[order.id] = order
     cart.items.clear()
@@ -297,12 +350,17 @@ async def list_my_orders(
 async def quote(user: CurrentUser, store: StoreDep) -> dict[str, Any]:
     cart = cart_of(store, user.id)
     fee = DELIVERY_FEE if cart.items else Decimal("0")
-    return {
+    body: dict[str, Any] = {
         "subtotalAmount": money(cart.subtotal),
         "deliveryFee": money(fee),
         "totalAmount": money(cart.subtotal + fee),
         "currency": CURRENCY,
     }
+    if cart.restaurant_id is not None and cart.items:
+        minutes = promise_minutes(store.restaurants[cart.restaurant_id], None, None)
+        body["promiseMinutes"] = minutes
+        body["promisedAt"] = iso(now().replace(microsecond=0) + timedelta(minutes=minutes))
+    return body
 
 
 @router.get("/orders/restaurant/{restaurantId}")
