@@ -144,16 +144,20 @@ def make_engine(name: str) -> OrderEngine:
         from foood.agent_engine import from_env
 
         return from_env()
-    if name == "langgraph":
+    if name in {"langgraph", "langgoap"}:
         import os
         from pathlib import Path
 
+        path = os.environ.get("FOOOD_CHECKPOINTS")
+        if name == "langgoap":
+            from foood.goap_engine import GoapEngine
+
+            return GoapEngine(Path(path) if path else None)
         from foood.graph_engine import LangGraphEngine
         from foood.nodes import client_for
         from foood.recovery import advisor_from_env
         from foood.suggest import classifier_from_env, suggester_from_env
 
-        path = os.environ.get("FOOOD_CHECKPOINTS")
         return LangGraphEngine(
             Path(path) if path else None,
             advisor=advisor_from_env("decide"),
@@ -166,7 +170,7 @@ def make_engine(name: str) -> OrderEngine:
         return ENGINES[name]()
     except KeyError:
         raise ValueError(
-            f"unknown engine {name!r}; one of {sorted(ENGINES) + ['llm', 'langgraph']}"
+            f"unknown engine {name!r}; one of {sorted(ENGINES) + ['llm', 'langgraph', 'langgoap']}"
         ) from None
 
 

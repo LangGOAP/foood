@@ -14,6 +14,7 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | bridge-closed | llm + gpt-5.4 | 11 | 3 | 3 | 1 | 0 | 3/3 | 33.9 | 37.4 | 9 | 0 | 41 | 0 | 19 | 14 | 0.1733 | - |
 | bridge-closed | llm + gpt-5.4 | 13 | 3 | 3 | 1 | 0 | 3/3 | 33.9 | 37.4 | 9 | 0 | 41 | 0 | 18 | 11 | 0.1689 | - |
 | delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 22 | 0 | 0 | 0 | 0.007 | driver_drops |
+| delivery-trouble | langgoap | 7 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 0 | 0 | 0 | 0 | unpriced | - |
 | delivery-trouble | langgraph | 7 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 6 | 0 | 2 | 4 | 26 | 12 | 0.0044 | - |
 | delivery-trouble | langgraph | 11 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 6 | 0 | 2 | 4 | 26 | 11 | 0.0043 | - |
 | delivery-trouble | langgraph | 13 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 6 | 0 | 2 | 4 | 26 | 15 | 0.0047 | - |
@@ -21,6 +22,7 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | delivery-trouble | llm + gpt-5.4 | 11 | 4 | 3 | 2 | 0 | 3/4 | 18.0 | 30.9 | 8 | 0 | 38 | 0 | 22 | 6 | 0.1524 | driver_drops |
 | delivery-trouble | llm + gpt-5.4 | 13 | 4 | 3 | 2 | 0 | 3/4 | 20.1 | 37.0 | 6 | 1 | 34 | 0 | 20 | 6 | 0.134 | driver_drops |
 | happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 10 | 0 | 0 | 0 | 0.0031 | - |
+| happy-path | langgoap | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 0 | 0 | 0 | unpriced | - |
 | happy-path | langgraph | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 0 | 10 | 0 | 0.0007 | - |
 | happy-path | langgraph | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 0 | 10 | 0 | 0.0007 | - |
 | happy-path | langgraph | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 0 | 10 | 0 | 0.0008 | - |
@@ -28,6 +30,7 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | happy-path | llm + gpt-5.4 | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0326 | - |
 | happy-path | llm + gpt-5.4 | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0324 | - |
 | kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 36.1 | 36.1 | 2 | 0 | 13 | 0 | 0 | 0 | 0.0042 | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | langgoap | 7 | 3 | 3 | 2 | 0 | 3/3 | 18.8 | 35.9 | 7 | 0 | 0 | 0 | 0 | 0 | unpriced | - |
 | kitchen-trouble | langgraph | 7 | 3 | 3 | 2 | 0 | 3/3 | 19.4 | 35.8 | 13 | 0 | 2 | 9 | 25 | 17 | 0.0054 | - |
 | kitchen-trouble | langgraph | 11 | 3 | 3 | 2 | 0 | 3/3 | 19.4 | 35.8 | 13 | 0 | 2 | 9 | 25 | 20 | 0.0058 | - |
 | kitchen-trouble | langgraph | 13 | 3 | 3 | 2 | 0 | 3/3 | 19.4 | 35.8 | 13 | 0 | 2 | 9 | 25 | 20 | 0.0056 | - |
@@ -35,6 +38,7 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | kitchen-trouble | llm + gpt-5.4 | 11 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 21 | 0 | 22 | 1 | 0.0914 | - |
 | kitchen-trouble | llm + gpt-5.4 | 13 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 22 | 0 | 22 | 3 | 0.0961 | - |
 | payment-trouble | hand-wired | 7 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 6 | 0 | 0 | 0 | 0.0018 | gateway_down, payment_declines |
+| payment-trouble | langgoap | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 2 | 0 | 0 | 0 | 0 | 0 | unpriced | - |
 | payment-trouble | langgraph | 7 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 4 | 0 | 2 | 3 | 16 | 10 | 0.0032 | - |
 | payment-trouble | langgraph | 11 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 5 | 0 | 2 | 4 | 16 | 12 | 0.0037 | - |
 | payment-trouble | langgraph | 13 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 5 | 0 | 2 | 4 | 16 | 16 | 0.0041 | - |
@@ -48,6 +52,6 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | storm | llm + gpt-5.4 | 11 | 5 | 5 | 3 | 0 | 5/5 | 24.1 | 34.6 | 17 | 0 | 66 | 0 | 30 | 20 | 0.2852 | - |
 | storm | llm + gpt-5.4 | 13 | 5 | 3 | 2 | 0 | 3/5 | 24.2 | 34.6 | 20 | 0 | 71 | 0 | 26 | 20 | 0.2828 | driver_offline, storm |
 
-40 run(s).
+44 run(s).
 
 Costs use the model prices each run file records: gpt-5.4: 2.5 in and 15.0 out; gpt-5.4-mini: 0.75 in and 4.5 out; gpt-5.4-nano: 0.2 in and 1.25 out; 0.75 in and 4.5 out, USD per million tokens (see `bench.env` for the source and date).
