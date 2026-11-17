@@ -1,0 +1,387 @@
+{
+  "scenario": "incident",
+  "engine": "hand-wired",
+  "model": null,
+  "seed": 7,
+  "times": 10,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T19:57:23.413822Z",
+  "distribution": {
+    "identical": true,
+    "delivered": {
+      "2": 10
+    },
+    "deliveredWithinPromise": {
+      "2": 10
+    },
+    "cancelled": {
+      "5": 10
+    },
+    "llmCalls": {
+      "0": 10
+    },
+    "humanPrompts": {
+      "0": 10
+    },
+    "unrecovered": {
+      "accepts_then_cancels, driver_drops, gateway_down, payment_declines, restaurant_rejects": 10
+    },
+    "decisionsTaken": {
+      "refund": 30,
+      "cancel": 30
+    },
+    "modelMs": {
+      "min": 0.0,
+      "median": 0.0,
+      "max": 0.0
+    },
+    "cost": {
+      "min": 0.0076,
+      "median": 0.0077,
+      "max": 0.0079
+    },
+    "llmPriced": true
+  },
+  "runs": [
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6727,
+      "cost": 0.0079,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6632,
+      "cost": 0.0076,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6694,
+      "cost": 0.0078,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6660,
+      "cost": 0.0077,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6660,
+      "cost": 0.0078,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6687,
+      "cost": 0.0077,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6711,
+      "cost": 0.0078,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6680,
+      "cost": 0.0078,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6642,
+      "cost": 0.0077,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 2,
+      "deliveredWithinPromise": 2,
+      "cancelled": 5,
+      "consistent": 7,
+      "meanMinutes": 15.8,
+      "p95Minutes": 15.8,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 25,
+      "llmTokens": 6619,
+      "cost": 0.0076,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "courier_delay",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "payment_declines",
+        "restaurant_rejects"
+      ]
+    }
+  ]
+}

@@ -350,51 +350,51 @@ shown per seed so its variation is visible rather than averaged away.
 <!-- bench:start -->
 | Scenario | Engine | Seed | Orders | Delivered | Within promise | Cancelled | Consistent | Mean min | p95 min | Recovery decisions | Human prompts | LLM calls, decisions | LLM calls, language | LLM tokens | Cost (USD) | Planner ms | Model ms, decisions | Re-plans | Plan steps | Wall s | Not recovered |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 15.2 | 22.2 | 3 | 0 | 0 | 22 | 5784 | unpriced | 0 | 0.0 | 0 | - | 19.7 | driver_drops |
-| delivery-trouble | hand-wired | 11 | 4 | 3 | 2 | 1 | 4/4 | 15.2 | 22.2 | 3 | 0 | 0 | 22 | 5846 | unpriced | 0 | 0.0 | 0 | - | 19.4 | driver_drops |
-| delivery-trouble | hand-wired | 13 | 4 | 3 | 2 | 1 | 4/4 | 15.2 | 22.2 | 3 | 0 | 0 | 22 | 5794 | unpriced | 0 | 0.0 | 0 | - | 21.3 | driver_drops |
-| delivery-trouble | langgoap | 7 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 0 | 27 | 7224 | unpriced | 4.1 | 0.0 | 2 | 6.0 | 24.9 | - |
-| delivery-trouble | langgoap | 11 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 0 | 27 | 7142 | unpriced | 4.9 | 0.0 | 2 | 6.0 | 24.2 | - |
-| delivery-trouble | langgoap | 13 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 0 | 27 | 7183 | unpriced | 3.6 | 0.0 | 2 | 6.0 | 25.2 | - |
-| delivery-trouble | langgraph + gpt-5.4-mini | 7 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 26 | 8227 | unpriced | 0 | 2511.4 | 0 | - | 25.9 | - |
-| delivery-trouble | langgraph + gpt-5.4-mini | 11 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 26 | 8299 | unpriced | 0 | 2783.9 | 0 | - | 26.5 | - |
-| delivery-trouble | langgraph + gpt-5.4-mini | 13 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 26 | 8247 | unpriced | 0 | 2628.6 | 0 | - | 26.3 | - |
-| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2571 | unpriced | 0 | 0.0 | 0 | - | 12.2 | - |
-| happy-path | hand-wired | 11 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2612 | unpriced | 0 | 0.0 | 0 | - | 9.6 | - |
-| happy-path | hand-wired | 13 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2626 | unpriced | 0 | 0.0 | 0 | - | 9.5 | - |
-| happy-path | langgoap | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2631 | unpriced | 4.3 | 0.0 | 0 | 6.0 | 9.4 | - |
-| happy-path | langgoap | 11 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2626 | unpriced | 3.9 | 0.0 | 0 | 6.0 | 10.7 | - |
-| happy-path | langgoap | 13 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2626 | unpriced | 4.5 | 0.0 | 0 | 6.0 | 9.8 | - |
-| happy-path | langgraph + gpt-5.4-mini | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2565 | unpriced | 0 | 0.0 | 0 | - | 9.3 | - |
-| happy-path | langgraph + gpt-5.4-mini | 11 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2592 | unpriced | 0 | 0.0 | 0 | - | 9.3 | - |
-| happy-path | langgraph + gpt-5.4-mini | 13 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2578 | unpriced | 0 | 0.0 | 0 | - | 11.0 | - |
-| incident | hand-wired | 7 | 6 | 2 | 2 | 4 | 6/6 | 14.9 | 14.9 | 5 | 0 | 0 | 25 | 6635 | unpriced | 0 | 0.0 | 0 | - | 24.3 | accepts_then_cancels, driver_drops, payment_declines, restaurant_rejects |
-| incident | hand-wired | 11 | 6 | 2 | 2 | 4 | 6/6 | 14.9 | 14.9 | 5 | 0 | 0 | 25 | 6696 | unpriced | 0 | 0.0 | 0 | - | 25.2 | accepts_then_cancels, driver_drops, payment_declines, restaurant_rejects |
-| incident | hand-wired | 13 | 6 | 2 | 2 | 4 | 6/6 | 14.9 | 14.9 | 5 | 0 | 0 | 25 | 6687 | unpriced | 0 | 0.0 | 0 | - | 25.1 | accepts_then_cancels, driver_drops, payment_declines, restaurant_rejects |
-| incident | langgoap | 7 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 10 | 0 | 0 | 43 | 11510 | unpriced | 7.3 | 0.0 | 5 | 6.0 | 40.5 | - |
-| incident | langgoap | 11 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 10 | 0 | 0 | 43 | 11472 | unpriced | 9.2 | 0.0 | 5 | 6.0 | 40.2 | - |
-| incident | langgoap | 13 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 10 | 0 | 0 | 43 | 11361 | unpriced | 6.0 | 0.0 | 5 | 6.0 | 41.5 | - |
-| incident | langgraph + gpt-5.4-mini | 7 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 7 | 0 | 4 | 42 | 13958 | unpriced | 0 | 6147.6 | 0 | - | 46.0 | - |
-| incident | langgraph + gpt-5.4-mini | 11 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 7 | 0 | 4 | 42 | 13991 | unpriced | 0 | 5311.7 | 0 | - | 45.1 | - |
-| incident | langgraph + gpt-5.4-mini | 13 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 7 | 0 | 4 | 42 | 13881 | unpriced | 0 | 5225.2 | 0 | - | 45.7 | - |
-| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 35.2 | 35.2 | 2 | 0 | 0 | 13 | 3485 | unpriced | 0 | 0.0 | 0 | - | 11.8 | accepts_then_cancels, restaurant_rejects |
-| kitchen-trouble | hand-wired | 11 | 3 | 1 | 0 | 2 | 3/3 | 35.2 | 35.2 | 2 | 0 | 0 | 13 | 3455 | unpriced | 0 | 0.0 | 0 | - | 12.8 | accepts_then_cancels, restaurant_rejects |
-| kitchen-trouble | hand-wired | 13 | 3 | 1 | 0 | 2 | 3/3 | 35.2 | 35.2 | 2 | 0 | 0 | 13 | 3463 | unpriced | 0 | 0.0 | 0 | - | 11.6 | accepts_then_cancels, restaurant_rejects |
-| kitchen-trouble | langgoap | 7 | 3 | 3 | 2 | 0 | 3/3 | 18.8 | 35.9 | 7 | 0 | 0 | 22 | 5991 | unpriced | 6.4 | 0.0 | 3 | 6.0 | 19.2 | - |
-| kitchen-trouble | langgoap | 11 | 3 | 3 | 2 | 0 | 3/3 | 18.8 | 35.9 | 7 | 0 | 0 | 22 | 5902 | unpriced | 5.9 | 0.0 | 3 | 6.0 | 20.6 | - |
-| kitchen-trouble | langgoap | 13 | 3 | 3 | 2 | 0 | 3/3 | 18.8 | 35.9 | 7 | 0 | 0 | 22 | 5872 | unpriced | 6.4 | 0.0 | 3 | 6.0 | 20.4 | - |
-| kitchen-trouble | langgraph + gpt-5.4-mini | 7 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 24 | 8464 | unpriced | 0 | 4376.8 | 0 | - | 28.1 | - |
-| kitchen-trouble | langgraph + gpt-5.4-mini | 11 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 24 | 8465 | unpriced | 0 | 3988.0 | 0 | - | 27.0 | - |
-| kitchen-trouble | langgraph + gpt-5.4-mini | 13 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 24 | 8466 | unpriced | 0 | 3695.6 | 0 | - | 24.8 | - |
-| payment-trouble | hand-wired | 7 | 2 | 1 | 1 | 1 | 2/2 | 11.2 | 11.2 | 1 | 0 | 0 | 6 | 1601 | unpriced | 0 | 0.0 | 0 | - | 5.7 | payment_declines |
-| payment-trouble | hand-wired | 11 | 2 | 1 | 1 | 1 | 2/2 | 11.2 | 11.2 | 1 | 0 | 0 | 6 | 1611 | unpriced | 0 | 0.0 | 0 | - | 5.6 | payment_declines |
-| payment-trouble | hand-wired | 13 | 2 | 1 | 1 | 1 | 2/2 | 11.2 | 11.2 | 1 | 0 | 0 | 6 | 1576 | unpriced | 0 | 0.0 | 0 | - | 5.6 | payment_declines |
-| payment-trouble | langgoap | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 2 | 0 | 0 | 11 | 2923 | unpriced | 2.0 | 0.0 | 1 | 6.0 | 10.3 | - |
-| payment-trouble | langgoap | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 2 | 0 | 0 | 11 | 2895 | unpriced | 2.9 | 0.0 | 1 | 6.0 | 10.3 | - |
-| payment-trouble | langgoap | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 2 | 0 | 0 | 11 | 2879 | unpriced | 2.9 | 0.0 | 1 | 6.0 | 9.8 | - |
-| payment-trouble | langgraph + gpt-5.4-mini | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 11 | 3554 | unpriced | 0 | 1239.0 | 0 | - | 10.8 | - |
-| payment-trouble | langgraph + gpt-5.4-mini | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 11 | 3509 | unpriced | 0 | 1218.5 | 0 | - | 11.3 | - |
-| payment-trouble | langgraph + gpt-5.4-mini | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 11 | 3545 | unpriced | 0 | 1395.3 | 0 | - | 11.7 | - |
+| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | 22 | 5850 | 0.0067 | 0 | 0.0 | 0 | - | 18.8 | driver_drops |
+| delivery-trouble | hand-wired | 11 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | 22 | 5766 | 0.0066 | 0 | 0.0 | 0 | - | 18.6 | driver_drops |
+| delivery-trouble | hand-wired | 13 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | 22 | 5769 | 0.0068 | 0 | 0.0 | 0 | - | 18.1 | driver_drops |
+| delivery-trouble | langgoap | 7 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 4 | 0 | 0 | 27 | 7063 | 0.0081 | 2.8 | 0.0 | 2 | 6.0 | 23.8 | - |
+| delivery-trouble | langgoap | 11 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 4 | 0 | 0 | 27 | 7028 | 0.0081 | 2.7 | 0.0 | 2 | 6.0 | 23.8 | - |
+| delivery-trouble | langgoap | 13 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 4 | 0 | 0 | 27 | 7073 | 0.0081 | 2.9 | 0.0 | 2 | 6.0 | 22.8 | - |
+| delivery-trouble | langgraph + gpt-5.4-mini | 7 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 4 | 0 | 2 | 26 | 8242 | 0.0097 | 0 | 2901.1 | 0 | - | 25.1 | - |
+| delivery-trouble | langgraph + gpt-5.4-mini | 11 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 4 | 0 | 2 | 26 | 8268 | 0.0095 | 0 | 2589.6 | 0 | - | 24.6 | - |
+| delivery-trouble | langgraph + gpt-5.4-mini | 13 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 4 | 0 | 2 | 26 | 8222 | 0.0096 | 0 | 3094.0 | 0 | - | 24.5 | - |
+| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2628 | 0.003 | 0 | 0.0 | 0 | - | 11.3 | - |
+| happy-path | hand-wired | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2624 | 0.0031 | 0 | 0.0 | 0 | - | 8.4 | - |
+| happy-path | hand-wired | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2618 | 0.003 | 0 | 0.0 | 0 | - | 8.7 | - |
+| happy-path | langgoap | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2602 | 0.0029 | 1.4 | 0.0 | 0 | 6.0 | 8.4 | - |
+| happy-path | langgoap | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2578 | 0.003 | 1.3 | 0.0 | 0 | 6.0 | 9.3 | - |
+| happy-path | langgoap | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2640 | 0.0031 | 1.2 | 0.0 | 0 | 6.0 | 9.9 | - |
+| happy-path | langgraph + gpt-5.4-mini | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2615 | 0.003 | 0 | 0.0 | 0 | - | 8.1 | - |
+| happy-path | langgraph + gpt-5.4-mini | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2603 | 0.003 | 0 | 0.0 | 0 | - | 8.6 | - |
+| happy-path | langgraph + gpt-5.4-mini | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 10 | 2600 | 0.003 | 0 | 0.0 | 0 | - | 8.3 | - |
+| incident | hand-wired | 7 | 7 | 2 | 2 | 5 | 7/7 | 15.8 | 15.8 | 6 | 0 | 0 | 25 | 6668 | 0.0078 | 0 | 0.0 | 0 | - | 21.1 | accepts_then_cancels, driver_drops, gateway_down, payment_declines, restaurant_rejects |
+| incident | hand-wired | 11 | 7 | 2 | 2 | 5 | 7/7 | 15.8 | 15.8 | 6 | 0 | 0 | 25 | 6583 | 0.0076 | 0 | 0.0 | 0 | - | 22.3 | accepts_then_cancels, driver_drops, gateway_down, payment_declines, restaurant_rejects |
+| incident | hand-wired | 13 | 7 | 2 | 2 | 5 | 7/7 | 15.8 | 15.8 | 6 | 0 | 0 | 25 | 6675 | 0.0077 | 0 | 0.0 | 0 | - | 22.4 | accepts_then_cancels, driver_drops, gateway_down, payment_declines, restaurant_rejects |
+| incident | langgoap | 7 | 7 | 7 | 4 | 0 | 7/7 | 24.1 | 42.8 | 15 | 0 | 0 | 49 | 12901 | 0.0149 | 9.8 | 0.0 | 9 | 6.0 | 43.3 | - |
+| incident | langgoap | 11 | 7 | 7 | 4 | 0 | 7/7 | 24.1 | 42.8 | 15 | 0 | 0 | 49 | 12951 | 0.0149 | 10.0 | 0.0 | 9 | 6.0 | 42.1 | - |
+| incident | langgoap | 13 | 7 | 7 | 4 | 0 | 7/7 | 24.1 | 42.8 | 15 | 0 | 0 | 49 | 12914 | 0.0148 | 8.7 | 0.0 | 9 | 6.0 | 44.7 | - |
+| incident | langgraph + gpt-5.4-mini | 7 | 7 | 7 | 4 | 0 | 7/7 | 24.1 | 42.8 | 9 | 0 | 5 | 47 | 15875 | 0.0185 | 0 | 6497.0 | 0 | - | 49.3 | - |
+| incident | langgraph + gpt-5.4-mini | 11 | 7 | 7 | 4 | 0 | 7/7 | 24.1 | 42.8 | 9 | 0 | 5 | 47 | 15718 | 0.0181 | 0 | 6512.5 | 0 | - | 47.0 | - |
+| incident | langgraph + gpt-5.4-mini | 13 | 7 | 7 | 4 | 0 | 7/7 | 24.1 | 42.8 | 9 | 0 | 5 | 47 | 15814 | 0.0183 | 0 | 5940.9 | 0 | - | 48.7 | - |
+| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 36.1 | 36.1 | 2 | 0 | 0 | 13 | 3496 | 0.0041 | 0 | 0.0 | 0 | - | 10.2 | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | hand-wired | 11 | 3 | 1 | 0 | 2 | 3/3 | 36.1 | 36.1 | 2 | 0 | 0 | 13 | 3554 | 0.0042 | 0 | 0.0 | 0 | - | 10.4 | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | hand-wired | 13 | 3 | 1 | 0 | 2 | 3/3 | 36.1 | 36.1 | 2 | 0 | 0 | 13 | 3545 | 0.0041 | 0 | 0.0 | 0 | - | 11.1 | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | langgoap | 7 | 3 | 3 | 2 | 0 | 3/3 | 20.7 | 37.8 | 7 | 0 | 0 | 22 | 5856 | 0.0068 | 4.4 | 0.0 | 3 | 6.0 | 20.3 | - |
+| kitchen-trouble | langgoap | 11 | 3 | 3 | 2 | 0 | 3/3 | 20.7 | 37.8 | 7 | 0 | 0 | 22 | 5892 | 0.0069 | 6.0 | 0.0 | 3 | 6.0 | 20.7 | - |
+| kitchen-trouble | langgoap | 13 | 3 | 3 | 2 | 0 | 3/3 | 20.7 | 37.8 | 7 | 0 | 0 | 22 | 5919 | 0.0069 | 4.3 | 0.0 | 3 | 6.0 | 19.5 | - |
+| kitchen-trouble | langgraph + gpt-5.4-mini | 7 | 3 | 3 | 2 | 0 | 3/3 | 20.1 | 35.8 | 6 | 0 | 3 | 24 | 8511 | 0.0098 | 0 | 3993.0 | 0 | - | 25.7 | - |
+| kitchen-trouble | langgraph + gpt-5.4-mini | 11 | 3 | 3 | 2 | 0 | 3/3 | 20.1 | 35.8 | 6 | 0 | 3 | 24 | 8559 | 0.0099 | 0 | 4173.2 | 0 | - | 25.6 | - |
+| kitchen-trouble | langgraph + gpt-5.4-mini | 13 | 3 | 3 | 2 | 0 | 3/3 | 20.1 | 35.8 | 6 | 0 | 3 | 24 | 8565 | 0.0098 | 0 | 4030.4 | 0 | - | 25.2 | - |
+| payment-trouble | hand-wired | 7 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 0 | 6 | 1584 | 0.0019 | 0 | 0.0 | 0 | - | 5.4 | gateway_down, payment_declines |
+| payment-trouble | hand-wired | 11 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 0 | 6 | 1545 | 0.0018 | 0 | 0.0 | 0 | - | 4.8 | gateway_down, payment_declines |
+| payment-trouble | hand-wired | 13 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 0 | 6 | 1588 | 0.0019 | 0 | 0.0 | 0 | - | 5.0 | gateway_down, payment_declines |
+| payment-trouble | langgoap | 7 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 5 | 0 | 0 | 17 | 4537 | 0.0052 | 2.9 | 0.0 | 3 | 6.0 | 14.5 | - |
+| payment-trouble | langgoap | 11 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 5 | 0 | 0 | 17 | 4474 | 0.0052 | 3.2 | 0.0 | 3 | 6.0 | 14.7 | - |
+| payment-trouble | langgoap | 13 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 5 | 0 | 0 | 17 | 4440 | 0.0052 | 3.4 | 0.0 | 3 | 6.0 | 15.6 | - |
+| payment-trouble | langgraph + gpt-5.4-mini | 7 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 3 | 0 | 2 | 16 | 5485 | 0.0063 | 0 | 2655.3 | 0 | - | 16.4 | - |
+| payment-trouble | langgraph + gpt-5.4-mini | 11 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 3 | 0 | 2 | 16 | 5561 | 0.0065 | 0 | 2673.4 | 0 | - | 16.8 | - |
+| payment-trouble | langgraph + gpt-5.4-mini | 13 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 3 | 0 | 2 | 16 | 5565 | 0.0065 | 0 | 2397.0 | 0 | - | 17.4 | - |
 <!-- bench:end -->
 
 ## Credits
