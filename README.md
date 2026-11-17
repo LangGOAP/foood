@@ -54,7 +54,8 @@ driver on the customer's map because a browser window cannot.
 
 Every order placed in the customer app flows through payment, the restaurant
 app's kitchen board, dispatch to an online driver, the driver app's pickup and
-drop-off, live tracking and notifications. `CONTRACT.md` lists which of the
+drop-off, live tracking and notifications, priced in US dollars (the contract
+types the currency as a free string; its examples say EGP). `CONTRACT.md` lists which of the
 Delivery Plus API operations are implemented.
 
 ## The engine

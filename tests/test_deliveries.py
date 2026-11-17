@@ -99,7 +99,7 @@ async def test_full_delivery_run(client) -> None:
         "items"
     ] == []
     earnings = (await client.get("/api/deliveries/me/earnings", headers=driver)).json()
-    assert earnings["currency"] == "EGP" and earnings["pending"] == "3.00"
+    assert earnings["currency"] == "USD" and earnings["pending"] == "3.00"
     assert earnings["available"] == "0.00" and earnings["balance"] == "3.00"
     assert (
         earnings["entries"][0]["type"] == "DELIVERY_EARNING"

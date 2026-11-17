@@ -24,12 +24,12 @@ from foood.cart import cart_changed, cart_of, reconcile
 from foood.catalog import distance_km, owned_restaurant, page_of
 from foood.errors import ApiError
 from foood.models import Restaurant, money, new_id
+from foood.money import CURRENCY
 from foood.store import Store, User, iso, now
 
 router = APIRouter(prefix="/api", tags=["orders"])
 
 DELIVERY_FEE = Decimal("3.00")
-CURRENCY = "EGP"
 DUPLICATE_WINDOW = timedelta(seconds=60)
 #: the promise: the kitchen's prep time, a ride at city speed, and a margin (simulator constants)
 RIDE_SPEED_KMH = 20.0
