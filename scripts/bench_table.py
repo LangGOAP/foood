@@ -52,7 +52,55 @@ def render(results_dir: Path = RESULTS) -> str:
     if not runs:
         lines.append("| (no runs yet) |" + " |" * (len(COLUMNS) - 1))
     lines += ["", f"{len(runs)} run(s)."]
+    sets = [
+        json.loads(p.read_text(encoding="utf-8"))
+        for p in sorted((results_dir / "repeats").glob("*.json"))
+    ]
+    if sets:
+        lines += [
+            "",
+            "## Repeats",
+            "",
+            "The same scenario, engine and seed run several times, so the model is the only",
+            "source of variation; an engine without a model is the control and its runs must",
+            "be identical. Histograms read value ×count.",
+            "",
+            "| " + " | ".join(name for name, _ in REPEAT_COLUMNS) + " |",
+            "|" + "|".join("---" for _ in REPEAT_COLUMNS) + "|",
+        ]
+        for one in sorted(sets, key=lambda r: (r["scenario"], r["engine"], r["seed"])):
+            lines.append("| " + " | ".join(str(fn(one)) for _, fn in REPEAT_COLUMNS) + " |")
+        lines += ["", f"{len(sets)} set(s)."]
     return "\n".join(lines) + "\n"
+
+
+def _counts(histogram: dict) -> str:
+    return ", ".join(f"{value} ×{count}" for value, count in histogram.items()) or "-"
+
+
+def _triple(spread: dict | None) -> str:
+    return "-" if not spread else f"{spread['min']} / {spread['median']} / {spread['max']}"
+
+
+REPEAT_COLUMNS = [
+    ("Scenario", lambda r: r["scenario"]),
+    ("Engine", lambda r: f"{r['engine']} + {r['model']}" if r.get("model") else r["engine"]),
+    ("Seed", lambda r: r["seed"]),
+    ("Runs", lambda r: r["times"]),
+    ("Delivered", lambda r: _counts(r["distribution"]["delivered"])),
+    ("LLM calls, decisions", lambda r: _counts(r["distribution"]["llmCalls"])),
+    ("Human prompts", lambda r: _counts(r["distribution"]["humanPrompts"])),
+    ("Decisions taken", lambda r: _counts(r["distribution"]["decisionsTaken"])),
+    ("Model ms (min / median / max)", lambda r: _triple(r["distribution"]["modelMs"])),
+    (
+        "Cost (USD)",
+        lambda r: (
+            _triple(r["distribution"]["cost"]) if r["distribution"].get("llmPriced") else "unpriced"
+        ),
+    ),
+    ("Not recovered", lambda r: _counts(r["distribution"]["unrecovered"])),
+    ("Identical", lambda r: "yes" if r["distribution"]["identical"] else "no"),
+]
 
 
 def main() -> int:
