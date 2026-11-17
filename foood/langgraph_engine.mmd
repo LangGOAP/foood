@@ -1,0 +1,68 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	begin(begin)
+	confirm(confirm)
+	dispatch(dispatch)
+	recover(recover)
+	cleanup(cleanup)
+	wait_payment(wait_payment)
+	wait_kitchen(wait_kitchen)
+	wait_driver(wait_driver)
+	wait_pickup(wait_pickup)
+	wait_dropoff(wait_dropoff)
+	failure_card_declined(failure_card_declined)
+	failure_kitchen_rejected(failure_kitchen_rejected)
+	failure_kitchen_cancelled_mid_prep(failure_kitchen_cancelled_mid_prep)
+	failure_prep_overrun(failure_prep_overrun)
+	failure_no_driver(failure_no_driver)
+	failure_driver_dropped_before_pickup(failure_driver_dropped_before_pickup)
+	failure_driver_dropped_after_pickup(failure_driver_dropped_after_pickup)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> begin;
+	begin -.-> wait_kitchen;
+	begin -.-> wait_payment;
+	confirm --> wait_kitchen;
+	dispatch --> wait_driver;
+	failure_card_declined --> recover;
+	failure_driver_dropped_after_pickup --> recover;
+	failure_driver_dropped_before_pickup --> recover;
+	failure_kitchen_cancelled_mid_prep --> recover;
+	failure_kitchen_rejected --> recover;
+	failure_no_driver --> recover;
+	failure_prep_overrun --> recover;
+	recover -.-> __end__;
+	recover -.-> wait_driver;
+	recover -.-> wait_dropoff;
+	recover -.-> wait_kitchen;
+	recover -.-> wait_pickup;
+	wait_driver -.-> cleanup;
+	wait_driver -.-> failure_no_driver;
+	wait_driver -.-> wait_pickup;
+	wait_dropoff -.-> __end__;
+	wait_dropoff -.-> cleanup;
+	wait_dropoff -.-> failure_driver_dropped_after_pickup;
+	wait_kitchen -.-> cleanup;
+	wait_kitchen -.-> dispatch;
+	wait_kitchen -.-> failure_kitchen_cancelled_mid_prep;
+	wait_kitchen -.-> failure_kitchen_rejected;
+	wait_kitchen -.-> failure_prep_overrun;
+	wait_payment -.-> cleanup;
+	wait_payment -.-> confirm;
+	wait_payment -.-> failure_card_declined;
+	wait_pickup -.-> cleanup;
+	wait_pickup -.-> failure_driver_dropped_before_pickup;
+	wait_pickup -.-> wait_dropoff;
+	cleanup --> __end__;
+	wait_driver -.-> wait_driver;
+	wait_dropoff -.-> wait_dropoff;
+	wait_kitchen -.-> wait_kitchen;
+	wait_payment -.-> wait_payment;
+	wait_pickup -.-> wait_pickup;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
