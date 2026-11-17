@@ -4,8 +4,19 @@
   "model": "gpt-5.4-mini",
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T03:03:16.001730Z",
+  "machine": {
+    "platform": "macOS-26.6.2-x86_64-i386-64bit-Mach-O",
+    "python": "3.13.14",
+    "processor": "i386"
+  },
+  "startedAt": "2026-11-17T12:51:51.000975Z",
   "virtualMinutes": 12.0,
+  "timing": {
+    "planningMs": 0,
+    "modelMs": 0.0,
+    "languageMs": 8924.3,
+    "wallSeconds": 9.3
+  },
   "summary": {
     "orders": 2,
     "delivered": 2,
@@ -18,8 +29,10 @@
     "humanPrompts": 0,
     "llmCalls": 0,
     "messageCalls": 10,
-    "llmTokens": 2695,
+    "llmTokens": 2565,
     "cost": 0.0,
+    "replans": 0,
+    "meanPlanSteps": null,
     "llmPriced": false,
     "failuresFired": [],
     "unrecovered": []
@@ -27,11 +40,11 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "8d99a9c7-e3f9-4ba6-a09f-b7a8e094f8fa",
-      "finalOrderId": "8d99a9c7-e3f9-4ba6-a09f-b7a8e094f8fa",
+      "orderId": "bf69615a-b327-4864-bccb-b5116c58a5cb",
+      "finalOrderId": "bf69615a-b327-4864-bccb-b5116c58a5cb",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:24:16.001730Z",
-      "deliveredAt": "2026-11-17T03:14:11.001730Z",
+      "promisedAt": "2026-11-17T13:12:51.000975Z",
+      "deliveredAt": "2026-11-17T13:02:46.000975Z",
       "withinPromise": true,
       "minutes": 10.9,
       "consistent": true,
@@ -43,7 +56,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 5,
-      "llmTokens": 1367,
+      "llmTokens": 1280,
       "cost": 0.0,
       "decisionNames": [
         "phrase",
@@ -55,15 +68,20 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 0,
+      "modelMs": 0.0,
+      "languageMs": 4412.1,
+      "replans": 0,
+      "planSteps": null,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "f8cfd85f-fd43-4ad4-836f-abc5cd23c0f7",
-      "finalOrderId": "f8cfd85f-fd43-4ad4-836f-abc5cd23c0f7",
+      "orderId": "fe97f276-5aa1-471f-a173-012466e703f9",
+      "finalOrderId": "fe97f276-5aa1-471f-a173-012466e703f9",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:25:16.001730Z",
-      "deliveredAt": "2026-11-17T03:15:11.001730Z",
+      "promisedAt": "2026-11-17T13:13:51.000975Z",
+      "deliveredAt": "2026-11-17T13:03:46.000975Z",
       "withinPromise": true,
       "minutes": 10.9,
       "consistent": true,
@@ -75,7 +93,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 5,
-      "llmTokens": 1328,
+      "llmTokens": 1285,
       "cost": 0.0,
       "decisionNames": [
         "phrase",
@@ -87,6 +105,11 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 0,
+      "modelMs": 0.0,
+      "languageMs": 4512.2,
+      "replans": 0,
+      "planSteps": null,
       "notes": []
     }
   ]

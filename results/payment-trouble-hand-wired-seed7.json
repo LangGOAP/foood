@@ -4,8 +4,19 @@
   "model": null,
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T03:10:17.653319Z",
+  "machine": {
+    "platform": "macOS-26.6.2-x86_64-i386-64bit-Mach-O",
+    "python": "3.13.14",
+    "processor": "i386"
+  },
+  "startedAt": "2026-11-17T12:59:23.807374Z",
   "virtualMinutes": 12.2,
+  "timing": {
+    "planningMs": 0,
+    "modelMs": 0.0,
+    "languageMs": 5604.9,
+    "wallSeconds": 5.7
+  },
   "summary": {
     "orders": 2,
     "delivered": 1,
@@ -18,8 +29,10 @@
     "humanPrompts": 0,
     "llmCalls": 0,
     "messageCalls": 6,
-    "llmTokens": 1559,
+    "llmTokens": 1601,
     "cost": 0.0,
+    "replans": 0,
+    "meanPlanSteps": null,
     "llmPriced": false,
     "failuresFired": [
       "payment_declines"
@@ -31,10 +44,10 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "9439567d-11fc-49bf-b521-27be337abce9",
-      "finalOrderId": "9439567d-11fc-49bf-b521-27be337abce9",
+      "orderId": "908f7a0b-dc7c-441d-9306-e3dbe7324895",
+      "finalOrderId": "908f7a0b-dc7c-441d-9306-e3dbe7324895",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T03:31:17.653319Z",
+      "promisedAt": "2026-11-17T13:20:23.807374Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -49,21 +62,26 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 1,
-      "llmTokens": 280,
+      "llmTokens": 291,
       "cost": 0.0,
       "decisionNames": [
         "phrase",
         "cancel"
       ],
+      "planningMs": 0,
+      "modelMs": 0.0,
+      "languageMs": 1013.8,
+      "replans": 0,
+      "planSteps": null,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "d30eea89-e684-4d50-b819-c8028715b046",
-      "finalOrderId": "d30eea89-e684-4d50-b819-c8028715b046",
+      "orderId": "5ea0225d-39d6-44a0-8a26-d3811623239d",
+      "finalOrderId": "5ea0225d-39d6-44a0-8a26-d3811623239d",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:32:17.653319Z",
-      "deliveredAt": "2026-11-17T03:22:27.653319Z",
+      "promisedAt": "2026-11-17T13:21:23.807374Z",
+      "deliveredAt": "2026-11-17T13:11:33.807374Z",
       "withinPromise": true,
       "minutes": 11.2,
       "consistent": true,
@@ -75,7 +93,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 5,
-      "llmTokens": 1279,
+      "llmTokens": 1310,
       "cost": 0.0,
       "decisionNames": [
         "phrase",
@@ -87,6 +105,11 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 0,
+      "modelMs": 0.0,
+      "languageMs": 4591.1,
+      "replans": 0,
+      "planSteps": null,
       "notes": []
     }
   ]

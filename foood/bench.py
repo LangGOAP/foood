@@ -15,7 +15,9 @@ import asyncio
 import dataclasses
 import json
 import math
+import platform
 import statistics
+import time
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass, field
@@ -130,6 +132,40 @@ def merge_nodes(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
                 if model not in total["models"]:
                     total["models"].append(model)
     return out
+
+
+PLANNING = {"plan", "replan", "plan skips ahead"}
+
+
+def timing(decisions: list[dict[str, Any]]) -> dict[str, Any]:
+    """How long the engine took to decide about one order, and how often it changed its mind.
+
+    Planner time is the wall-clock of every planning round (the first plan, re-plans and the
+    rounds where the world ran ahead of the plan) as the engine's tracer measured it. Model
+    time is the round trip of the calls that decide about the order; perception and language
+    calls are timed apart, as their counts are. Plan steps is the first plan's.
+    """
+    first_plan = next((d for d in decisions if d["decision"] == "plan"), None)
+    rounds = by_role(decisions)
+    return {
+        "planningMs": round(
+            sum(float(d.get("planningMs") or 0) for d in decisions if d["decision"] in PLANNING), 1
+        ),
+        "modelMs": float(rounds["decision"]["latencyMs"]),
+        "perceptionMs": float(rounds["perception"]["latencyMs"]),
+        "languageMs": float(rounds["language"]["latencyMs"]),
+        "replans": sum(d["decision"] == "replan" for d in decisions),
+        "planSteps": len(first_plan.get("steps") or []) if first_plan is not None else None,
+    }
+
+
+def machine() -> dict[str, str]:
+    """Where a run happened; its wall-clock figures mean nothing without it."""
+    return {
+        "platform": platform.platform(),
+        "python": platform.python_version(),
+        "processor": platform.processor() or platform.machine(),
+    }
 
 
 def merge_models(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -305,6 +341,7 @@ class Run:
     async def execute(self) -> dict[str, Any]:
         CLOCK.freeze()  # at the wall clock so fresh tokens stay valid; then only ticks move it
         started = now()
+        self.wall_started = time.perf_counter()
         try:
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app=self.app), base_url="http://bench"
@@ -440,26 +477,36 @@ class Run:
                         sum((float(d.get("cost", 0)) for d in decisions if d.get("llmCalls")), 0.0),
                         4,
                     ),
+                    **timing(decisions),
                     "notes": placed.notes,
                 }
             )
         placed_rows = [r for r in rows if r["orderId"]]
         prices = llm_prices()
         durations: list[float] = [r["minutes"] for r in placed_rows if r["minutes"] is not None]
+        steps = [r["planSteps"] for r in placed_rows if r["planSteps"] is not None]
         unrecovered = sorted(
             {f for r in placed_rows if r["status"] != "DELIVERED" for f in r["failures"]}
         )
-        advisor = getattr(self.app.state.engine, "advisor", None)
         return {
             "scenario": self.scenario.name,
             "engine": self.engine_name,
-            "model": getattr(advisor, "model", None) if advisor is not None else None,
             "seed": self.seed,
             "foood": __version__,
+            "machine": machine(),
             "startedAt": iso(started),
             "model": getattr(self.engine, "model_name", None),
             "virtualMinutes": round(self.ticks * TICK_SECONDS / 60, 1),
             "llmPrices": prices,
+            # Wall-clock figures live apart from the summary: the summary must come out the
+            # same for the same inputs, how long the machine took to produce it need not.
+            "timing": {
+                "planningMs": round(sum(r["planningMs"] for r in placed_rows), 1),
+                "modelMs": round(sum(r["modelMs"] for r in placed_rows), 1),
+                "perceptionMs": round(sum(r["perceptionMs"] for r in placed_rows), 1),
+                "languageMs": round(sum(r["languageMs"] for r in placed_rows), 1),
+                "wallSeconds": round(time.perf_counter() - self.wall_started, 1),
+            },
             "summary": {
                 "orders": len(placed_rows),
                 "delivered": sum(r["status"] == "DELIVERED" for r in placed_rows),
@@ -487,6 +534,8 @@ class Run:
                 "llmTokens": sum(r["llmTokens"] for r in placed_rows),
                 "worldCalls": sum(r["worldCalls"] for r in placed_rows),
                 "cost": round(sum(r["cost"] for r in placed_rows), 4),
+                "replans": sum(r["replans"] for r in placed_rows),
+                "meanPlanSteps": round(statistics.fmean(steps), 1) if steps else None,
                 "llmPriced": bool(prices["perModel"])
                 or all(
                     prices[key] is not None for key in ("inputPerMillionUsd", "outputPerMillionUsd")

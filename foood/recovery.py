@@ -182,9 +182,12 @@ class OpenAIAdvisor:
 class ScriptedAdvisor:
     """For tests and demos: answers from a script, or raises what the script says to raise."""
 
-    def __init__(self, *answers: Recovery | Exception, tokens: int = 100) -> None:
+    def __init__(
+        self, *answers: Recovery | Exception, tokens: int = 100, latency_ms: float = 0.0
+    ) -> None:
         self.answers = list(answers)
         self.tokens = tokens
+        self.latency_ms = latency_ms
         self.contexts: list[Context] = []
 
     def advise(self, context: Context) -> tuple[Recovery, Usage]:
@@ -194,7 +197,7 @@ class ScriptedAdvisor:
         answer = self.answers.pop(0)
         if isinstance(answer, Exception):
             raise answer
-        return answer, Usage("scripted", self.tokens // 2, self.tokens // 2, 50.0)
+        return answer, Usage("scripted", self.tokens // 2, self.tokens // 2, self.latency_ms)
 
 
 def advisor_from_env(node: str = "decide") -> Advisor | None:

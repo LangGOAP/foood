@@ -4,8 +4,19 @@
   "model": null,
   "seed": 13,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T03:15:57.149691Z",
+  "machine": {
+    "platform": "macOS-26.6.2-x86_64-i386-64bit-Mach-O",
+    "python": "3.13.14",
+    "processor": "i386"
+  },
+  "startedAt": "2026-11-17T13:05:37.579990Z",
   "virtualMinutes": 38.1,
+  "timing": {
+    "planningMs": 6.0,
+    "modelMs": 0.0,
+    "languageMs": 40263.0,
+    "wallSeconds": 41.5
+  },
   "summary": {
     "orders": 6,
     "delivered": 6,
@@ -18,8 +29,10 @@
     "humanPrompts": 0,
     "llmCalls": 0,
     "messageCalls": 43,
-    "llmTokens": 11414,
+    "llmTokens": 11361,
     "cost": 108.77,
+    "replans": 5,
+    "meanPlanSteps": 6.0,
     "llmPriced": false,
     "failuresFired": [
       "accepts_then_cancels",
@@ -34,11 +47,11 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "2ebcc5b4-a3da-4235-b185-614bddac4b41",
-      "finalOrderId": "164345a3-8ae1-4f83-9ceb-98feae00f16a",
+      "orderId": "816b8494-db77-4207-b92e-0ad5a59522ba",
+      "finalOrderId": "9b866364-6de9-4990-92cb-73973de17d71",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:36:57.149691Z",
-      "deliveredAt": "2026-11-17T03:26:02.149691Z",
+      "promisedAt": "2026-11-17T13:26:37.579990Z",
+      "deliveredAt": "2026-11-17T13:15:42.579990Z",
       "withinPromise": true,
       "minutes": 10.1,
       "consistent": true,
@@ -52,7 +65,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 8,
-      "llmTokens": 2137,
+      "llmTokens": 2112,
       "cost": 21.09,
       "decisionNames": [
         "plan",
@@ -71,15 +84,20 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 1.2,
+      "modelMs": 0.0,
+      "languageMs": 7434.8,
+      "replans": 1,
+      "planSteps": 6,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "2dc6f1b6-2052-453a-81b3-15c907fc7327",
-      "finalOrderId": "d9ed3d01-e2b2-4cd0-813f-9c9c6b24e18c",
+      "orderId": "25cd8183-fbac-47cd-911f-6e21229e4056",
+      "finalOrderId": "5dce2d83-c05a-429e-8c6c-df23c5f9477d",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:38:57.149691Z",
-      "deliveredAt": "2026-11-17T03:28:17.149691Z",
+      "promisedAt": "2026-11-17T13:28:37.579990Z",
+      "deliveredAt": "2026-11-17T13:17:57.579990Z",
       "withinPromise": true,
       "minutes": 10.3,
       "consistent": true,
@@ -93,7 +111,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 8,
-      "llmTokens": 2203,
+      "llmTokens": 2164,
       "cost": 27.09,
       "decisionNames": [
         "plan",
@@ -113,15 +131,20 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 1.5,
+      "modelMs": 0.0,
+      "languageMs": 6982.3,
+      "replans": 1,
+      "planSteps": 6,
       "notes": []
     },
     {
       "number": 3,
-      "orderId": "2964a228-43e0-4c3b-a061-c3f02755052d",
-      "finalOrderId": "2964a228-43e0-4c3b-a061-c3f02755052d",
+      "orderId": "761f1849-74d0-4230-88da-3fbb6d312c95",
+      "finalOrderId": "761f1849-74d0-4230-88da-3fbb6d312c95",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:40:57.149691Z",
-      "deliveredAt": "2026-11-17T03:36:52.149691Z",
+      "promisedAt": "2026-11-17T13:30:37.579990Z",
+      "deliveredAt": "2026-11-17T13:26:32.579990Z",
       "withinPromise": true,
       "minutes": 16.9,
       "consistent": true,
@@ -135,7 +158,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 6,
-      "llmTokens": 1566,
+      "llmTokens": 1585,
       "cost": 21.0,
       "decisionNames": [
         "plan",
@@ -152,17 +175,22 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 1.2,
+      "modelMs": 0.0,
+      "languageMs": 6511.4,
+      "replans": 1,
+      "planSteps": 6,
       "notes": [
         "QA Pasta unavailable, picked another dish"
       ]
     },
     {
       "number": 4,
-      "orderId": "5af7ba21-cecf-4c35-be30-d9851e10192d",
-      "finalOrderId": "5af7ba21-cecf-4c35-be30-d9851e10192d",
+      "orderId": "bd3ddd15-7fb6-49da-a20b-d13a05c4776d",
+      "finalOrderId": "bd3ddd15-7fb6-49da-a20b-d13a05c4776d",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:42:57.149691Z",
-      "deliveredAt": "2026-11-17T03:39:07.149691Z",
+      "promisedAt": "2026-11-17T13:32:37.579990Z",
+      "deliveredAt": "2026-11-17T13:28:47.579990Z",
       "withinPromise": true,
       "minutes": 17.2,
       "consistent": true,
@@ -176,7 +204,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 5,
-      "llmTokens": 1288,
+      "llmTokens": 1299,
       "cost": 7.0,
       "decisionNames": [
         "plan",
@@ -189,17 +217,22 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 0.4,
+      "modelMs": 0.0,
+      "languageMs": 4509.8,
+      "replans": 0,
+      "planSteps": 6,
       "notes": [
         "QA Pasta unavailable, picked another dish"
       ]
     },
     {
       "number": 5,
-      "orderId": "93c44a23-787c-4da9-af70-568c4fe9535a",
-      "finalOrderId": "fc1501f2-cde6-4c83-a163-838c68b8f397",
+      "orderId": "2bf32bde-1f31-460c-a3c1-731bc297ab54",
+      "finalOrderId": "590515cc-69b9-416c-9cb3-8721c7ebe0d3",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:44:57.149691Z",
-      "deliveredAt": "2026-11-17T03:48:37.149691Z",
+      "promisedAt": "2026-11-17T13:34:37.579990Z",
+      "deliveredAt": "2026-11-17T13:38:17.579990Z",
       "withinPromise": false,
       "minutes": 24.7,
       "consistent": true,
@@ -213,7 +246,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 10,
-      "llmTokens": 2648,
+      "llmTokens": 2637,
       "cost": 21.59,
       "decisionNames": [
         "plan",
@@ -236,17 +269,22 @@
         "phrase",
         "phrase"
       ],
+      "planningMs": 1.0,
+      "modelMs": 0.0,
+      "languageMs": 9168.4,
+      "replans": 1,
+      "planSteps": 6,
       "notes": [
         "QA Pasta unavailable, picked another dish"
       ]
     },
     {
       "number": 6,
-      "orderId": "e6ccbebf-c265-4de5-aa46-23b9b74e9908",
-      "finalOrderId": "e6ccbebf-c265-4de5-aa46-23b9b74e9908",
+      "orderId": "a56d14be-f67e-451a-b8ba-86bac67e12c5",
+      "finalOrderId": "a56d14be-f67e-451a-b8ba-86bac67e12c5",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T03:46:57.149691Z",
-      "deliveredAt": "2026-11-17T03:53:57.149691Z",
+      "promisedAt": "2026-11-17T13:36:37.579990Z",
+      "deliveredAt": "2026-11-17T13:43:37.579990Z",
       "withinPromise": false,
       "minutes": 28.0,
       "consistent": true,
@@ -260,7 +298,7 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 6,
-      "llmTokens": 1572,
+      "llmTokens": 1564,
       "cost": 11.0,
       "decisionNames": [
         "plan",
@@ -276,6 +314,11 @@
         "act: issue_credit",
         "phrase"
       ],
+      "planningMs": 0.7,
+      "modelMs": 0.0,
+      "languageMs": 5656.3,
+      "replans": 1,
+      "planSteps": 6,
       "notes": [
         "QA Pasta unavailable, picked another dish"
       ]

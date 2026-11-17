@@ -129,13 +129,20 @@ class Trace(NullTracer):
             str(thread_id),
             "plan skips ahead" if skipped else "replan",
             because=reason,
+            planningMs=round(duration_ms or 0.0, 1),
             steps=steps,
             planCost=round(float(new_plan.total_cost), 2) if new_plan is not None else None,
             considered=self.considered(str(thread_id)) if not skipped else [],
         )
 
     def on_plan_failed(self, reason: str, duration_ms: float, thread_id: str | None = None) -> None:
-        decide(self.store, str(thread_id), "no plan", because=reason)
+        decide(
+            self.store,
+            str(thread_id),
+            "no plan",
+            because=reason,
+            planningMs=round(duration_ms, 1),
+        )
 
     def on_action_complete(self, result: Any, thread_id: str | None = None) -> None:
         """The executor's update: the last entry of its execution history is the action."""
