@@ -92,8 +92,11 @@ card, and an engine can retry a decline on the next card; `payment_declines`
 in a scenario takes `times = 2` to decline both. Credits: a ledger per customer that
 engines or support fill as compensation (`POST /api/credits`, one credit per
 order); the next quote and order apply the balance, the payment charges the
-rest, and a cancelled order gives its credit back (`GET /api/credits/me`). The
-hand-wired engine uses none of these: it refunds and cancels, as most shops do.
+rest, and a cancelled order gives its credit back (`GET /api/credits/me`). Dispatch strategies (`foood/dispatch.py`): longest idle, nearest first by
+last known position, and stacking a ready order onto a busy driver whose
+drop-off is near the restaurant so it becomes their next job; a waiting
+delivery shows how long it has searched. The hand-wired engine uses none of
+these: it dispatches longest-idle, refunds and cancels, as most shops do.
 
 ## Break it on purpose
 

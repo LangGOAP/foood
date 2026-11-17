@@ -62,6 +62,9 @@ class Delivery:
             "pickedUpAt": iso(self.picked_up_at) if self.picked_up_at else None,
             "deliveredAt": iso(self.delivered_at) if self.delivered_at else None,
             "cancelledAt": iso(self.cancelled_at) if self.cancelled_at else None,
+            "searchSeconds": (
+                int((now() - self.created_at).total_seconds()) if self.status == "CREATED" else None
+            ),
             "createdAt": iso(self.created_at),
             "updatedAt": iso(self.updated_at),
         }
@@ -117,11 +120,16 @@ def delivery_for_order(store: Store, order_id: str) -> Delivery | None:
     return next((d for d in store.deliveries.values() if d.order_id == order_id), None)
 
 
+def active_deliveries(store: Store, driver: Driver) -> list[Delivery]:
+    """The driver's jobs in hand, the one being worked first, a stacked one after it."""
+    mine = [d for d in store.deliveries.values() if d.driver_id == driver.id and d.status in ACTIVE]
+    rank = {"IN_TRANSIT": 0, "PICKED_UP": 1, "DRIVER_ASSIGNED": 2}
+    return sorted(mine, key=lambda d: (rank[d.status], d.assigned_at or d.created_at))
+
+
 def current_delivery(store: Store, driver: Driver) -> Delivery | None:
-    return next(
-        (d for d in store.deliveries.values() if d.driver_id == driver.id and d.status in ACTIVE),
-        None,
-    )
+    jobs = active_deliveries(store, driver)
+    return jobs[0] if jobs else None
 
 
 def create_delivery(store: Store, order: Order) -> Delivery:
@@ -134,10 +142,13 @@ def create_delivery(store: Store, order: Order) -> Delivery:
 
 
 def assign(store: Store, delivery: Delivery, driver: Driver) -> Delivery:
+    """Hand the delivery to an idle driver, or stack it on a busy one as their next job."""
     if delivery.status != "CREATED":
         raise ApiError(409, "This delivery already has a driver", error="InvalidTransition")
-    if driver.status != "AVAILABLE" or driver.verification_status != "VERIFIED":
+    if driver.verification_status != "VERIFIED" or driver.status not in {"AVAILABLE", "BUSY"}:
         raise ApiError(409, "That driver is not available", error="DriverUnavailable")
+    if driver.status == "BUSY" and len(active_deliveries(store, driver)) != 1:
+        raise ApiError(409, "That driver already has a job waiting", error="DriverUnavailable")
     delivery.driver_id = driver.id
     delivery.status = "DRIVER_ASSIGNED"
     delivery.assigned_at = delivery.updated_at = now()
@@ -175,12 +186,16 @@ def dispatch_pending(store: Store) -> list[tuple[Delivery, Driver]]:
 
 
 def _release(store: Store, delivery: Delivery) -> None:
+    """The job is over: the driver is idle again, unless a stacked job is waiting."""
     if delivery.driver_id is None:
         return
     driver = store.drivers.get(delivery.driver_id)
-    if driver is not None and driver.status == "BUSY":
-        driver.set_status("AVAILABLE")
-        store.publish("driver.available", driver=driver)
+    if driver is None or driver.status != "BUSY":
+        return
+    if any(d is not delivery for d in active_deliveries(store, driver)):
+        return  # straight on to the next job
+    driver.set_status("AVAILABLE")
+    store.publish("driver.available", driver=driver)
 
 
 def perform(store: Store, delivery: Delivery, action: str) -> Delivery:
