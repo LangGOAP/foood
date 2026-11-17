@@ -14,7 +14,23 @@ SCENARIO_HELP = "A bundled scenario name (see scenarios/) or a path to a TOML fi
 ENGINE_HELP = "The order engine that decides the lifecycle (see foood/engine.py)."
 
 
+def _load_dotenv() -> None:
+    """KEY=VALUE lines from a .env in the working directory or the repo, never overriding."""
+    from pathlib import Path
+
+    for folder in (Path.cwd(), Path(__file__).resolve().parents[1]):
+        dotenv = folder / ".env"
+        if dotenv.is_file():
+            for line in dotenv.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+            return
+
+
 def _select(scenario: str | None, engine: str | None) -> None:
+    _load_dotenv()
     if scenario:
         from foood.scenario import resolve
 

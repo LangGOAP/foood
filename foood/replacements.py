@@ -29,7 +29,7 @@ from pydantic import BaseModel
 
 from foood.auth import CurrentUser, StoreDep
 from foood.catalog import distance_km
-from foood.deliveries import cancel_delivery, delivery_for_order
+from foood.deliveries import ACTIVE, cancel_delivery, delivery_for_order
 from foood.errors import ApiError
 from foood.models import MenuItem, Restaurant, money, new_id
 from foood.notifications import notify
@@ -292,8 +292,11 @@ def replace(store: Store, order: Order, alternative: Alternative, reason: str) -
     """Create the replacement, carry the payment over, close out the original."""
     if order.replaced_by_order_id is not None:
         raise ApiError(409, "This order was already replaced", error="Conflict")
-    if order.status == "DELIVERED" or order.status in {"PICKED_UP"}:
-        raise ApiError(409, f"A {order.status} order cannot be replaced", error="InvalidTransition")
+    if order.status == "DELIVERED":
+        raise ApiError(409, "A delivered order cannot be replaced", error="InvalidTransition")
+    current = delivery_for_order(store, order.id)
+    if order.status == "PICKED_UP" and current is not None and current.status in ACTIVE:
+        raise ApiError(409, "The food is on its way; nothing to replace", error="InvalidTransition")
     payment = payment_for_order(store, order.id)
     if payment is None or payment.status != "COMPLETED":
         raise ApiError(409, "Only a paid order can be replaced", error="NotPaid")

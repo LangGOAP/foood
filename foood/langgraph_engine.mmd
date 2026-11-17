@@ -10,12 +10,15 @@ graph TD;
 	dispatch(dispatch)
 	recover(recover)
 	cleanup(cleanup)
+	answered(answered)
 	wait_payment(wait_payment)
 	wait_kitchen(wait_kitchen)
 	wait_driver(wait_driver)
 	wait_pickup(wait_pickup)
 	wait_dropoff(wait_dropoff)
+	wait_support(wait_support)
 	failure_card_declined(failure_card_declined)
+	failure_payment_gateway_down(failure_payment_gateway_down)
 	failure_kitchen_rejected(failure_kitchen_rejected)
 	failure_kitchen_cancelled_mid_prep(failure_kitchen_cancelled_mid_prep)
 	failure_prep_overrun(failure_prep_overrun)
@@ -24,6 +27,7 @@ graph TD;
 	failure_driver_dropped_after_pickup(failure_driver_dropped_after_pickup)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> begin;
+	answered --> recover;
 	begin -.-> wait_kitchen;
 	begin -.-> wait_payment;
 	confirm --> wait_kitchen;
@@ -34,12 +38,15 @@ graph TD;
 	failure_kitchen_cancelled_mid_prep --> recover;
 	failure_kitchen_rejected --> recover;
 	failure_no_driver --> recover;
+	failure_payment_gateway_down --> recover;
 	failure_prep_overrun --> recover;
 	recover -.-> __end__;
 	recover -.-> wait_driver;
 	recover -.-> wait_dropoff;
 	recover -.-> wait_kitchen;
+	recover -.-> wait_payment;
 	recover -.-> wait_pickup;
+	recover -.-> wait_support;
 	wait_driver -.-> cleanup;
 	wait_driver -.-> failure_no_driver;
 	wait_driver -.-> wait_pickup;
@@ -54,15 +61,19 @@ graph TD;
 	wait_payment -.-> cleanup;
 	wait_payment -.-> confirm;
 	wait_payment -.-> failure_card_declined;
+	wait_payment -.-> failure_payment_gateway_down;
 	wait_pickup -.-> cleanup;
 	wait_pickup -.-> failure_driver_dropped_before_pickup;
 	wait_pickup -.-> wait_dropoff;
+	wait_support -.-> answered;
+	wait_support -.-> cleanup;
 	cleanup --> __end__;
 	wait_driver -.-> wait_driver;
 	wait_dropoff -.-> wait_dropoff;
 	wait_kitchen -.-> wait_kitchen;
 	wait_payment -.-> wait_payment;
 	wait_pickup -.-> wait_pickup;
+	wait_support -.-> wait_support;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc

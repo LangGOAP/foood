@@ -127,8 +127,23 @@ pickup, the drop-off), and the engine resumes them with the event. Every
 failure routes to `recover`, the fork. A SQLite checkpointer
 (`FOOOD_CHECKPOINTS`, `build/langgraph-checkpoints.sqlite` under `foood up`)
 keeps every thread, so a new engine process resumes each order where it
-paused. With the model disabled, `recover` applies the hand-wired reaction
-and the bench numbers match `main` exactly.
+paused.
+
+At `recover`, a model picks one of the platform's recovery tools: a replacement
+order from another kitchen, the backup card, a credit, a wider dispatch,
+waiting, a question to support (who picks the tool), or refund and cancel. It
+is corralled the way careful teams corral it: an allow-list of tools per
+failure (`foood/recovery.py`), a budget of three recoveries per order, a
+timeout and no retries per call, structured output, and the hand-wired
+reaction as the fallback whenever the model errs, picks a tool it may not,
+or the budget is spent. A poor choice costs money or minutes, never a
+consistent state. Every call is recorded on the order's decisions with its
+tokens, so the bench reports what the judgement cost. The model is
+`FOOOD_LLM_MODEL` (default `gpt-5.4-mini`) with `OPENAI_API_KEY` from the
+environment or a `.env` file; `FOOOD_LLM=off` disables it, and then `recover`
+applies the hand-wired reaction and the bench numbers match `main` exactly.
+Set `FOOOD_LLM_PRICE_IN` and `FOOOD_LLM_PRICE_OUT` (USD per million tokens)
+to have costs priced; otherwise only tokens are reported.
 
 ## Support, the human in the loop
 
@@ -207,7 +222,7 @@ nothing behaves differently. The bundled ones:
 | Scenario | What happens |
 |---|---|
 | `happy-path` | The kitchen cooks every order itself; nothing goes wrong. |
-| `kitchen-trouble` | Order 1 is rejected, order 2 is accepted then cancelled when an item runs out, order 3 takes a quarter of an hour past its promise. |
+| `kitchen-trouble` | Order 1 is rejected, order 2 is accepted then cancelled when an item runs out, order 3 is ready twenty-five minutes after the kitchen started, past its promise. |
 | `delivery-trouble` | Order 1 waits 90 s for a driver, order 2's driver drops it before pickup, order 3's after pickup, order 4's courier crawls. |
 | `payment-trouble` | Order 1's card is declined; order 2 is submitted twice and the duplicate is refused; order 3 meets a minute of payment gateway outage. |
 | `storm` | A storm over the kitchens as order 1 is confirmed: kitchens slower, couriers slower, a driver offline for five minutes; order 3 meets heavy traffic downtown. Nothing fails; the promises do. |

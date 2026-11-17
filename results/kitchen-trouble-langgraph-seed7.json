@@ -1,0 +1,102 @@
+{
+  "scenario": "kitchen-trouble",
+  "engine": "langgraph",
+  "seed": 7,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T01:55:31.902936Z",
+  "virtualMinutes": 32.8,
+  "summary": {
+    "orders": 3,
+    "delivered": 3,
+    "deliveredWithinPromise": 2,
+    "cancelled": 0,
+    "consistent": 3,
+    "meanMinutes": 17.1,
+    "p95Minutes": 30.8,
+    "recoveryDecisions": 6,
+    "humanPrompts": 0,
+    "llmCalls": 3,
+    "llmTokens": 2091,
+    "cost": 0.0,
+    "llmPriced": false,
+    "failuresFired": [
+      "accepts_then_cancels",
+      "prep_overrun",
+      "restaurant_rejects"
+    ],
+    "unrecovered": []
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "69239a08-3f1e-4a9d-92de-a2b8f6b33ac1",
+      "finalOrderId": "9d928d64-420e-4456-a6df-e0d4159d2618",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T02:16:31.902936Z",
+      "deliveredAt": "2026-11-17T02:05:36.902936Z",
+      "withinPromise": true,
+      "minutes": 10.1,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "restaurant_rejects"
+      ],
+      "recovered": true,
+      "decisions": 5,
+      "recoveryDecisions": 2,
+      "humanPrompts": 0,
+      "llmCalls": 1,
+      "llmTokens": 669,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "90f7733b-501e-4cf2-9559-ef93f901d194",
+      "finalOrderId": "8503f3fd-cd08-4b8a-9e6c-51bb4fc8f3c1",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T02:17:31.902936Z",
+      "deliveredAt": "2026-11-17T02:06:51.902936Z",
+      "withinPromise": true,
+      "minutes": 10.3,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "accepts_then_cancels"
+      ],
+      "recovered": true,
+      "decisions": 5,
+      "recoveryDecisions": 2,
+      "humanPrompts": 0,
+      "llmCalls": 1,
+      "llmTokens": 713,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "4754fd65-9c5c-4d5f-8a4b-58467914fc17",
+      "finalOrderId": "2968c4ff-4949-4f3a-8e08-355e70bd1d16",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T02:18:31.902936Z",
+      "deliveredAt": "2026-11-17T02:28:16.902936Z",
+      "withinPromise": false,
+      "minutes": 30.8,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "prep_overrun"
+      ],
+      "recovered": true,
+      "decisions": 5,
+      "recoveryDecisions": 2,
+      "humanPrompts": 0,
+      "llmCalls": 1,
+      "llmTokens": 709,
+      "cost": 0.0,
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    }
+  ]
+}

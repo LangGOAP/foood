@@ -112,6 +112,7 @@ def test_table_is_rendered_from_the_files(tmp_path: Path, monkeypatch) -> None:
     run("happy-path", "hand-wired", 7, tmp_path)
     table = render(tmp_path)
     assert "| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 |" in table
+    assert "unpriced" in table
     assert table.rstrip().endswith("1 run(s).")
 
 
