@@ -98,6 +98,8 @@ class User:
     #: may the platform re-order the same items elsewhere without asking, and up to what
     #: increase of the subtotal, in percent? None means always ask.
     substitution_policy: dict[str, Any] | None = None
+    #: cards on file, primary first: {"id", "brand", "last4", "label"}; nothing is charged anywhere
+    cards: list[dict[str, str]] = field(default_factory=list)
     created_at: datetime = field(default_factory=now)
     updated_at: datetime = field(default_factory=now)
 
@@ -225,6 +227,10 @@ class Store:
                 del self.refresh[token]
 
 
+def card(card_id: str, brand: str, last4: str) -> dict[str, str]:
+    return {"id": card_id, "brand": brand, "last4": last4, "label": f"{brand} •••• {last4}"}
+
+
 def seed_demo(store: Store) -> Store:
     """The accounts the Delivery Plus apps and their seed scripts expect."""
     store.add_user(
@@ -236,6 +242,7 @@ def seed_demo(store: Store) -> Store:
         phone_verified_at=now(),
         address="742 Evergreen Terrace, Apt 3B",
         substitution_policy={"allow": True, "max_increase_pct": 10},
+        cards=[card("card-sara-visa", "Visa", "4242"), card("card-sara-mc", "Mastercard", "4444")],
     )
     store.add_user("admin@example.com", PASSWORD, "Platform Admin", "ADMIN")
     store.add_user("demo.driver@example.com", PASSWORD, "Demo Driver", "DRIVER")
@@ -252,6 +259,7 @@ def seed_demo(store: Store) -> Store:
         phone_verified_at=now(),
         address="1 Test Street, Apt 1",
         substitution_policy={"allow": False},
+        cards=[card("card-qa-visa", "Visa", "0001")],
     )
     store.add_user("qa.customer2@delivery-plus.test", QA_PASSWORD, "QA Other", "CUSTOMER")
     store.add_user(

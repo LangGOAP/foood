@@ -9,6 +9,7 @@ autopilot = true
 [[inject]]
 order = 1
 failure = "payment_declines"
+times = 1  # 2 declines the backup card too
 reason = "Insufficient funds"
 
 [[inject]]

@@ -85,7 +85,11 @@ substitution policy says whether a dearer kitchen needs support's approval.
 Sister restaurants exist for this: QA Bistro next to QA Kitchen (owner
 `qa.restaurant3@delivery-plus.test`), Luigi's Pizzeria next to Pizza Napoli and
 Smash Bros Burgers next to Burger Palace. Support can do it by hand with `POST
-/api/orders/{id}/replacement`.
+/api/orders/{id}/replacement`. Backup cards: customers may hold more than one
+card on file (the demo customer has two), every payment attempt names its card,
+and an engine can retry a decline on the next card; `payment_declines` in a
+scenario takes `times = 2` to decline both. The hand-wired engine does neither;
+it refunds and cancels.
 
 ## Break it on purpose
 

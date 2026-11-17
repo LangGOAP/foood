@@ -65,6 +65,7 @@ class Injection:
     reason: str | None = None
     after: str = "assigned"  # driver_drops: "assigned" or "pickup"
     factor: float = 0.25  # courier_delay: speed multiplier
+    times: int = 1  # payment_declines: how many attempts (cards) decline
 
     @property
     def delay(self) -> float:
@@ -114,6 +115,7 @@ def parse(text: str) -> Scenario:
                 reason=item.get("reason"),
                 after=item.get("after", "assigned"),
                 factor=float(item.get("factor", 0.25)),
+                times=int(item.get("times", 1)),
             )
         )
     kitchen = Kitchen(**raw.get("kitchen", {}))
@@ -162,7 +164,7 @@ class Engine:
         self.timers: list[Timer] = []
         self.log: list[dict[str, Any]] = []
         self.no_driver_until: dict[str, datetime] = {}
-        self.declines: dict[str, str] = {}  # order id -> reason
+        self.declines: dict[str, tuple[str, int]] = {}  # order id -> (reason, attempts left)
         self.previous_charge = store.hooks.get("charge")
         self.previous_dispatch = store.hooks.get("dispatch")
 
@@ -216,7 +218,7 @@ class Engine:
         for injection in mine:
             self.record("armed", order.id, failure=injection.failure, orderNumber=self.placed)
             if injection.failure == "payment_declines":
-                self.declines[order.id] = injection.note or "Card declined"
+                self.declines[order.id] = (injection.note or "Card declined", injection.times)
             elif injection.failure == "duplicate_submission":
                 self._resubmit(order)
 
@@ -379,9 +381,20 @@ class Engine:
     # hooks -------------------------------------------------------------------------------
 
     def _charge(self, payment: Payment) -> tuple[str, str | None]:
-        reason = self.declines.pop(payment.order_id, None)
-        if reason is not None:
-            self.record("fired", payment.order_id, failure="payment_declines", reason=reason)
+        pending = self.declines.get(payment.order_id)
+        if pending is not None:
+            reason, left = pending
+            if left <= 1:
+                self.declines.pop(payment.order_id)
+            else:
+                self.declines[payment.order_id] = (reason, left - 1)
+            self.record(
+                "fired",
+                payment.order_id,
+                failure="payment_declines",
+                reason=reason,
+                attempt=payment.attempt,
+            )
             return "FAILED", reason
         if self.previous_charge is not None:
             outcome: tuple[str, str | None] = self.previous_charge(payment)
