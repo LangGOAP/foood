@@ -160,6 +160,17 @@ def write_stamp(out_dir: Path, api_url: str, extra_env: dict[str, str]) -> None:
     (out_dir / STAMP).write_text(json.dumps({"fingerprint": _fingerprint(api_url, extra_env)}))
 
 
+#: What every web build is made with, besides the API address and its fixed position:
+#: English, and dollars (the customer and driver apps come from our forks, which add the
+#: currency switch; upstream labels every amount EGP).
+PUBLIC_ENV = {"EXPO_PUBLIC_DEFAULT_LOCALE": "en", "EXPO_PUBLIC_CURRENCY": "USD"}
+
+
+def public_env(app: App, api_url: str) -> dict[str, str]:
+    """The build-time settings of *app*: they go into the export and into its stamp."""
+    return {"EXPO_PUBLIC_API_BASE_URL": api_url, **PUBLIC_ENV, **app.extra_env}
+
+
 def export_is_current(out_dir: Path, api_url: str, extra_env: dict[str, str]) -> bool:
     stamp = out_dir / STAMP
     if not stamp.is_file() or not (out_dir / "index.html").is_file():
@@ -180,18 +191,13 @@ def ensure_node_modules(app: App) -> None:
 
 def export_app(app: App, api_url: str, force: bool = False) -> Path:
     out = BUILD / app.name
-    if not force and export_is_current(out, api_url, app.extra_env):
+    public = public_env(app, api_url)
+    if not force and export_is_current(out, api_url, public):
         return out
     ensure_node_modules(app)
     print(f"[{app.name}] exporting the web build against {api_url}", flush=True)
     shutil.rmtree(out, ignore_errors=True)
-    env = {
-        **os.environ,
-        "CI": "1",
-        "EXPO_PUBLIC_API_BASE_URL": api_url,
-        "EXPO_PUBLIC_DEFAULT_LOCALE": "en",
-        **app.extra_env,
-    }
+    env = {**os.environ, "CI": "1", **public}
     subprocess.run(
         ["npx", "expo", "export", "--platform", "web", "--output-dir", str(out), "--clear"],
         cwd=app.directory,
@@ -199,7 +205,7 @@ def export_app(app: App, api_url: str, force: bool = False) -> Path:
         check=True,
         stdout=sys.stderr,
     )
-    write_stamp(out, api_url, app.extra_env)
+    write_stamp(out, api_url, public)
     return out
 
 

@@ -1,9 +1,9 @@
 [submodule "apps/customer"]
 	path = apps/customer
-	url = https://github.com/Delivery-Plus0/delivery-plus-customer-app.git
+	url = https://github.com/LangGOAP/delivery-plus-customer-app.git
 [submodule "apps/driver"]
 	path = apps/driver
-	url = https://github.com/Delivery-Plus0/delivery-plus-driver-app.git
+	url = https://github.com/LangGOAP/delivery-plus-driver-app.git
 [submodule "apps/restaurant"]
 	path = apps/restaurant
 	url = https://github.com/Delivery-Plus0/delivery-plus-restaurant-app.git
