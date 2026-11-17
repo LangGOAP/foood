@@ -19,6 +19,7 @@ from foood import __version__
 from foood.auth import router as auth_router
 from foood.cart import router as cart_router
 from foood.catalog import router as catalog_router
+from foood.credits import router as credits_router
 from foood.deliveries import router as deliveries_router
 from foood.drivers import router as drivers_router
 from foood.engine import OrderEngine, make_engine
@@ -95,6 +96,7 @@ def create_app(
     app.include_router(engine_router)
     app.include_router(support_router)
     app.include_router(replacements_router)
+    app.include_router(credits_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

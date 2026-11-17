@@ -93,6 +93,7 @@ class Order:
     cancelled_by: str | None = None
     cancellation_reason: str | None = None
     cancellation_note: str | None = None
+    credit_applied: Decimal = Decimal("0")
     replaces_order_id: str | None = None
     replaced_by_order_id: str | None = None
     promise_minutes: int = DEFAULT_RIDE_MINUTES + PROMISE_MARGIN_MINUTES
@@ -122,8 +123,13 @@ class Order:
         return sum((i.price * i.quantity for i in self.items), Decimal("0"))
 
     @property
-    def total(self) -> Decimal:
+    def gross(self) -> Decimal:
         return self.subtotal + DELIVERY_FEE
+
+    @property
+    def total(self) -> Decimal:
+        """What the customer pays: the gross less the credit applied at checkout."""
+        return self.gross - self.credit_applied
 
     def to_json(self, store: Store | None = None) -> dict[str, Any]:
         data: dict[str, Any] = {
@@ -135,6 +141,8 @@ class Order:
             "items": [i.to_json() for i in self.items],
             "subtotalAmount": money(self.subtotal),
             "deliveryFee": money(DELIVERY_FEE),
+            "grossAmount": money(self.gross),
+            "creditApplied": money(self.credit_applied),
             "totalAmount": money(self.total),
             "deliveryAddress": self.delivery_address,
             "deliveryNotes": self.delivery_notes,
@@ -203,6 +211,11 @@ def transition(store: Store, order: Order, status: str, **changes: Any) -> Order
         setattr(order, attr, value)
     if status == "DELIVERED":
         order.delivered_at = now()
+    if status in {"CANCELLED", "FAILED"} and order.credit_applied > 0:
+        from foood.credits import return_credit
+
+        return_credit(store, order.customer_id, order.id, order.credit_applied)
+        order.credit_applied = Decimal("0")
     order.updated_at = now()
     store.publish("order.status", order=order, previous=previous)
     return order
@@ -281,6 +294,9 @@ def place_order(
         delivery_longitude=longitude,
         promise_minutes=promise_minutes(restaurant, latitude, longitude),
     )
+    from foood.credits import apply_credit
+
+    order.credit_applied = apply_credit(store, user.id, order.id, order.gross)
     store.orders[order.id] = order
     cart.items.clear()
     cart.touch()
@@ -352,12 +368,17 @@ async def list_my_orders(
 
 @router.get("/orders/quote")
 async def quote(user: CurrentUser, store: StoreDep) -> dict[str, Any]:
+    from foood.credits import balance
+
     cart = cart_of(store, user.id)
     fee = DELIVERY_FEE if cart.items else Decimal("0")
+    gross = cart.subtotal + fee
+    credit = min(balance(store, user.id), gross) if cart.items else Decimal("0")
     body: dict[str, Any] = {
         "subtotalAmount": money(cart.subtotal),
         "deliveryFee": money(fee),
-        "totalAmount": money(cart.subtotal + fee),
+        "creditApplied": money(credit),
+        "totalAmount": money(gross - credit),
         "currency": CURRENCY,
     }
     if cart.restaurant_id is not None and cart.items:
