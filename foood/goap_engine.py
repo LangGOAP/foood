@@ -14,6 +14,7 @@ person, through support, as a typed form.
 from __future__ import annotations
 
 import sqlite3
+import time
 from collections import deque
 from collections.abc import Callable
 from decimal import Decimal
@@ -84,6 +85,7 @@ class Trace(NullTracer):
         self.order_id = ""
         self.last_steps: dict[str, list[str]] = {}
         self.current_order = current_order
+        self.round_started: float | None = None
 
     def considered(self) -> list[dict[str, Any]]:
         """The other kitchens on the table when this plan was made, with what they would cost."""
@@ -103,6 +105,21 @@ class Trace(NullTracer):
             for a in alternatives(self.store, order)[:3]
         ]
 
+    def on_plan_start(self, goal: Any, state: Any, strategy_name: str) -> None:
+        self.round_started = time.perf_counter()
+
+    def round_ms(self, reported: float | None = None) -> float:
+        """Wall-clock of the planning round that just ended, from on_plan_start to this hook.
+
+        The library reports a duration for first plans only; timing every round the same way
+        keeps plans, re-plans and the rounds where the world ran ahead comparable.
+        """
+        if self.round_started is None:
+            return round(reported or 0.0, 1)
+        elapsed = (time.perf_counter() - self.round_started) * 1000
+        self.round_started = None
+        return round(elapsed, 1)
+
     def on_plan_complete(self, plan: Any, duration_ms: float) -> None:
         steps = [a.name for a in plan.actions]
         self.last_steps[self.order_id] = steps
@@ -113,7 +130,7 @@ class Trace(NullTracer):
             because="A* over the platform's actions",
             steps=steps,
             planCost=round(float(plan.total_cost), 2),
-            planningMs=round(duration_ms, 1),
+            planningMs=self.round_ms(duration_ms),
             considered=self.considered(),
         )
 
@@ -128,13 +145,20 @@ class Trace(NullTracer):
             self.order_id,
             "plan skips ahead" if skipped else "replan",
             because=reason,
+            planningMs=self.round_ms(),
             steps=steps,
             planCost=round(float(new_plan.total_cost), 2) if new_plan is not None else None,
             considered=self.considered() if not skipped else [],
         )
 
     def on_plan_failed(self, reason: str, duration_ms: float) -> None:
-        decide(self.store, self.order_id, "no plan", because=reason)
+        decide(
+            self.store,
+            self.order_id,
+            "no plan",
+            because=reason,
+            planningMs=self.round_ms(duration_ms),
+        )
 
     def on_action_complete(self, result: Any) -> None:
         """The executor's update: the last entry of its execution history is the action."""
