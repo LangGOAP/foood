@@ -53,10 +53,10 @@ class App:
     extra_env: dict[str, str]
 
 
-#: Fixed browser positions so no app asks for geolocation: the customer at home near
-#: downtown Cairo, the driver around the corner from the restaurants. Values are degrees.
-CUSTOMER_HOME = "30.0450,31.2400"
-DRIVER_START = "30.0350,31.2300"
+#: Fixed browser positions so no app asks for geolocation: the customer at home by
+#: Union Square, the driver around the corner from the kitchens. Values are degrees.
+CUSTOMER_HOME = "37.7849,-122.4094"
+DRIVER_START = "37.7760,-122.4180"
 
 APPS = [
     App(

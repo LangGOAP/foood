@@ -88,8 +88,8 @@ async def test_radius_and_closed_kitchens_are_excluded(client) -> None:
         restaurant="Pizza Napoli",
         items=(("Margherita", 1), ("Tiramisu", 1)),
         deliveryAddress="A kilometre north",
-        deliveryLatitude=30.0716,
-        deliveryLongitude=31.2197,
+        deliveryLatitude=37.8076,
+        deliveryLongitude=-122.4082,
     )
     order = get_order(client.store, near["id"])
     found = alternatives(client.store, order)

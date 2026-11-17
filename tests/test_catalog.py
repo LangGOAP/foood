@@ -22,8 +22,8 @@ async def test_restaurant_detail_conforms(client) -> None:
     burger = next(r for r in items if r["name"] == "Burger Palace")
     response = await client.get(f"/api/restaurants/{burger['id']}")
     body = assert_conforms("GET", "/api/restaurants/{id}", response)
-    assert body["status"] == "OPEN" and body["address"] == "123 Main St"
-    assert body["latitude"] == pytest.approx(30.0444) and body["deliveryRadiusKm"] > 0
+    assert body["status"] == "OPEN" and body["address"] == "123 Powell St"
+    assert body["latitude"] == pytest.approx(37.7856) and body["deliveryRadiusKm"] > 0
     assert (await client.get("/api/restaurants/nope")).status_code == 404
 
 
@@ -32,7 +32,7 @@ async def test_search_status_and_distance(client) -> None:
     assert [r["name"] for r in found] == ["Pizza Napoli"]
     closed = (await client.get("/api/restaurants?status=CLOSED")).json()["items"]
     assert [r["name"] for r in closed] == ["Green Bowl", "QA Night Cafe"]
-    near = (await client.get("/api/restaurants?lat=30.0444&lng=31.2357&limit=50")).json()["items"]
+    near = (await client.get("/api/restaurants?lat=37.7856&lng=-122.4083&limit=50")).json()["items"]
     assert near[0]["name"] == "Burger Palace" and near[0]["distanceKm"] == pytest.approx(
         0, abs=0.01
     )
@@ -127,7 +127,12 @@ async def test_new_restaurant_is_a_draft_until_submitted(client) -> None:
     headers = {"Authorization": f"Bearer {register.json()['accessToken']}"}
     draft = await client.post(
         "/api/restaurants",
-        json={"name": "Chef's Table", "address": "1 Food St", "latitude": 30.0, "longitude": 31.2},
+        json={
+            "name": "Chef's Table",
+            "address": "1 Food St",
+            "latitude": 37.78,
+            "longitude": -122.42,
+        },
         headers=headers,
     )
     assert draft.status_code == 201 and draft.json()["approvalStatus"] == "DRAFT"

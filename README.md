@@ -47,8 +47,9 @@ can refund payments and cancel deliveries.
 `make serve` runs the API alone with auto-reload; `make down` stops a
 `foood up` left running in another terminal. The apps live in `apps/` as git
 submodules of the Delivery Plus repositories and read the API address from
-`EXPO_PUBLIC_API_BASE_URL`; the web builds get fixed browser positions so no
-app asks for geolocation, and the API's simulated driver phone moves the
+`EXPO_PUBLIC_API_BASE_URL`; the web builds get fixed browser positions in San
+Francisco (the customer at home by Union Square, the driver around the corner
+from the kitchens) so no app asks for geolocation, and the API's simulated driver phone moves the
 driver on the customer's map because a browser window cannot.
 
 Every order placed in the customer app flows through payment, the restaurant

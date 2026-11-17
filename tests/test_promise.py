@@ -35,12 +35,12 @@ async def _pay(client, headers, order_id: str) -> None:
 def test_promise_formula() -> None:
     from foood.models import Restaurant
 
-    kitchen = Restaurant("K", "o", "1 St", 30.03, 31.24, prep_minutes=12)
+    kitchen = Restaurant("K", "o", "1 St", 37.7731, -122.4167, prep_minutes=12)
     unknown = promise_minutes(kitchen, None, None)
     assert unknown == 12 + DEFAULT_RIDE_MINUTES + PROMISE_MARGIN_MINUTES
-    next_door = promise_minutes(kitchen, 30.03, 31.24)
+    next_door = promise_minutes(kitchen, 37.7731, -122.4167)
     assert next_door == 12 + PROMISE_MARGIN_MINUTES  # no ride at all
-    far = promise_minutes(kitchen, 30.12, 31.24)  # about 10 km north
+    far = promise_minutes(kitchen, 37.8631, -122.4167)  # about 10 km north
     assert far > unknown
 
 
@@ -56,8 +56,8 @@ async def test_quote_and_order_carry_the_promise(client) -> None:
             "/api/orders",
             json={
                 "deliveryAddress": "Next door",
-                "deliveryLatitude": 30.03,
-                "deliveryLongitude": 31.24,
+                "deliveryLatitude": 37.7731,
+                "deliveryLongitude": -122.4167,
             },
             headers=sara,
         )

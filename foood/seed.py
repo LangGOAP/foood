@@ -18,9 +18,9 @@ Item = tuple[str, str, str] | tuple[str, str, str, bool]  # name, description, p
 RESTAURANTS: list[dict[str, Any]] = [
     {
         "name": "Burger Palace",
-        "address": "123 Main St",
-        "latitude": 30.0444,
-        "longitude": 31.2357,
+        "address": "123 Powell St",
+        "latitude": 37.7856,
+        "longitude": -122.4083,
         "status": "OPEN",
         "cuisine": ["Burgers", "American"],
         "categories": {
@@ -44,9 +44,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     },
     {
         "name": "Pizza Napoli",
-        "address": "48 Via Roma Ave",
-        "latitude": 30.0626,
-        "longitude": 31.2197,
+        "address": "435 Columbus Ave",
+        "latitude": 37.7986,
+        "longitude": -122.4082,
         "status": "OPEN",
         "cuisine": ["Pizza", "Italian"],
         "categories": {
@@ -65,9 +65,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     },
     {
         "name": "Cairo Kitchen",
-        "address": "9 Nile Corniche",
-        "latitude": 29.9792,
-        "longitude": 31.1342,
+        "address": "3251 20th Ave",
+        "latitude": 37.728,
+        "longitude": -122.4765,
         "status": "OPEN",
         "cuisine": ["Egyptian"],
         "categories": {
@@ -85,9 +85,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     },
     {
         "name": "Taco Fiesta",
-        "address": "77 Sunset Blvd",
-        "latitude": 30.0131,
-        "longitude": 31.2089,
+        "address": "3200 Mission St",
+        "latitude": 37.745,
+        "longitude": -122.42,
         "status": "OPEN",
         "cuisine": ["Mexican"],
         "categories": {
@@ -101,9 +101,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     },
     {
         "name": "Sakura Sushi",
-        "address": "5 Cherry Blossom Lane",
-        "latitude": 30.05,
-        "longitude": 31.233,
+        "address": "1581 Webster St",
+        "latitude": 37.7852,
+        "longitude": -122.4318,
         "status": "BUSY",
         "cuisine": ["Japanese", "Sushi"],
         "categories": {
@@ -116,9 +116,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     },
     {
         "name": "Green Bowl",
-        "address": "300 Garden St",
-        "latitude": 29.995,
-        "longitude": 31.161,
+        "address": "3655 Lawton St",
+        "latitude": 37.757,
+        "longitude": -122.503,
         "status": "CLOSED",
         "cuisine": ["Healthy", "Salads"],
         "categories": {
@@ -131,9 +131,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     {
         "name": "QA Kitchen",
         "description": "Deterministic restaurant for UI tests",
-        "address": "100 QA Avenue",
-        "latitude": 30.03,
-        "longitude": 31.24,
+        "address": "1500 Mission St",
+        "latitude": 37.7731,
+        "longitude": -122.4167,
         "status": "OPEN",
         "cuisine": ["Test"],
         "owner_email": "qa.restaurant@delivery-plus.test",
@@ -148,9 +148,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     },
     {
         "name": "Luigi's Pizzeria",
-        "address": "52 Via Roma Ave",
-        "latitude": 30.0631,
-        "longitude": 31.2205,
+        "address": "447 Columbus Ave",
+        "latitude": 37.799,
+        "longitude": -122.4086,
         "status": "OPEN",
         "cuisine": ["Pizza", "Italian"],
         "categories": {
@@ -163,9 +163,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     },
     {
         "name": "Smash Bros Burgers",
-        "address": "130 Main St",
-        "latitude": 30.0451,
-        "longitude": 31.2362,
+        "address": "130 Powell St",
+        "latitude": 37.7858,
+        "longitude": -122.408,
         "status": "OPEN",
         "cuisine": ["Burgers"],
         "categories": {
@@ -177,9 +177,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     {
         "name": "QA Bistro",
         "description": "Second deterministic restaurant: QA Kitchen's menu at other prices",
-        "address": "102 QA Avenue",
-        "latitude": 30.032,
-        "longitude": 31.243,
+        "address": "1521 Mission St",
+        "latitude": 37.7735,
+        "longitude": -122.4175,
         "status": "OPEN",
         "cuisine": ["Test"],
         "owner_email": "qa.restaurant3@delivery-plus.test",
@@ -195,9 +195,9 @@ RESTAURANTS: list[dict[str, Any]] = [
     {
         "name": "QA Night Cafe",
         "description": "Closed restaurant for UI tests",
-        "address": "2 Test Street",
-        "latitude": 30.031,
-        "longitude": 31.241,
+        "address": "30 Van Ness Ave",
+        "latitude": 37.7742,
+        "longitude": -122.419,
         "status": "CLOSED",
         "cuisine": ["Test"],
         "owner_email": "qa.restaurant2@delivery-plus.test",

@@ -12,8 +12,8 @@ from foood.store import now
 from tests.support import login
 
 QA_OWNER = "qa.restaurant@delivery-plus.test"
-QA_KITCHEN = (30.03, 31.24)  # QA Kitchen's seeded position
-DROP_OFF = (30.045, 31.25)
+QA_KITCHEN = (37.7731, -122.4167)  # QA Kitchen's seeded position
+DROP_OFF = (37.787, -122.3985)
 
 
 def _km(location: dict, target: tuple[float, float]) -> float:
@@ -50,8 +50,8 @@ async def _assigned(client) -> tuple[dict, dict, dict, dict]:
         sara,
         owner,
         deliveryAddress="742 Evergreen Terrace",
-        deliveryLatitude=30.045,
-        deliveryLongitude=31.25,
+        deliveryLatitude=37.787,
+        deliveryLongitude=-122.3985,
     )
     await client.post("/api/drivers/me/online", json={}, headers=driver)
     delivery = (await client.get(f"/api/deliveries/by-order/{order['id']}", headers=sara)).json()
@@ -72,12 +72,12 @@ async def test_snapshot_follows_the_delivery(client) -> None:
     assert awaiting["tracking"] == "AWAITING_LOCATION" and awaiting["assignment"]["driverId"]
     assert awaiting["eta"]["status"] == "UNAVAILABLE"
     reported = await client.post(
-        "/api/tracking/location", json={"latitude": 30.02, "longitude": 31.23}, headers=driver
+        "/api/tracking/location", json={"latitude": 37.765, "longitude": -122.426}, headers=driver
     )
     assert reported.status_code == 201, reported.text
     live = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
     assert live["tracking"] == "LIVE" and live["locationAgeSeconds"] == 0
-    assert live["location"]["latitude"] == 30.02 and live["location"]["updatedAt"]
+    assert live["location"]["latitude"] == 37.765 and live["location"]["updatedAt"]
     assert live["status"] == "DRIVER_ASSIGNED" and live["deliveryId"] == delivery["id"]
     assert live["eta"]["status"] == "ESTIMATED" and live["eta"]["seconds"] > 0
     assert live["eta"]["driverId"] == awaiting["assignment"]["driverId"]
@@ -90,7 +90,7 @@ async def test_snapshot_follows_the_delivery(client) -> None:
 async def test_old_locations_go_stale(client) -> None:
     sara, driver, order, delivery = await _assigned(client)
     await client.post(
-        "/api/tracking/location", json={"latitude": 30.02, "longitude": 31.23}, headers=driver
+        "/api/tracking/location", json={"latitude": 37.765, "longitude": -122.426}, headers=driver
     )
     from foood.tracking import STALE_AFTER
 
@@ -113,7 +113,7 @@ async def test_location_reports_are_checked(client) -> None:
     future = (now() + timedelta(minutes=5)).isoformat()
     ahead = await client.post(
         "/api/tracking/location",
-        json={"latitude": 30.0, "longitude": 31.0, "recordedAt": future},
+        json={"latitude": 37.7, "longitude": -122.5, "recordedAt": future},
         headers=driver,
     )
     assert ahead.status_code == 400
@@ -123,12 +123,12 @@ async def test_location_reports_are_checked(client) -> None:
         )
     ).status_code == 403
     ok = await client.post(
-        "/api/tracking/location", json={"latitude": 30.0, "longitude": 31.0}, headers=driver
+        "/api/tracking/location", json={"latitude": 37.7, "longitude": -122.5}, headers=driver
     )
     assert ok.status_code == 201
     me = (await client.get("/api/auth/me", headers=driver)).json()
     mine = await client.get(f"/api/tracking/driver/{me['sub']}", headers=driver)
-    assert mine.status_code == 200 and mine.json()["latitude"] == 30.0
+    assert mine.status_code == 200 and mine.json()["latitude"] == 37.7
     assert (await client.get(f"/api/tracking/driver/{me['sub']}", headers=admin)).status_code == 200
     assert (await client.get(f"/api/tracking/driver/{me['sub']}", headers=sara)).status_code == 403
     assert (await client.get("/api/tracking/driver/nobody", headers=admin)).status_code == 404
@@ -168,10 +168,12 @@ async def test_stream_pushes_snapshots_and_ends(live) -> None:
         first = await asyncio.wait_for(_read_event(lines), 5)
         assert first["tracking"] == "AWAITING_LOCATION"
         await client.post(
-            "/api/tracking/location", json={"latitude": 30.021, "longitude": 31.231}, headers=driver
+            "/api/tracking/location",
+            json={"latitude": 37.7655, "longitude": -122.4255},
+            headers=driver,
         )
         moved = await asyncio.wait_for(_read_event(lines), 5)
-        assert moved["tracking"] == "LIVE" and moved["location"]["latitude"] == 30.021
+        assert moved["tracking"] == "LIVE" and moved["location"]["latitude"] == 37.7655
         for action in ("pickup", "start", "complete"):
             await client.post(f"/api/deliveries/{delivery['id']}/{action}", json={}, headers=driver)
         seen = []
@@ -217,11 +219,11 @@ async def test_simulated_phone_moves_the_driver_when_nobody_reports(client) -> N
     assert _km(after["location"], DROP_OFF) < _km(before["location"], DROP_OFF)
     # a real phone takes precedence over the simulation
     await client.post(
-        "/api/tracking/location", json={"latitude": 30.0, "longitude": 31.0}, headers=driver
+        "/api/tracking/location", json={"latitude": 37.7, "longitude": -122.5}, headers=driver
     )
     simulate_step(store)
     real = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
-    assert (real["location"]["latitude"], real["location"]["longitude"]) == (30.0, 31.0)
+    assert (real["location"]["latitude"], real["location"]["longitude"]) == (37.7, -122.5)
 
 
 def test_simulated_phone_idles_without_deliveries() -> None:
@@ -238,9 +240,9 @@ async def test_simulated_phones_can_outrank_fixed_browser_positions(client, monk
 
     sara, driver, order, delivery = await _assigned(client)
     await client.post(
-        "/api/tracking/location", json={"latitude": 30.0, "longitude": 31.0}, headers=driver
+        "/api/tracking/location", json={"latitude": 37.7, "longitude": -122.5}, headers=driver
     )
     monkeypatch.setenv("FOOOD_SIMULATED_PHONES", "true")
     simulate_step(client.store)
     moved = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
-    assert (moved["location"]["latitude"], moved["location"]["longitude"]) != (30.0, 31.0)
+    assert (moved["location"]["latitude"], moved["location"]["longitude"]) != (37.7, -122.5)

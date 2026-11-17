@@ -24,10 +24,10 @@ QA_OWNER = "qa.restaurant@delivery-plus.test"
 def _city() -> tuple[Store, Restaurant, list[Driver]]:
     """Three idle drivers around a restaurant, one of them without a known position."""
     store = Store()
-    kitchen = Restaurant("K", "owner", "1 St", 30.03, 31.24)
+    kitchen = Restaurant("K", "owner", "1 St", 37.7731, -122.4167)
     store.restaurants[kitchen.id] = kitchen
     drivers = []
-    for n, position in enumerate([(30.05, 31.26), (30.031, 31.241), None]):
+    for n, position in enumerate([(37.7931, -122.3967), (37.774, -122.416), None]):
         driver = Driver(user_id=f"u{n}", vehicle_type="Bike", license_plate=f"P{n}")
         driver.verify("VERIFIED", None)
         driver.set_status("AVAILABLE")
@@ -63,17 +63,17 @@ def test_stacking_finds_a_driver_finishing_nearby() -> None:
         kitchen.id,
         [OrderItem("m", "x", 1, 1)],
         "near the kitchen",
-        delivery_latitude=30.035,
-        delivery_longitude=31.245,
+        delivery_latitude=37.7781,
+        delivery_longitude=-122.4112,
     )
     store.orders[order.id] = order
     current = Delivery(order.id, kitchen.id, "c", driver_id=busy.id, status="IN_TRANSIT")
     store.deliveries[current.id] = current
     new = Delivery("o2", kitchen.id, "c2")
     assert finishing_near(store, new) is busy  # drop-off about 700 m from the restaurant
-    order.delivery_latitude = 30.10  # about 8 km away: too far to stack
+    order.delivery_latitude = 37.8451  # about 8 km away: too far to stack
     assert finishing_near(store, new) is None
-    order.delivery_latitude = 30.035
+    order.delivery_latitude = 37.7781
     current.status = "DRIVER_ASSIGNED"  # not even picked up yet: no stacking
     assert finishing_near(store, new) is None
     current.status = "IN_TRANSIT"
@@ -102,8 +102,8 @@ async def test_a_stacked_delivery_is_the_drivers_next_job(client) -> None:
                 "/api/orders",
                 json={
                     "deliveryAddress": "Round the corner",
-                    "deliveryLatitude": 30.034,
-                    "deliveryLongitude": 31.244,
+                    "deliveryLatitude": 37.7771,
+                    "deliveryLongitude": -122.4121,
                 },
                 headers=sara,
             )
