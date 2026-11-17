@@ -1,0 +1,244 @@
+{
+  "scenario": "incident",
+  "engine": "hand-wired",
+  "model": null,
+  "seed": 11,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T03:11:53.349837Z",
+  "virtualMinutes": 25.0,
+  "summary": {
+    "orders": 6,
+    "delivered": 2,
+    "deliveredWithinPromise": 2,
+    "cancelled": 4,
+    "consistent": 6,
+    "meanMinutes": 14.9,
+    "p95Minutes": 14.9,
+    "recoveryDecisions": 5,
+    "humanPrompts": 0,
+    "llmCalls": 0,
+    "messageCalls": 25,
+    "llmTokens": 6591,
+    "cost": 0.0,
+    "llmPriced": false,
+    "failuresFired": [
+      "accepts_then_cancels",
+      "courier_delay",
+      "driver_drops",
+      "no_driver",
+      "payment_declines",
+      "restaurant_rejects"
+    ],
+    "unrecovered": [
+      "accepts_then_cancels",
+      "driver_drops",
+      "payment_declines",
+      "restaurant_rejects"
+    ]
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "51433dcb-803c-4861-8f1d-c8cf1008daca",
+      "finalOrderId": "51433dcb-803c-4861-8f1d-c8cf1008daca",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T03:32:53.349837Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "restaurant_rejects"
+      ],
+      "recovered": false,
+      "decisions": 6,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 4,
+      "llmTokens": 1067,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "phrase",
+        "refund",
+        "phrase"
+      ],
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "38409508-fb73-47dd-b292-0220d43066cc",
+      "finalOrderId": "38409508-fb73-47dd-b292-0220d43066cc",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T03:34:53.349837Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "accepts_then_cancels"
+      ],
+      "recovered": false,
+      "decisions": 6,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 4,
+      "llmTokens": 1048,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "phrase",
+        "refund",
+        "phrase"
+      ],
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "a7aedc79-9227-47c9-ab9c-f7f77454a73a",
+      "finalOrderId": "a7aedc79-9227-47c9-ab9c-f7f77454a73a",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T03:36:53.349837Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "payment_declines"
+      ],
+      "recovered": false,
+      "decisions": 2,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 1,
+      "llmTokens": 273,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "cancel"
+      ],
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    },
+    {
+      "number": 4,
+      "orderId": "cd18d423-9c7d-4c69-b135-803f310bd6d4",
+      "finalOrderId": "cd18d423-9c7d-4c69-b135-803f310bd6d4",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T03:38:53.349837Z",
+      "deliveredAt": "2026-11-17T03:32:48.349837Z",
+      "withinPromise": true,
+      "minutes": 14.9,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "no_driver"
+      ],
+      "recovered": true,
+      "decisions": 7,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 5,
+      "llmTokens": 1281,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "phrase",
+        "phrase"
+      ],
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    },
+    {
+      "number": 5,
+      "orderId": "250c89eb-faf9-409c-a486-78350d8a6a2f",
+      "finalOrderId": "250c89eb-faf9-409c-a486-78350d8a6a2f",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T03:40:53.349837Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "driver_drops"
+      ],
+      "recovered": false,
+      "decisions": 10,
+      "recoveryDecisions": 2,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 6,
+      "llmTokens": 1590,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "phrase",
+        "cancel",
+        "phrase",
+        "refund",
+        "phrase"
+      ],
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    },
+    {
+      "number": 6,
+      "orderId": "6b2a72ec-6025-4fd8-a8b1-77ac094d2009",
+      "finalOrderId": "6b2a72ec-6025-4fd8-a8b1-77ac094d2009",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T03:42:53.349837Z",
+      "deliveredAt": "2026-11-17T03:36:48.349837Z",
+      "withinPromise": true,
+      "minutes": 14.9,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "courier_delay"
+      ],
+      "recovered": true,
+      "decisions": 8,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 5,
+      "llmTokens": 1332,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    }
+  ]
+}

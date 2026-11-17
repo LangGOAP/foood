@@ -1,0 +1,175 @@
+{
+  "scenario": "delivery-trouble",
+  "engine": "hand-wired",
+  "model": null,
+  "seed": 11,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T03:07:13.136098Z",
+  "virtualMinutes": 25.3,
+  "summary": {
+    "orders": 4,
+    "delivered": 3,
+    "deliveredWithinPromise": 2,
+    "cancelled": 1,
+    "consistent": 4,
+    "meanMinutes": 15.2,
+    "p95Minutes": 22.2,
+    "recoveryDecisions": 3,
+    "humanPrompts": 0,
+    "llmCalls": 0,
+    "messageCalls": 22,
+    "llmTokens": 5727,
+    "cost": 0.0,
+    "llmPriced": false,
+    "failuresFired": [
+      "courier_delay",
+      "driver_drops",
+      "no_driver"
+    ],
+    "unrecovered": [
+      "driver_drops"
+    ]
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "ae280df8-2487-468b-a741-a9c8af9090f4",
+      "finalOrderId": "ae280df8-2487-468b-a741-a9c8af9090f4",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T03:28:13.136098Z",
+      "deliveredAt": "2026-11-17T03:19:23.136098Z",
+      "withinPromise": true,
+      "minutes": 12.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "no_driver"
+      ],
+      "recovered": true,
+      "decisions": 7,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 5,
+      "llmTokens": 1294,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "phrase",
+        "phrase"
+      ],
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "56c19450-070a-4522-9203-0fde6da74843",
+      "finalOrderId": "56c19450-070a-4522-9203-0fde6da74843",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T03:29:13.136098Z",
+      "deliveredAt": "2026-11-17T03:19:23.136098Z",
+      "withinPromise": true,
+      "minutes": 11.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "driver_drops"
+      ],
+      "recovered": true,
+      "decisions": 10,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 6,
+      "llmTokens": 1553,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "dispatch again",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "f386cd87-7a32-4c9d-9bc9-eed503599c4f",
+      "finalOrderId": "f386cd87-7a32-4c9d-9bc9-eed503599c4f",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T03:30:13.136098Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "driver_drops"
+      ],
+      "recovered": false,
+      "decisions": 11,
+      "recoveryDecisions": 2,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 6,
+      "llmTokens": 1582,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "cancel",
+        "phrase",
+        "refund",
+        "phrase"
+      ],
+      "notes": []
+    },
+    {
+      "number": 4,
+      "orderId": "86705d21-390a-427a-82b9-efbd4bd21e31",
+      "finalOrderId": "86705d21-390a-427a-82b9-efbd4bd21e31",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T03:31:13.136098Z",
+      "deliveredAt": "2026-11-17T03:32:28.136098Z",
+      "withinPromise": false,
+      "minutes": 22.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "courier_delay"
+      ],
+      "recovered": true,
+      "decisions": 8,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 5,
+      "llmTokens": 1298,
+      "cost": 0.0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "notes": []
+    }
+  ]
+}

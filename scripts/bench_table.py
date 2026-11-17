@@ -32,6 +32,7 @@ COLUMNS = [
     ("LLM calls, perception", lambda r: _role(r, "perception")),
     ("LLM calls, language", lambda r: _role(r, "language")),
     ("World calls", lambda r: r["summary"].get("worldCalls", 0)),
+    ("LLM tokens", lambda r: r["summary"].get("llmTokens", 0)),
     ("Cost (USD)", lambda r: r["summary"]["cost"] if r["summary"].get("llmPriced") else "unpriced"),
     ("Not recovered", lambda r: ", ".join(r["summary"]["unrecovered"]) or "-"),
 ]
@@ -44,6 +45,35 @@ def _role(run: dict, role: str) -> int:
     return roles[role]
 
 
+README = ROOT / "README.md"
+START, END = "<!-- bench:start -->", "<!-- bench:end -->"
+
+
+def table_lines(runs: list[dict]) -> list[str]:
+    lines = [
+        "| " + " | ".join(name for name, _ in COLUMNS) + " |",
+        "|" + "|".join("---" for _ in COLUMNS) + "|",
+    ]
+    ordered = sorted(
+        runs, key=lambda r: (r["scenario"], r["engine"], str(r.get("model")), r["seed"])
+    )
+    for run in ordered:
+        lines.append("| " + " | ".join(str(fn(run)) for _, fn in COLUMNS) + " |")
+    if not runs:
+        lines.append("| (no runs yet) |" + " |" * (len(COLUMNS) - 1))
+    return lines
+
+
+def embed(readme_text: str, runs: list[dict]) -> str:
+    """Replace the table between the bench markers in the README; leave everything else alone."""
+    if START not in readme_text or END not in readme_text:
+        return readme_text
+    before, rest = readme_text.split(START, 1)
+    _, after = rest.split(END, 1)
+    body = "\n".join(table_lines(runs))
+    return f"{before}{START}\n{body}\n{END}{after}"
+
+
 def render(results_dir: Path = RESULTS) -> str:
     runs = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(results_dir.glob("*.json"))]
     lines = [
@@ -54,8 +84,16 @@ def render(results_dir: Path = RESULTS) -> str:
         "`uv run foood bench --scenario <name> --engine <name> --seed <n>` on the frozen",
         "clock with the headless autopilots, so the same inputs give the same numbers.",
         "",
-        "| " + " | ".join(name for name, _ in COLUMNS) + " |",
-        "|" + "|".join("---" for _ in COLUMNS) + "|",
+        "Honesty notes: the scenarios and the seed list are committed before a run; every",
+        "number is read from a results file; the hand-wired rows are reported as they are;",
+        "an engine that calls a model is labelled with it and shown per seed, so its",
+        "variation is visible rather than averaged away; model calls that decide about an",
+        "order are counted apart from the ones that only write language (messages,",
+        "intake), which any engine may use; nothing is priced unless prices were set.",
+        "",
+        *table_lines(runs),
+        "",
+        f"{len(runs)} run(s).",
     ]
     for run in sorted(runs, key=lambda r: (r["scenario"], r["engine"], r["seed"])):
         lines.append("| " + " | ".join(str(fn(run)) for _, fn in COLUMNS) + " |")
@@ -150,7 +188,9 @@ REPEAT_COLUMNS = [
 
 def main() -> int:
     OUT.write_text(render(), encoding="utf-8")
-    print(f"wrote {OUT.relative_to(ROOT)}")
+    runs = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(RESULTS.glob("*.json"))]
+    README.write_text(embed(README.read_text(encoding="utf-8"), runs), encoding="utf-8")
+    print(f"wrote {OUT.relative_to(ROOT)} and the README table")
     return 0
 
 

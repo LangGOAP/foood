@@ -140,3 +140,55 @@ def test_a_run_ends_with_the_replacement_not_the_original() -> None:
     assert bench.finished() is False
     replacement.status = "DELIVERED"
     assert bench.finished() is True
+
+
+def test_incident_scenario_and_the_matrix_schedule() -> None:
+    from foood.bench import ENGINES_ALL, SCENARIOS_ALL, SEEDS_ALL
+
+    incident = load("incident")
+    assert incident.bench.orders == 7 and incident.kitchen.autopilot
+    assert [i.failure for i in incident.injections] == [
+        "restaurant_rejects",
+        "accepts_then_cancels",
+        "payment_declines",
+        "no_driver",
+        "driver_drops",
+        "courier_delay",
+        "gateway_down",
+    ]
+    assert "incident" in SCENARIOS_ALL
+    assert ENGINES_ALL == ["hand-wired", "llm", "langgraph", "langgoap"]
+    assert SEEDS_ALL == [7, 11, 13]
+
+
+def test_hand_wired_on_the_incident_evening(tmp_path: Path) -> None:
+    result = run("incident", "hand-wired", 7, tmp_path)
+    summary = result["summary"]
+    assert summary["orders"] == 7 and summary["consistent"] == 7
+    assert set(summary["unrecovered"]) >= {
+        "restaurant_rejects",
+        "accepts_then_cancels",
+        "payment_declines",
+        "driver_drops",
+        "gateway_down",
+    }
+    assert (
+        "+" not in Path(result["path"]).name
+    )  # no model: the file is named after the engine alone
+
+
+def test_readme_embed_replaces_only_the_marked_table(tmp_path: Path) -> None:
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from bench_table import END, START, embed
+
+    readme = f"intro\n\n{START}\nold\n{END}\n\noutro\n"
+    run("happy-path", "hand-wired", 7, tmp_path)
+    import json
+
+    runs = [json.loads(p.read_text()) for p in tmp_path.glob("*.json")]
+    out = embed(readme, runs)
+    assert out.startswith("intro\n\n" + START) and out.endswith(END + "\n\noutro\n")
+    assert "| happy-path | hand-wired | 7 |" in out and "old" not in out
+    assert embed("no markers here", runs) == "no markers here"
