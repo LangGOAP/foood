@@ -140,6 +140,11 @@ make bench                      # every bundled scenario against ENGINE (hand-wi
 uv run foood bench --scenario delivery-trouble --engine hand-wired --seed 7
 ```
 
+Add `--repeat 10` to run the same scenario, engine and seed ten times, so the
+model is the only source of variation; `results/repeats/` keeps every run's
+summary with the distribution of what differed, rendered as a second table in
+`BENCH.md`. An engine without a model must produce identical runs.
+
 The bench runs a scenario with nobody at the apps: autopilots place and pay the
 orders, drive the deliveries when the simulated phone arrives, and answer
 support's questions with the recommended option after a while, on a frozen clock

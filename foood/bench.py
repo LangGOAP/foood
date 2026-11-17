@@ -16,6 +16,8 @@ import dataclasses
 import json
 import math
 import statistics
+from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -301,6 +303,7 @@ class Run:
                         q.order_id in {order.id, final.id} for q in store.questions.values()
                     ),
                     "llmCalls": sum(int(d.get("llmCalls", 0)) for d in decisions),
+                    "decisionNames": [d["decision"] for d in decisions],
                     "cost": round(sum(float(d.get("cost", 0)) for d in decisions), 4),
                     "notes": placed.notes,
                 }
@@ -353,4 +356,92 @@ def run(
     return result
 
 
-__all__ = ["Kitchen", "Run", "run"]
+def _label(engine: str, result: dict[str, Any]) -> str:
+    model = result.get("model")
+    return f"{engine}+{model}" if model else engine
+
+
+def _histogram(values: Iterable[Any]) -> dict[str, int]:
+    counts = Counter(values)
+    return {str(value): counts[value] for value in sorted(counts, key=str)}
+
+
+def _spread(values: list[float]) -> dict[str, float] | None:
+    if not values:
+        return None
+    return {"min": min(values), "median": round(statistics.median(values), 4), "max": max(values)}
+
+
+#: What a phrasing model changes between otherwise identical runs: tokens and their price. A
+#: run's outcomes and decisions are compared without them.
+LANGUAGE_FOOTPRINT = {"cost", "llmTokens", "messageCalls", "llmPriced"}
+
+
+def same_outcomes(summaries: list[dict[str, Any]]) -> bool:
+    """True when every summary agrees on everything but the language model's footprint."""
+    strip = [{k: v for k, v in s.items() if k not in LANGUAGE_FOOTPRINT} for s in summaries]
+    return all(s == strip[0] for s in strip)
+
+
+def repeat(
+    scenario: str,
+    engine: str = "hand-wired",
+    seed: int = 7,
+    times: int = 10,
+    out_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Run the same scenario, engine and seed *times* times: the model is the only variation.
+
+    Writes ``results/repeats/<scenario>-<engine>-seed<seed>-x<times>.json`` with every
+    run's summary and the distribution of what differed: outcomes, decision calls, human
+    prompts, the recovery decisions taken, model time and cost. An engine without a model
+    is the control: its runs must be identical, and ``identical`` says whether they were.
+    """
+    if times < 1:
+        raise ValueError("times must be at least 1")
+    runs = [asyncio.run(Run(load(scenario), engine, seed).execute()) for _ in range(times)]
+    summaries = [r["summary"] for r in runs]
+    taken = Counter(
+        name
+        for r in runs
+        for order in r["orders"]
+        for name in order["decisionNames"]
+        if name not in HAPPY_PATH
+    )
+    model_ms = [
+        float(r["timing"]["modelMs"])
+        for r in runs
+        if r.get("timing") and r["timing"].get("modelMs") is not None
+    ]
+    result: dict[str, Any] = {
+        "scenario": runs[0]["scenario"],
+        "engine": engine,
+        "model": runs[0].get("model"),
+        "seed": seed,
+        "times": times,
+        "foood": __version__,
+        "startedAt": runs[0]["startedAt"],
+        "distribution": {
+            "identical": same_outcomes(summaries),
+            "delivered": _histogram(s["delivered"] for s in summaries),
+            "deliveredWithinPromise": _histogram(s["deliveredWithinPromise"] for s in summaries),
+            "cancelled": _histogram(s["cancelled"] for s in summaries),
+            "llmCalls": _histogram(s["llmCalls"] for s in summaries),
+            "humanPrompts": _histogram(s["humanPrompts"] for s in summaries),
+            "unrecovered": _histogram(", ".join(s["unrecovered"]) or "-" for s in summaries),
+            "decisionsTaken": dict(taken.most_common()),
+            "modelMs": _spread(model_ms),
+            "cost": _spread([float(s["cost"]) for s in summaries]),
+            "llmPriced": any(bool(s.get("llmPriced")) for s in summaries),
+        },
+        "runs": summaries,
+    }
+    folder = (out_dir or RESULTS) / "repeats"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"{result['scenario']}-{_label(engine, runs[0])}-seed{seed}-x{times}.json"
+    path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    result["path"] = str(path)
+    return result
+
+
+__all__ = ["Kitchen", "Run", "repeat", "run", "same_outcomes"]

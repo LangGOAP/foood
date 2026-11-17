@@ -60,10 +60,23 @@ def bench(
     scenario: str = typer.Option(..., help=SCENARIO_HELP),
     engine: str = typer.Option("hand-wired", help=ENGINE_HELP),
     seed: int = 7,
+    repeat: int = typer.Option(
+        1, help="Run the same scenario, engine and seed this many times (results/repeats/)."
+    ),
 ) -> None:
     """Run a scenario headless against an engine; writes a results/*.json file."""
+    from foood.bench import repeat as repeat_runs
     from foood.bench import run
 
+    if repeat > 1:
+        repeated = repeat_runs(scenario, engine, seed, repeat)
+        spread = repeated["distribution"]
+        typer.echo(
+            f"{repeated['scenario']} / {engine} / seed {seed} x{repeat}: "
+            f"delivered {spread['delivered']}, decision calls {spread['llmCalls']}, "
+            f"identical: {'yes' if spread['identical'] else 'no'} -> {repeated['path']}"
+        )
+        return
     result = run(scenario, engine, seed)
     summary = result["summary"]
     typer.echo(
