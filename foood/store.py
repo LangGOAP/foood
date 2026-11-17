@@ -60,18 +60,28 @@ def owner_email(restaurant: str) -> str:
 
 @dataclass
 class Clock:
-    """Wall time plus an offset the scenario engine and the tests can move."""
+    """Wall time plus an offset the scenario engine and the tests can move.
+
+    Frozen, it stands still between ``advance`` calls, which makes a bench run
+    reproducible: the same seed and schedule give the same timestamps.
+    """
 
     offset: timedelta = timedelta(0)
+    frozen: datetime | None = None
 
     def now(self) -> datetime:
-        return datetime.now(UTC) + self.offset
+        return (self.frozen or datetime.now(UTC)) + self.offset
 
     def advance(self, seconds: float) -> None:
         self.offset += timedelta(seconds=seconds)
 
+    def freeze(self, at: datetime | None = None) -> None:
+        self.frozen = at or datetime.now(UTC)
+        self.offset = timedelta(0)
+
     def reset(self) -> None:
         self.offset = timedelta(0)
+        self.frozen = None
 
 
 CLOCK = Clock()

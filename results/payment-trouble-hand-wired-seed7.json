@@ -1,0 +1,71 @@
+{
+  "scenario": "payment-trouble",
+  "engine": "hand-wired",
+  "seed": 7,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T01:28:16.398720Z",
+  "virtualMinutes": 12.2,
+  "summary": {
+    "orders": 2,
+    "delivered": 1,
+    "deliveredWithinPromise": 1,
+    "cancelled": 1,
+    "consistent": 2,
+    "meanMinutes": 11.2,
+    "p95Minutes": 11.2,
+    "recoveryDecisions": 1,
+    "humanPrompts": 0,
+    "llmCalls": 0,
+    "cost": 0.0,
+    "failuresFired": [
+      "payment_declines"
+    ],
+    "unrecovered": [
+      "payment_declines"
+    ]
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "6a3a2241-013c-42f9-9999-8486e4976101",
+      "finalOrderId": "6a3a2241-013c-42f9-9999-8486e4976101",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T01:49:16.398720Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "payment_declines"
+      ],
+      "recovered": false,
+      "decisions": 1,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "af31efb8-c2ee-4afd-8472-538ff50a0f48",
+      "finalOrderId": "af31efb8-c2ee-4afd-8472-538ff50a0f48",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T01:50:16.398720Z",
+      "deliveredAt": "2026-11-17T01:40:26.398720Z",
+      "withinPromise": true,
+      "minutes": 11.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [],
+      "recovered": false,
+      "decisions": 3,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    }
+  ]
+}

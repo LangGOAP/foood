@@ -113,7 +113,7 @@ nothing behaves differently. The bundled ones:
 | Scenario | What happens |
 |---|---|
 | `happy-path` | The kitchen cooks every order itself; nothing goes wrong. |
-| `kitchen-trouble` | Order 1 is rejected, order 2 is accepted then cancelled when an item runs out, order 3 takes four minutes. |
+| `kitchen-trouble` | Order 1 is rejected, order 2 is accepted then cancelled when an item runs out, order 3 takes a quarter of an hour past its promise. |
 | `delivery-trouble` | Order 1 waits 90 s for a driver, order 2's driver drops it before pickup, order 3's after pickup, order 4's courier crawls. |
 | `payment-trouble` | Order 1's card is declined; order 2 is submitted twice and the duplicate is refused. |
 
@@ -124,6 +124,25 @@ The failures available to a scenario file are `restaurant_rejects`,
 `GET /api/_scenario` shows what the loaded scenario has fired so far, and the
 tests in `tests/test_scenario.py` prove each failure ends in a consistent
 state across the order, its payment and its delivery.
+
+## Measure it
+
+```bash
+make bench                      # every bundled scenario against ENGINE (hand-wired) under SEED (7)
+uv run foood bench --scenario delivery-trouble --engine hand-wired --seed 7
+```
+
+The bench runs a scenario with nobody at the apps: autopilots place and pay
+the orders, drive the deliveries when the simulated phone arrives, and answer
+support's questions with the recommended option after a while, on a frozen
+clock advanced tick by tick. Each run writes `results/<scenario>-<engine>-seed<n>.json`
+with, per order, the final status, whether it arrived within its promise, the
+minutes it took, whether its state is consistent, the failures fired against
+it, the engine's recovery decisions, human prompts, LLM calls and cost.
+[`BENCH.md`](BENCH.md) is generated from those files by `make bench-table` and
+CI fails when it is stale; no number in it is typed by hand. The hand-wired
+rows are the baseline every other engine is compared with, and they say
+plainly which failures it does not recover from.
 
 ## Credits
 
