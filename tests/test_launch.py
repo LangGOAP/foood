@@ -68,3 +68,39 @@ async def test_browser_origins_are_allowed(client) -> None:
     assert plain.headers["access-control-allow-origin"] == "http://127.0.0.1:8083"
     elsewhere = await client.get("/health", headers={"Origin": "https://evil.example"})
     assert "access-control-allow-origin" not in elsewhere.headers
+
+
+def test_every_app_is_built_in_english_and_dollars() -> None:
+    from foood.launch import public_env
+
+    for app in APPS:
+        env = public_env(app, "http://localhost:3000")
+        assert env["EXPO_PUBLIC_API_BASE_URL"] == "http://localhost:3000"
+        assert env["EXPO_PUBLIC_DEFAULT_LOCALE"] == "en"
+        assert env["EXPO_PUBLIC_CURRENCY"] == "USD"
+
+
+def test_the_customer_and_driver_apps_come_from_the_forks() -> None:
+    """Upstream labels every amount EGP; our forks add EXPO_PUBLIC_CURRENCY (offered upstream)."""
+    from configparser import ConfigParser
+
+    from foood.launch import ROOT
+
+    modules = ConfigParser()
+    modules.read(ROOT / ".gitmodules")
+    for name in ("customer", "driver"):
+        url = modules[f'submodule "apps/{name}"']["url"]
+        assert url == f"https://github.com/LangGOAP/delivery-plus-{name}-app.git"
+    assert "Delivery-Plus0" in modules['submodule "apps/restaurant"']["url"]
+
+
+def test_the_checked_out_apps_carry_the_currency_switch() -> None:
+    import pytest
+
+    from foood.launch import ROOT
+
+    for name in ("customer", "driver"):
+        formatter = ROOT / "apps" / name / "src" / "utils" / "format.ts"
+        if not formatter.exists():
+            pytest.skip("the app submodules are not checked out here")
+        assert "EXPO_PUBLIC_CURRENCY" in formatter.read_text(encoding="utf-8")
