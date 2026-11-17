@@ -12,7 +12,9 @@ from foood.bench import _spread, repeat, same_outcomes
 from foood.cli import app
 
 
-def test_repeats_of_a_model_free_run_are_identical(tmp_path: Path) -> None:
+def test_repeats_of_a_model_free_run_are_identical(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("FOOOD_LLM_PRICE_IN", raising=False)  # make exports bench.env; stay unpriced
+    monkeypatch.delenv("FOOOD_LLM_PRICE_OUT", raising=False)
     result = repeat("happy-path", "hand-wired", 7, 2, tmp_path)
     path = Path(result["path"])
     assert path == tmp_path / "repeats" / "happy-path-hand-wired-seed7-x2.json"

@@ -79,9 +79,13 @@ def test_bench_section_defaults_and_overrides() -> None:
     assert custom.bench.drop_off == (30.0, 31.0)
 
 
-def test_table_is_rendered_from_the_files(tmp_path: Path) -> None:
+def test_table_is_rendered_from_the_files(tmp_path: Path, monkeypatch) -> None:
     import sys
 
+    monkeypatch.delenv(
+        "FOOOD_LLM_PRICE_IN", raising=False
+    )  # make exports bench.env; render unpriced
+    monkeypatch.delenv("FOOOD_LLM_PRICE_OUT", raising=False)
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
     from bench_table import render
 
