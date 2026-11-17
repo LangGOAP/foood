@@ -116,7 +116,7 @@ the card that paid, the credit added. Any error, an empty or overlong answer,
 or no model leaves the template from `main` in place, and each phrasing call is
 recorded on the order's decisions with its tokens.
 
-## The LangGraph engine (this branch)
+## The LangGraph engine (the `langgraph` branch)
 
 `foood up --engine langgraph` runs the lifecycle as a LangGraph `StateGraph`,
 one thread per order, drawn in [`foood/langgraph_engine.mmd`](foood/langgraph_engine.mmd).
@@ -204,6 +204,30 @@ could make it, a dish nobody has, a sold-out item), and the order is placed
 through the same door the app uses, so every guard still applies. The order
 then shows up in the customer app like any other, with the intake call's
 tokens on its decisions.
+
+## The LangGOAP engine (this branch)
+
+`foood up --engine langgoap` runs the lifecycle as a goal and a set of actions
+(`foood/goap_engine.py`), one plan per customer order that follows a replacement
+to the door. A sensor derives the world from the platform before every plan:
+paid or declined, the kitchen cooking, late, ready or failed, a driver being
+searched for, assigned, the order picked up, lost or delivered, whether another
+kitchen can make it, whether that needs approval, whether the promise is
+breached and whether the customer was compensated. The actions are the same
+recovery tools the other engines have, with preconditions, effects and costs:
+the waits (payment, kitchen, driver, pickup, drop-off) interrupt until the
+platform publishes an event and return what they observe; a replacement order
+costs its price difference, prep time and distance; widening the search is
+cheaper than waiting longer; accepting a late kitchen is dear; a credit settles
+the compensation the goal demands once the promise is breached. The goal is
+`delivered` and `compensated_if_late`. When what a wait observes is not what
+the plan expected, the planner re-plans from the real state; when no route to
+the goal exists, the engine refunds and cancels and says why. Only the
+substitution approval asks a person, as a typed form through support. No model
+is called after intake; the drawing is in
+[`foood/langgoap_engine.mmd`](foood/langgoap_engine.mmd) and the checkpointer
+resumes every thread after a restart. The bench rows for `langgoap` in
+[`BENCH.md`](BENCH.md) are produced with the model off.
 
 ## Support, the human in the loop
 

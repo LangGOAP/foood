@@ -1,0 +1,73 @@
+{
+  "scenario": "payment-trouble",
+  "engine": "langgoap",
+  "seed": 7,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T02:41:58.911981Z",
+  "virtualMinutes": 12.2,
+  "summary": {
+    "orders": 2,
+    "delivered": 2,
+    "deliveredWithinPromise": 2,
+    "cancelled": 0,
+    "consistent": 2,
+    "meanMinutes": 11.2,
+    "p95Minutes": 11.2,
+    "recoveryDecisions": 2,
+    "humanPrompts": 0,
+    "llmCalls": 0,
+    "llmTokens": 0,
+    "cost": 32.0,
+    "llmPriced": false,
+    "failuresFired": [
+      "payment_declines"
+    ],
+    "unrecovered": []
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "2a52ee2f-10f0-4aa5-aa56-17d4b36d8c4d",
+      "finalOrderId": "2a52ee2f-10f0-4aa5-aa56-17d4b36d8c4d",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T03:02:58.911981Z",
+      "deliveredAt": "2026-11-17T02:53:08.911981Z",
+      "withinPromise": true,
+      "minutes": 11.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "payment_declines"
+      ],
+      "recovered": true,
+      "decisions": 8,
+      "recoveryDecisions": 2,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "llmTokens": 0,
+      "cost": 23.0,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "f40b3ce4-1000-45da-a026-90ccf9b26e42",
+      "finalOrderId": "f40b3ce4-1000-45da-a026-90ccf9b26e42",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T03:03:58.911981Z",
+      "deliveredAt": "2026-11-17T02:54:08.911981Z",
+      "withinPromise": true,
+      "minutes": 11.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [],
+      "recovered": false,
+      "decisions": 5,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "llmTokens": 0,
+      "cost": 9.0,
+      "notes": []
+    }
+  ]
+}

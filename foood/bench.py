@@ -44,7 +44,16 @@ TICK_SECONDS = 5
 MAX_VIRTUAL_SECONDS = 3 * 3600
 ARRIVED_KM = 0.08
 DRIVER_ACCOUNTS = [("driver@example.com", PASSWORD), ("qa.driver@delivery-plus.test", QA_PASSWORD)]
-NOT_RECOVERY = {"confirm", "create delivery", "assign driver", "intake", "phrase"}
+NOT_RECOVERY = {
+    "confirm",
+    "create delivery",
+    "assign driver",
+    "intake",
+    "phrase",
+    "plan",
+    "plan skips ahead",
+    "act: dispatch",
+}
 #: what a model call was for: deciding what happens next, turning text or the world into facts,
 #: or language (intake, messages); counted apart so a planner's zero decisions stays honest
 ROLES = ("decision", "perception", "language")
