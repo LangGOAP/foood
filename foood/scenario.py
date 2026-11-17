@@ -378,9 +378,14 @@ class Engine:
                 kitchen.start_after, "kitchen starts", lambda: self._kitchen(order, "PREPARING")
             )
             self.schedule(
+                kitchen.start_after + kitchen.ready_after,
+                "kitchen is late",
+                lambda: self._late(order, injection),
+            )
+            self.schedule(
                 kitchen.start_after + injection.delay,
                 "kitchen finally ready",
-                lambda: self._kitchen(order, "READY_FOR_PICKUP", "prep_overrun"),
+                lambda: self._kitchen(order, "READY_FOR_PICKUP"),
             )
         elif kitchen.autopilot:
             restaurant = self.store.restaurants[order.restaurant_id]
@@ -393,6 +398,10 @@ class Engine:
                 "kitchen ready",
                 lambda: self._kitchen(order, "READY_FOR_PICKUP"),
             )
+
+    def _late(self, order: Order, injection: Injection) -> None:
+        if order.status == "PREPARING":
+            self.record("fired", order.id, failure="prep_overrun", readyAfter=injection.delay)
 
     def _kitchen(self, order: Order, status: str, failure: str | None = None) -> None:
         expected = {"PREPARING": "CONFIRMED", "READY_FOR_PICKUP": "PREPARING"}[status]

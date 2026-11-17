@@ -149,9 +149,10 @@ def make_engine(name: str) -> OrderEngine:
         from pathlib import Path
 
         from foood.graph_engine import LangGraphEngine
+        from foood.recovery import advisor_from_env
 
         path = os.environ.get("FOOOD_CHECKPOINTS")
-        return LangGraphEngine(Path(path) if path else None)
+        return LangGraphEngine(Path(path) if path else None, advisor=advisor_from_env())
     try:
         return ENGINES[name]()
     except KeyError:

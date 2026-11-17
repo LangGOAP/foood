@@ -11,18 +11,22 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | bridge-closed | llm + gpt-5.4 | 11 | 3 | 3 | 1 | 0 | 3/3 | 33.9 | 37.4 | 9 | 0 | 41 | 0 | 19 | 14 | 0.1733 | - |
 | bridge-closed | llm + gpt-5.4 | 13 | 3 | 3 | 1 | 0 | 3/3 | 33.9 | 37.4 | 9 | 0 | 41 | 0 | 18 | 11 | 0.1689 | - |
 | delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | 0 | 0 | 0 | 0.0 | driver_drops |
+| delivery-trouble | langgraph | 7 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 0 | 0 | 0 | unpriced | - |
 | delivery-trouble | llm + gpt-5.4 | 7 | 4 | 3 | 2 | 0 | 3/4 | 20.1 | 37.0 | 5 | 0 | 31 | 0 | 21 | 6 | 0.1236 | driver_drops |
 | delivery-trouble | llm + gpt-5.4 | 11 | 4 | 3 | 2 | 0 | 3/4 | 18.0 | 30.9 | 8 | 0 | 38 | 0 | 22 | 6 | 0.1524 | driver_drops |
 | delivery-trouble | llm + gpt-5.4 | 13 | 4 | 3 | 2 | 0 | 3/4 | 20.1 | 37.0 | 6 | 1 | 34 | 0 | 20 | 6 | 0.134 | driver_drops |
 | happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 0 | 0 | 0 | 0.0 | - |
+| happy-path | langgraph | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 0 | 0 | 0 | unpriced | - |
 | happy-path | llm + gpt-5.4 | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0327 | - |
 | happy-path | llm + gpt-5.4 | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0326 | - |
 | happy-path | llm + gpt-5.4 | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0324 | - |
 | kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 26.1 | 26.1 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0 | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | langgraph | 7 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 0 | 0 | 0 | unpriced | - |
 | kitchen-trouble | llm + gpt-5.4 | 7 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 21 | 0 | 22 | 3 | 0.0916 | - |
 | kitchen-trouble | llm + gpt-5.4 | 11 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 21 | 0 | 22 | 1 | 0.0914 | - |
 | kitchen-trouble | llm + gpt-5.4 | 13 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 22 | 0 | 22 | 3 | 0.0961 | - |
 | payment-trouble | hand-wired | 7 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0 | gateway_down, payment_declines |
+| payment-trouble | langgraph | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 0 | 0 | 0 | unpriced | - |
 | payment-trouble | llm + gpt-5.4 | 7 | 3 | 3 | 2 | 0 | 3/3 | 19.7 | 34.8 | 14 | 0 | 42 | 0 | 16 | 1 | 0.1523 | - |
 | payment-trouble | llm + gpt-5.4 | 11 | 3 | 3 | 2 | 0 | 3/3 | 19.7 | 34.8 | 14 | 0 | 44 | 0 | 16 | 1 | 0.1591 | - |
 | payment-trouble | llm + gpt-5.4 | 13 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 16 | 0 | 49 | 0 | 17 | 4 | 0.1796 | - |
@@ -30,6 +34,6 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | storm | llm + gpt-5.4 | 11 | 5 | 5 | 3 | 0 | 5/5 | 24.1 | 34.6 | 17 | 0 | 66 | 0 | 30 | 20 | 0.2852 | - |
 | storm | llm + gpt-5.4 | 13 | 5 | 3 | 2 | 0 | 3/5 | 24.2 | 34.6 | 20 | 0 | 71 | 0 | 26 | 20 | 0.2828 | driver_offline, storm |
 
-22 run(s).
+26 run(s).
 
 Costs use the model prices each run file records: gpt-5.4: 2.5 in and 15.0 out; gpt-5.4-mini: 0.75 in and 4.5 out; gpt-5.4-nano: 0.2 in and 1.25 out; 0.75 in and 4.5 out, USD per million tokens (see `bench.env` for the source and date).

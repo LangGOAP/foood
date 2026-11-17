@@ -116,12 +116,18 @@ async def test_a_customer_cancellation_is_tidied_up() -> None:
         assert client.engine.waiting_at(order["id"]) is None
 
 
-def test_bench_parity_with_the_hand_wired_engine(tmp_path: Path) -> None:
-    """Step one of #17: the graph decides exactly what the hand-wired engine decides."""
+def _outcome(result: dict) -> dict:
+    """The summary minus the decision count: the graph logs 'keep waiting', the other does not."""
+    return {k: v for k, v in result["summary"].items() if k != "recoveryDecisions"}
+
+
+def test_bench_parity_with_the_hand_wired_engine(tmp_path: Path, monkeypatch) -> None:
+    """With the model off, the graph ends every order exactly where the hand-wired engine does."""
+    monkeypatch.setenv("FOOOD_LLM", "off")
     for name in SCENARIOS:
         wired = run(name, "hand-wired", 7, tmp_path / "wired")
         graphed = run(name, "langgraph", 7, tmp_path / "graph")
-        assert graphed["summary"] == wired["summary"], name
+        assert _outcome(graphed) == _outcome(wired), name
         assert [(o["status"], o["minutes"], o["withinPromise"]) for o in graphed["orders"]] == [
             (o["status"], o["minutes"], o["withinPromise"]) for o in wired["orders"]
         ], name

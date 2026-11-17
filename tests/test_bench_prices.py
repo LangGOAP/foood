@@ -29,7 +29,8 @@ def test_an_unpriced_run_says_so(tmp_path: Path, monkeypatch) -> None:
     }
     assert result["summary"]["llmPriced"] is False
     table = _render(tmp_path)
-    assert "| unpriced |" in table and "per million tokens" not in table
+    assert "| unpriced |" in table
+    assert "Costs use the model prices each run file records" not in table
 
 
 def test_a_priced_run_carries_its_prices(tmp_path: Path, monkeypatch) -> None:
