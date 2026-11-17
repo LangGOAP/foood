@@ -29,7 +29,7 @@ COLUMNS = [
     ("Recovery decisions", lambda r: r["summary"]["recoveryDecisions"]),
     ("Human prompts", lambda r: r["summary"]["humanPrompts"]),
     ("LLM calls", lambda r: r["summary"]["llmCalls"]),
-    ("Cost", lambda r: r["summary"]["cost"]),
+    ("Cost (USD)", lambda r: r["summary"]["cost"] if r["summary"].get("llmPriced") else "unpriced"),
     ("Not recovered", lambda r: ", ".join(r["summary"]["unrecovered"]) or "-"),
 ]
 
@@ -52,6 +52,20 @@ def render(results_dir: Path = RESULTS) -> str:
     if not runs:
         lines.append("| (no runs yet) |" + " |" * (len(COLUMNS) - 1))
     lines += ["", f"{len(runs)} run(s)."]
+    priced = sorted(
+        {
+            (r["llmPrices"]["inputPerMillionUsd"], r["llmPrices"]["outputPerMillionUsd"])
+            for r in runs
+            if r.get("summary", {}).get("llmPriced") and r.get("llmPrices")
+        }
+    )
+    if priced:
+        lines += [
+            "",
+            "Costs use the model prices each run file records: "
+            + "; ".join(f"{i} in and {o} out, USD per million tokens" for i, o in priced)
+            + " (see `bench.env` for the source and date).",
+        ]
     sets = [
         json.loads(p.read_text(encoding="utf-8"))
         for p in sorted((results_dir / "repeats").glob("*.json"))

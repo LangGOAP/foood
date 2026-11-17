@@ -152,6 +152,9 @@ clock advanced tick by tick. Each run writes `results/<scenario>-<engine>-seed<n
 with, per order, the final status, whether it arrived within its promise, the
 minutes it took, whether its state is consistent, the failures fired against
 it, the engine's recovery decisions, human prompts, LLM calls and cost.
+Cost is computed with the model prices in `bench.env` (USD per million tokens,
+with the source and date in the file); every results file records the prices it
+was given, and a run without them says unpriced.
 [`BENCH.md`](BENCH.md) is generated from those files by `make bench-table` and
 CI fails when it is stale; no number in it is typed by hand. The hand-wired
 rows are the baseline every other engine is compared with, and they say

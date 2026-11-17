@@ -15,6 +15,7 @@ import asyncio
 import dataclasses
 import json
 import math
+import os
 import statistics
 from collections import Counter
 from collections.abc import Iterable
@@ -298,11 +299,17 @@ class Run:
                     ),
                     "llmCalls": sum(int(d.get("llmCalls", 0)) for d in decisions),
                     "decisionNames": [d["decision"] for d in decisions],
-                    "cost": round(sum(float(d.get("cost", 0)) for d in decisions), 4),
+                    # money is spent only where a model was called; a planner's decisions
+                    # carry a plan cost under their own key, not dollars
+                    "cost": round(
+                        sum((float(d.get("cost", 0)) for d in decisions if d.get("llmCalls")), 0.0),
+                        4,
+                    ),
                     "notes": placed.notes,
                 }
             )
         placed_rows = [r for r in rows if r["orderId"]]
+        prices = llm_prices()
         durations: list[float] = [r["minutes"] for r in placed_rows if r["minutes"] is not None]
         unrecovered = sorted(
             {f for r in placed_rows if r["status"] != "DELIVERED" for f in r["failures"]}
@@ -314,6 +321,7 @@ class Run:
             "foood": __version__,
             "startedAt": iso(started),
             "virtualMinutes": round(self.ticks * TICK_SECONDS / 60, 1),
+            "llmPrices": prices,
             "summary": {
                 "orders": len(placed_rows),
                 "delivered": sum(r["status"] == "DELIVERED" for r in placed_rows),
@@ -330,6 +338,7 @@ class Run:
                 "humanPrompts": sum(r["humanPrompts"] for r in placed_rows),
                 "llmCalls": sum(r["llmCalls"] for r in placed_rows),
                 "cost": round(sum(r["cost"] for r in placed_rows), 4),
+                "llmPriced": all(value is not None for value in prices.values()),
                 "failuresFired": sorted({f for r in placed_rows for f in r["failures"]}),
                 "unrecovered": unrecovered,
             },
@@ -348,6 +357,23 @@ def run(
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     result["path"] = str(path)
     return result
+
+
+def llm_prices() -> dict[str, float | None]:
+    """The model prices a run was given (USD per million tokens), so its cost has provenance.
+
+    Set FOOOD_LLM_PRICE_IN and FOOOD_LLM_PRICE_OUT (the bench targets read ``bench.env``);
+    without both, nothing is priced and the table says so.
+    """
+
+    def read(name: str) -> float | None:
+        raw = os.environ.get(name, "").strip()
+        return float(raw) if raw else None
+
+    return {
+        "inputPerMillionUsd": read("FOOOD_LLM_PRICE_IN"),
+        "outputPerMillionUsd": read("FOOOD_LLM_PRICE_OUT"),
+    }
 
 
 def _label(engine: str, result: dict[str, Any]) -> str:
