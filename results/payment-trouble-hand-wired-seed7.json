@@ -3,34 +3,41 @@
   "engine": "hand-wired",
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T14:26:23.915787Z",
+  "startedAt": "2026-11-17T18:28:29.071836Z",
   "virtualMinutes": 13.2,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5
+  },
   "summary": {
-    "orders": 2,
+    "orders": 3,
     "delivered": 1,
     "deliveredWithinPromise": 1,
-    "cancelled": 1,
-    "consistent": 2,
+    "cancelled": 2,
+    "consistent": 3,
     "meanMinutes": 12.1,
     "p95Minutes": 12.1,
-    "recoveryDecisions": 1,
+    "recoveryDecisions": 2,
     "humanPrompts": 0,
     "llmCalls": 0,
     "cost": 0.0,
+    "llmPriced": true,
     "failuresFired": [
+      "gateway_down",
       "payment_declines"
     ],
     "unrecovered": [
+      "gateway_down",
       "payment_declines"
     ]
   },
   "orders": [
     {
       "number": 1,
-      "orderId": "9ac16a51-f426-4fe4-a229-e81f11fdc320",
-      "finalOrderId": "9ac16a51-f426-4fe4-a229-e81f11fdc320",
+      "orderId": "37b7d2f3-9828-46af-9a00-b9c3413d377b",
+      "finalOrderId": "37b7d2f3-9828-46af-9a00-b9c3413d377b",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T14:48:23.915787Z",
+      "promisedAt": "2026-11-17T18:50:29.071836Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -44,16 +51,19 @@
       "recoveryDecisions": 1,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "cancel"
+      ],
       "cost": 0.0,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "007f08e1-b13d-4efc-9c94-455cb04497db",
-      "finalOrderId": "007f08e1-b13d-4efc-9c94-455cb04497db",
+      "orderId": "68dc1a2f-6930-48fa-afa5-962a58c9fb76",
+      "finalOrderId": "68dc1a2f-6930-48fa-afa5-962a58c9fb76",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T14:49:23.915787Z",
-      "deliveredAt": "2026-11-17T14:39:28.915787Z",
+      "promisedAt": "2026-11-17T18:51:29.071836Z",
+      "deliveredAt": "2026-11-17T18:41:34.071836Z",
       "withinPromise": true,
       "minutes": 12.1,
       "consistent": true,
@@ -64,6 +74,36 @@
       "recoveryDecisions": 0,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery",
+        "assign driver"
+      ],
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "085ecf0c-f556-4696-9315-d3c56838e3fa",
+      "finalOrderId": "085ecf0c-f556-4696-9315-d3c56838e3fa",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T18:52:29.071836Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "gateway_down"
+      ],
+      "recovered": false,
+      "decisions": 1,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "decisionNames": [
+        "cancel"
+      ],
       "cost": 0.0,
       "notes": []
     }

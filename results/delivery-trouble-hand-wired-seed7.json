@@ -3,8 +3,12 @@
   "engine": "hand-wired",
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T14:26:21.232287Z",
+  "startedAt": "2026-11-17T18:28:27.644221Z",
   "virtualMinutes": 28.1,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5
+  },
   "summary": {
     "orders": 4,
     "delivered": 3,
@@ -17,6 +21,7 @@
     "humanPrompts": 0,
     "llmCalls": 0,
     "cost": 0.0,
+    "llmPriced": true,
     "failuresFired": [
       "courier_delay",
       "driver_drops",
@@ -29,11 +34,11 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "63afae3f-3380-4732-af2f-333901a46394",
-      "finalOrderId": "63afae3f-3380-4732-af2f-333901a46394",
+      "orderId": "c9320718-93de-4101-90fc-485f627bd414",
+      "finalOrderId": "c9320718-93de-4101-90fc-485f627bd414",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T14:48:21.232287Z",
-      "deliveredAt": "2026-11-17T14:39:26.232287Z",
+      "promisedAt": "2026-11-17T18:50:27.644221Z",
+      "deliveredAt": "2026-11-17T18:41:32.644221Z",
       "withinPromise": true,
       "minutes": 13.1,
       "consistent": true,
@@ -46,16 +51,20 @@
       "recoveryDecisions": 0,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery"
+      ],
       "cost": 0.0,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "84e1c208-40ee-4f00-a9bf-5e350cbb747d",
-      "finalOrderId": "84e1c208-40ee-4f00-a9bf-5e350cbb747d",
+      "orderId": "eb1184bd-4598-40e6-b87a-6e77152fe93f",
+      "finalOrderId": "eb1184bd-4598-40e6-b87a-6e77152fe93f",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T14:49:21.232287Z",
-      "deliveredAt": "2026-11-17T14:39:26.232287Z",
+      "promisedAt": "2026-11-17T18:51:27.644221Z",
+      "deliveredAt": "2026-11-17T18:41:32.644221Z",
       "withinPromise": true,
       "minutes": 12.1,
       "consistent": true,
@@ -68,15 +77,21 @@
       "recoveryDecisions": 1,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery",
+        "dispatch again",
+        "assign driver"
+      ],
       "cost": 0.0,
       "notes": []
     },
     {
       "number": 3,
-      "orderId": "5254b5f0-8f00-4c6e-98a8-8f1b83c58652",
-      "finalOrderId": "5254b5f0-8f00-4c6e-98a8-8f1b83c58652",
+      "orderId": "0ea56ff5-f743-4a0e-9696-0e5f8e6132f0",
+      "finalOrderId": "0ea56ff5-f743-4a0e-9696-0e5f8e6132f0",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T14:50:21.232287Z",
+      "promisedAt": "2026-11-17T18:52:27.644221Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -90,16 +105,23 @@
       "recoveryDecisions": 2,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery",
+        "assign driver",
+        "cancel",
+        "refund"
+      ],
       "cost": 0.0,
       "notes": []
     },
     {
       "number": 4,
-      "orderId": "d9bd27ec-9ce1-49b5-ae32-b51eb1fbf11b",
-      "finalOrderId": "d9bd27ec-9ce1-49b5-ae32-b51eb1fbf11b",
+      "orderId": "2dd20754-eb43-48a6-ad6d-205a746e739e",
+      "finalOrderId": "2dd20754-eb43-48a6-ad6d-205a746e739e",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T14:51:21.232287Z",
-      "deliveredAt": "2026-11-17T14:54:21.232287Z",
+      "promisedAt": "2026-11-17T18:53:27.644221Z",
+      "deliveredAt": "2026-11-17T18:56:27.644221Z",
       "withinPromise": false,
       "minutes": 25.0,
       "consistent": true,
@@ -112,6 +134,11 @@
       "recoveryDecisions": 0,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery",
+        "assign driver"
+      ],
       "cost": 0.0,
       "notes": []
     }

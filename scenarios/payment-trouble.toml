@@ -1,6 +1,6 @@
-# Money misbehaves: a declined card and a double-submitted order.
+# Money misbehaves: a declined card, a double-submitted order and a gateway outage.
 name = "payment-trouble"
-description = "Order 1's card is declined; order 2 is submitted twice."
+description = "Order 1's card is declined; order 2 is submitted twice; order 3 meets a minute of payment gateway outage."
 seed = 4
 
 [kitchen]
@@ -15,3 +15,8 @@ reason = "Insufficient funds"
 [[inject]]
 order = 2
 failure = "duplicate_submission"
+
+[[inject]]
+order = 3
+failure = "gateway_down"
+for_seconds = 60

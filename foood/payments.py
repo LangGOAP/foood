@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from foood.auth import CurrentUser, StoreDep
 from foood.errors import ApiError
 from foood.models import money, new_id
-from foood.orders import get_order, transition
+from foood.orders import TERMINAL, get_order, transition
 from foood.store import Store, iso, now
 
 router = APIRouter(prefix="/api", tags=["payments"])
@@ -106,6 +106,34 @@ def settle(store: Store, payment: Payment, status: str, reason: str | None) -> N
     order.payment_status = status  # a fact about the order; what follows is the engine's call
     order.updated_at = now()
     store.publish("payment.processed", payment=payment)
+
+
+def gateway_is_down(store: Store) -> bool:
+    """An outage is a window the scenario opens; while it is open every payment is refused."""
+    until = store.gateway_down_until
+    return until is not None and now() < until
+
+
+def abandon(store: Store, payment: Payment, reason: str) -> None:
+    """Give up on a pending attempt without charging it (an engine that will not wait)."""
+    payment.status = "FAILED"
+    payment.failure_reason = reason
+    payment.updated_at = now()
+
+
+def retry_pending_payment(store: Store, order_id: str) -> Payment | None:
+    """Process the order's pending attempt now; an engine does this when the gateway is back.
+
+    Returns ``None`` when there is nothing pending or the gateway is still down.
+    """
+    payment = payment_for_order(store, order_id)
+    if payment is None or payment.status != "PENDING" or gateway_is_down(store):
+        return None
+    if get_order(store, order_id).status in TERMINAL:
+        return None
+    status, reason = charge(store, payment)
+    settle(store, payment, status, reason)
+    return payment
 
 
 def retry_with_backup(store: Store, declined: Payment) -> Payment:
@@ -213,6 +241,15 @@ async def process_payment(
     if payment.status != "PENDING":
         raise ApiError(
             409, f"A {payment.status} payment cannot be processed", error="InvalidTransition"
+        )
+    if get_order(store, payment.order_id).status in TERMINAL:
+        raise ApiError(409, "The order is no longer payable", error="OrderNotPayable")
+    if body.simulateFailure is None and gateway_is_down(store):
+        store.publish("payment.unavailable", payment=payment)
+        raise ApiError(
+            503,
+            "The payment gateway is unavailable; try again shortly",
+            error="PaymentGatewayUnavailable",
         )
     if body.simulateFailure is True:
         status, reason = "FAILED", "Card declined (simulated)"

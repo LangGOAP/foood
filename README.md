@@ -97,7 +97,11 @@ Smash Bros Burgers next to Burger Palace. Support can do it by hand with
 `POST /api/orders/{id}/replacement`. Backup cards: customers may hold more than
 one card on file (the demo customer has two), every payment attempt names its
 card, and an engine can retry a decline on the next card; `payment_declines`
-in a scenario takes `times = 2` to decline both. Credits: a ledger per customer that
+in a scenario takes `times = 2` to decline both. A gateway outage (`gateway_down`,
+`for_seconds`) refuses every payment processed in its window with a 503 and the
+platform announces the gateway going down and coming back; the hand-wired engine
+cancels, an engine that can wait retries the pending attempt
+(`retry_pending_payment`) when it is back. Credits: a ledger per customer that
 engines or support fill as compensation (`POST /api/credits`, one credit per
 order); the next quote and order apply the balance, the payment charges the
 rest, and a cancelled order gives its credit back (`GET /api/credits/me`). Dispatch strategies (`foood/dispatch.py`): longest idle, nearest first by
@@ -123,12 +127,12 @@ nothing behaves differently. The bundled ones:
 | `happy-path` | The kitchen cooks every order itself; nothing goes wrong. |
 | `kitchen-trouble` | Order 1 is rejected, order 2 is accepted then cancelled when an item runs out, order 3 takes a quarter of an hour past its promise. |
 | `delivery-trouble` | Order 1 waits 90 s for a driver, order 2's driver drops it before pickup, order 3's after pickup, order 4's courier crawls. |
-| `payment-trouble` | Order 1's card is declined; order 2 is submitted twice and the duplicate is refused. |
+| `payment-trouble` | Order 1's card is declined; order 2 is submitted twice and the duplicate is refused; order 3 meets a minute of payment gateway outage. |
 
 The failures available to a scenario file are `restaurant_rejects`,
 `accepts_then_cancels`, `prep_overrun`, `payment_declines`, `no_driver`,
-`driver_drops` (before or after pickup), `courier_delay` and
-`duplicate_submission`; `foood/scenario.py` documents their fields.
+`driver_drops` (before or after pickup), `courier_delay`,
+`duplicate_submission` and `gateway_down`; `foood/scenario.py` documents their fields.
 `GET /api/_scenario` shows what the loaded scenario has fired so far, and the
 tests in `tests/test_scenario.py` prove each failure ends in a consistent
 state across the order, its payment and its delivery.

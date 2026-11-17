@@ -3,8 +3,12 @@
   "engine": "hand-wired",
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T14:26:18.792423Z",
+  "startedAt": "2026-11-17T18:28:26.291073Z",
   "virtualMinutes": 28.2,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5
+  },
   "summary": {
     "orders": 3,
     "delivered": 1,
@@ -17,6 +21,7 @@
     "humanPrompts": 0,
     "llmCalls": 0,
     "cost": 0.0,
+    "llmPriced": true,
     "failuresFired": [
       "accepts_then_cancels",
       "prep_overrun",
@@ -30,10 +35,10 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "22a744d6-5295-456e-8dbf-3b541d2df65b",
-      "finalOrderId": "22a744d6-5295-456e-8dbf-3b541d2df65b",
+      "orderId": "5a27d775-7374-4116-810a-40905b8979dc",
+      "finalOrderId": "5a27d775-7374-4116-810a-40905b8979dc",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T14:48:18.792423Z",
+      "promisedAt": "2026-11-17T18:50:26.291073Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -47,15 +52,19 @@
       "recoveryDecisions": 1,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "refund"
+      ],
       "cost": 0.0,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "5131fafa-3ef9-40f9-9742-726cd51550e0",
-      "finalOrderId": "5131fafa-3ef9-40f9-9742-726cd51550e0",
+      "orderId": "be754529-75c2-4ca1-8f04-d49ece7b9d0b",
+      "finalOrderId": "be754529-75c2-4ca1-8f04-d49ece7b9d0b",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T14:49:18.792423Z",
+      "promisedAt": "2026-11-17T18:51:26.291073Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -69,16 +78,20 @@
       "recoveryDecisions": 1,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "refund"
+      ],
       "cost": 0.0,
       "notes": []
     },
     {
       "number": 3,
-      "orderId": "0faf5346-d862-4fe1-be9f-40b76b862a1f",
-      "finalOrderId": "0faf5346-d862-4fe1-be9f-40b76b862a1f",
+      "orderId": "4cc032b4-148e-4fa4-9a94-0c89547371cd",
+      "finalOrderId": "4cc032b4-148e-4fa4-9a94-0c89547371cd",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T14:50:18.792423Z",
-      "deliveredAt": "2026-11-17T14:54:23.792423Z",
+      "promisedAt": "2026-11-17T18:52:26.291073Z",
+      "deliveredAt": "2026-11-17T18:56:31.291073Z",
       "withinPromise": false,
       "minutes": 26.1,
       "consistent": true,
@@ -91,6 +104,11 @@
       "recoveryDecisions": 0,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery",
+        "assign driver"
+      ],
       "cost": 0.0,
       "notes": [
         "QA Pasta unavailable, picked another dish"
