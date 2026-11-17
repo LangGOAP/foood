@@ -236,7 +236,10 @@ engine needs a person it asks support. http://localhost:3000/support (sign in as
 `admin@example.com`) lists the open questions with their options or form, the
 recent orders with the decisions taken for each, and the loaded scenario's log.
 A question unanswered by its deadline takes the default the engine declared. The
-hand-wired engine never asks; the LangGraph and LangGOAP engines do.
+hand-wired engine never asks; the LangGraph and LangGOAP engines do. Each order
+also carries its plan panel: the current route with the step it waits at, its
+cost, how often and why it was re-planned, the kitchens the planner weighed with
+their price difference, and, for the LangGraph engine, the model's last reason.
 
 The whole evening is on one map at http://localhost:3000/map: the kitchens, every
 order's door with the line from its kitchen coloured by its status, and the drivers

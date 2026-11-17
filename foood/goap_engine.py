@@ -79,10 +79,29 @@ class SubstitutionApproval(BaseModel):
 class Trace(NullTracer):
     """Plans, re-plans and the actions that ran, written to the order's decisions."""
 
-    def __init__(self, store: Store) -> None:
+    def __init__(self, store: Store, current_order: Callable[[str], Order] | None = None) -> None:
         self.store = store
         self.order_id = ""
         self.last_steps: dict[str, list[str]] = {}
+        self.current_order = current_order
+
+    def considered(self) -> list[dict[str, Any]]:
+        """The other kitchens on the table when this plan was made, with what they would cost."""
+        if self.current_order is None:
+            return []
+        try:
+            order = self.current_order(self.order_id)
+        except ApiError:
+            return []
+        customer = self.store.users[order.customer_id]
+        return [
+            {
+                "kitchen": a.restaurant.name,
+                "difference": str(a.difference(order)),
+                "needsApproval": a.needs_approval(order, customer),
+            }
+            for a in alternatives(self.store, order)[:3]
+        ]
 
     def on_plan_complete(self, plan: Any, duration_ms: float) -> None:
         steps = [a.name for a in plan.actions]
@@ -95,6 +114,7 @@ class Trace(NullTracer):
             steps=steps,
             planCost=round(float(plan.total_cost), 2),
             planningMs=round(duration_ms, 1),
+            considered=self.considered(),
         )
 
     def on_replan(self, reason: str, new_plan: Any) -> None:
@@ -110,6 +130,7 @@ class Trace(NullTracer):
             because=reason,
             steps=steps,
             planCost=round(float(new_plan.total_cost), 2) if new_plan is not None else None,
+            considered=self.considered() if not skipped else [],
         )
 
     def on_plan_failed(self, reason: str, duration_ms: float) -> None:
@@ -145,7 +166,7 @@ class GoapEngine:
 
     def install(self, store: Store) -> None:
         self.store = store
-        self.tracer = Trace(store)
+        self.tracer = Trace(store, self.current_order)
         self.checkpointer: BaseCheckpointSaver[Any] = (
             SqliteSaver(sqlite3.connect(self.checkpoint_path, check_same_thread=False))
             if self.checkpoint_path
@@ -643,7 +664,8 @@ class GoapEngine:
         self.questions[thread] = question.id
         decide(self.store, thread, "ask support", because="the substitution needs approval")
 
-    def waiting_at(self, thread: str) -> str | None:
+    def waiting_at(self, order_id: str) -> str | None:
+        thread = self.threads.get(order_id, order_id)
         snapshot = self.graph.get_state(self._config(thread))
         if not snapshot.next:
             return None
@@ -702,7 +724,7 @@ class GoapEngine:
 def mermaid() -> str:
     engine = GoapEngine()
     engine.store = Store()
-    engine.tracer = Trace(engine.store)
+    engine.tracer = Trace(engine.store, None)
     return GoapGraph(engine.actions()).compile().get_graph().draw_mermaid()
 
 

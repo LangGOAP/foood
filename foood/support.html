@@ -22,6 +22,11 @@
   button.alt { background:#fff; color:var(--ink); }
   input { font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:8px; width:100%; margin-top:6px; }
   ul.decisions { margin:6px 0 0; padding-left:18px; font-size:13px; } ul.decisions li { margin:2px 0; }
+  .plan { margin:8px 0 4px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
+  .step { font-size:12px; padding:3px 8px; border-radius:6px; background:#f1efe9; border:1px solid var(--line); }
+  .step.done { opacity:.55; text-decoration:line-through; }
+  .step.now { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .plan-note { font-size:12px; color:var(--muted); margin:2px 0; }
   form#login { max-width:360px; margin:40px auto; }
   .empty { color:var(--muted); font-style:italic; }
   .log { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; white-space:pre-wrap; color:var(--muted); }
@@ -48,6 +53,7 @@ const API = location.origin;
 let token = null, timer = null;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const dollars = (x) => (Number(x) < 0 ? "-" : "") + "$" + Math.abs(Number(x)).toFixed(2);
 const fmtTime = (iso) => iso ? new Date(iso).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : "";
 
 $("login").addEventListener("submit", async (e) => {
@@ -118,8 +124,23 @@ function renderOrders(orders) {
       <div class="row"><strong>${esc(o.restaurantName)} · ${esc(o.customerFirstName || "")}</strong>
         <span class="pill ${o.status === "CANCELLED" || o.status === "FAILED" ? "bad" : o.status === "DELIVERED" ? "ok" : ""}">${esc(o.status)}</span></div>
       <div class="muted">${esc(o.id.slice(0,8))} · ${esc(o.items.map((i) => `${i.quantity}× ${i.name}`).join(", "))} · $${esc(o.totalAmount)} · promised ${fmtTime(o.promisedAt)}${o.promiseBreached ? ' · <span class="pill bad">late</span>' : ""}${o.cancellationNote ? ` · ${esc(o.cancellationNote)}` : ""}</div>
-      ${o.decisions.length ? `<ul class="decisions">${o.decisions.map((d) => `<li>${fmtTime(d.at)} <strong>${esc(d.decision)}</strong> — ${esc(d.because || "")}${d.licensePlate ? ` (${esc(d.licensePlate)})` : ""}</li>`).join("")}</ul>` : ""}
+      ${renderPlan(o.plan)}
+      ${o.decisions.length ? `<ul class="decisions">${o.decisions.map((d) => `<li>${fmtTime(d.at)} <strong>${esc(d.decision)}</strong> — ${esc(d.because || "")}${d.licensePlate ? ` (${esc(d.licensePlate)})` : ""}${d.steps ? ` [${esc(d.steps.join(" → "))}]` : ""}</li>`).join("")}</ul>` : ""}
     </div>`).join("");
+}
+
+function renderPlan(plan) {
+  if (!plan) return "";
+  const steps = plan.steps.map((s, i) => {
+    const cls = plan.position === null ? "step" : i < plan.position ? "step done" : i === plan.position ? "step now" : "step";
+    return `<span class="${cls}">${esc(s.replace(/_/g, " "))}</span>`;
+  }).join('<span class="muted">›</span>');
+  const notes = [];
+  if (plan.cost != null) notes.push(`cost ${plan.cost}`);
+  if (plan.replans) notes.push(`${plan.replans} re-plan${plan.replans > 1 ? "s" : ""}${plan.lastReplan ? `, last: ${esc(plan.lastReplan)}` : ""}`);
+  if (plan.considered && plan.considered.length) notes.push("considered " + plan.considered.map((c) => `${esc(c.kitchen)} (${dollars(c.difference)}${c.needsApproval ? ", needs approval" : ""})`).join(", "));
+  if (plan.lastReasoning) notes.push(`model: ${esc(plan.lastReasoning)}`);
+  return `<div class="plan">${steps}</div>${notes.map((n) => `<div class="plan-note">${n}</div>`).join("")}`;
 }
 
 function renderScenario(s) {
