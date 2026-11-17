@@ -7,6 +7,8 @@ import os
 import typer
 import uvicorn
 
+from foood.money import dollars
+
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
 
@@ -104,10 +106,6 @@ def bench(
     )
 
 
-if __name__ == "__main__":
-    app()
-
-
 @app.command()
 def ask(
     text: str = typer.Argument(..., help="The order, in a sentence."),
@@ -115,19 +113,15 @@ def ask(
     email: str = typer.Option("demo.customer@example.com", help="The customer to order as."),
     password: str = typer.Option("password123"),
 ) -> None:
-    """Order in a sentence through the running API's model intake (--engine llm)."""
+    """Order in a sentence through the running API's LLM intake."""
     import httpx
-
-    from foood.money import dollars
 
     session = httpx.post(f"{api}/api/auth/login", json={"email": email, "password": password})
     if session.status_code != 200:
         typer.echo(f"sign-in failed: {session.text}", err=True)
         raise typer.Exit(1)
     headers = {"Authorization": f"Bearer {session.json()['accessToken']}"}
-    reply = httpx.post(
-        f"{api}/api/orders/intake", json={"text": text}, headers=headers, timeout=120
-    )
+    reply = httpx.post(f"{api}/api/orders/intake", json={"text": text}, headers=headers, timeout=60)
     body = reply.json()
     if reply.status_code != 200:
         typer.echo(f"{body.get('error')}: {body.get('message')}", err=True)
@@ -139,6 +133,9 @@ def ask(
     items = ", ".join(f"{i['quantity']}x {i['name']}" for i in order["items"])
     typer.echo(
         f"placed {order['id'][:8]}: {items} for {dollars(order['totalAmount'])}, "
-        f"promised by {order['promisedAt']} ({body['usage']['calls']} model calls, "
-        f"{body['usage']['tokens']} tokens)"
+        f"promised by {order['promisedAt']} (tokens: {body['usage'].get('tokens')})"
     )
+
+
+if __name__ == "__main__":
+    app()

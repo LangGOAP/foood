@@ -16,7 +16,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from foood import __version__
-from foood.agent_engine import router as intake_router
 from foood.auth import router as auth_router
 from foood.cart import router as cart_router
 from foood.catalog import router as catalog_router
@@ -26,6 +25,8 @@ from foood.drivers import router as drivers_router
 from foood.engine import OrderEngine, make_engine
 from foood.engine import router as engine_router
 from foood.errors import install_error_handlers
+from foood.intake import IntakeAdvisor, intake_from_env
+from foood.intake import router as intake_router
 from foood.mapview import router as map_router
 from foood.messages import Phraser, phraser_from_env
 from foood.messages import install as install_phraser
@@ -53,6 +54,7 @@ def create_app(
     simulate: bool = True,
     scenario: Scenario | None = None,
     engine: OrderEngine | None = None,
+    intake: IntakeAdvisor | None = None,
     phraser: Phraser | None = None,
 ) -> FastAPI:
     """Build the service.
@@ -90,6 +92,7 @@ def create_app(
     install_world(app.state.store)
     app.state.engine = engine or make_engine(os.environ.get("FOOOD_ENGINE", "hand-wired"))
     app.state.engine.install(app.state.store)
+    app.state.intake = intake or intake_from_env()
     chosen_phraser = phraser or phraser_from_env()
     if chosen_phraser is not None:
         install_phraser(app.state.store, chosen_phraser)

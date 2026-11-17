@@ -271,7 +271,9 @@ async def test_a_world_change_reaches_every_order_in_flight(agent_client) -> Non
         assert c.store.world.calls_by_order[order["id"]] == 1
 
 
-async def test_intake_places_an_order_through_the_cart_tools(agent_client) -> None:
+async def test_the_agents_intake_places_an_order_through_the_cart_tools(agent_client) -> None:
+    """On this branch the intake route is the graph's; the agent's loop is still callable."""
+
     def first_turn(input_items):
         return ("Looking.", [("search_menu", {"query": "QA Burger"})])
 
@@ -302,14 +304,9 @@ async def test_intake_places_an_order_through_the_cart_tools(agent_client) -> No
         ),
     )
     async with agent_client(model) as c:
-        sara = await login(c, "demo.customer@example.com")
-        placed = await c.post(
-            "/api/orders/intake",
-            json={"text": "two QA burgers to 742 Evergreen Terrace"},
-            headers=sara,
-        )
-        assert placed.status_code == 200, placed.text
-        body = placed.json()
+        await login(c, "demo.customer@example.com")
+        sara_user = c.store.user_by_email("demo.customer@example.com")
+        body = c.engine.intake(sara_user, "two QA burgers to 742 Evergreen Terrace")
         assert body["status"] == "placed" and body["usage"]["calls"] == 3
         assert [i["quantity"] for i in body["order"]["items"]] == [2]
         decisions = _decisions(c, body["order"]["id"])
@@ -326,10 +323,8 @@ async def test_intake_asks_back_instead_of_guessing(agent_client) -> None:
         ("Which?", [("ask_customer", {"question": "Pizza Napoli or Luigi's for the Margherita?"})])
     )
     async with agent_client(model) as c:
-        sara = await login(c, "demo.customer@example.com")
-        reply = (
-            await c.post("/api/orders/intake", json={"text": "a margherita"}, headers=sara)
-        ).json()
+        await login(c, "demo.customer@example.com")
+        reply = c.engine.intake(c.store.user_by_email("demo.customer@example.com"), "a margherita")
         assert reply["status"] == "question" and "Margherita" in reply["question"]
 
 

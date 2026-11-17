@@ -145,6 +145,21 @@ applies the hand-wired reaction and the bench numbers match `main` exactly.
 Set `FOOOD_LLM_PRICE_IN` and `FOOOD_LLM_PRICE_OUT` (USD per million tokens)
 to have costs priced; otherwise only tokens are reported.
 
+### Ordering in a sentence
+
+```bash
+uv run foood ask "two QA burgers and fries to the office, ring twice"
+```
+
+`POST /api/orders/intake` (outside the Delivery Plus contract) runs a small
+LangGraph: a model reads the sentence against the open kitchens' menus into a
+structured request, a deterministic step matches it to real menu items and
+turns anything unclear into a question instead of an order (several kitchens
+could make it, a dish nobody has, a sold-out item), and the order is placed
+through the same door the app uses, so every guard still applies. The order
+then shows up in the customer app like any other, with the intake call's
+tokens on its decisions.
+
 ## Support, the human in the loop
 
 The customer app has no approval screen and the apps stay unchanged, so when an
