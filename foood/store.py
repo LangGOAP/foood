@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from foood.orders import Order
     from foood.payments import Payment, Refund
     from foood.scenario import Engine
+    from foood.support import Question
     from foood.tracking import Location
 
 PASSWORD = "password123"
@@ -147,6 +148,8 @@ class Store:
     engine: Engine | None = None
     #: order id -> what the order engine decided and why
     decisions: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    #: questions engines asked support, keyed by question id
+    questions: dict[str, Question] = field(default_factory=dict)
 
     def subscribe(self, event: str, listener: Callable[..., None]) -> None:
         self.listeners.setdefault(event, []).append(listener)

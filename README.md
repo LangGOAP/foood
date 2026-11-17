@@ -66,6 +66,15 @@ branches add theirs and change nothing else. `foood up --engine hand-wired` pick
 one, and `GET /api/_engine?orderId=...` lists the decisions taken for an order and
 why.
 
+## Support, the human in the loop
+
+The customer app has no approval screen and the apps stay unchanged, so when an
+engine needs a person it asks support. http://localhost:3000/support (sign in as
+`admin@example.com`) lists the open questions with their options or form, the
+recent orders with the decisions taken for each, and the loaded scenario's log.
+A question unanswered by its deadline takes the default the engine declared. The
+hand-wired engine never asks; the LangGraph and LangGOAP engines do.
+
 ## Break it on purpose
 
 ```bash

@@ -210,6 +210,7 @@ def banner(api_url: str, apps: list[App]) -> str:
     lines = ["", "foood is up", "", f"  API            {api_url}  (docs at {api_url}/docs)"]
     engine = os.environ.get("FOOOD_ENGINE", "hand-wired")
     lines.append(f"  engine         {engine}  (decisions at {api_url}/api/_engine)")
+    lines.append(f"  support        {api_url}/support  (sign in as admin@example.com)")
     if os.environ.get("FOOOD_SCENARIO"):
         lines.append(
             f"  scenario       {os.environ['FOOOD_SCENARIO']}  (status at {api_url}/api/_scenario)"
