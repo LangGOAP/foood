@@ -7,9 +7,9 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 
 | Scenario | Engine | Seed | Orders | Delivered | Within promise | Cancelled | Consistent | Mean min | p95 min | Recovery decisions | Human prompts | LLM calls | Cost | Not recovered |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 15.2 | 22.2 | 3 | 0 | 0 | 0.0 | driver_drops |
-| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 0.0 | - |
-| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 25.2 | 25.2 | 2 | 0 | 0 | 0.0 | accepts_then_cancels, restaurant_rejects |
-| payment-trouble | hand-wired | 7 | 2 | 1 | 1 | 1 | 2/2 | 11.2 | 11.2 | 1 | 0 | 0 | 0.0 | payment_declines |
+| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | 0.0 | driver_drops |
+| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 0.0 | - |
+| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 26.1 | 26.1 | 2 | 0 | 0 | 0.0 | accepts_then_cancels, restaurant_rejects |
+| payment-trouble | hand-wired | 7 | 2 | 1 | 1 | 1 | 2/2 | 12.1 | 12.1 | 1 | 0 | 0 | 0.0 | payment_declines |
 
 4 run(s).

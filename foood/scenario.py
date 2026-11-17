@@ -93,7 +93,7 @@ class Bench:
     interval_seconds: float = 60.0
     restaurant: str = "QA Kitchen"
     items: tuple[str, ...] = ("QA Pasta",)
-    drop_off: tuple[float, float] = (30.045, 31.25)
+    drop_off: tuple[float, float] = (37.787, -122.3985)
     drivers: int = 2
     support_delay_seconds: float = 30.0
 

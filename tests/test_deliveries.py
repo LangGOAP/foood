@@ -65,7 +65,7 @@ async def test_full_delivery_run(client) -> None:
     current = await client.get("/api/deliveries/me/current", headers=driver)
     job = assert_conforms("GET", "/api/deliveries/me/current", current)
     assert current.status_code == 200
-    assert job["pickup"]["name"] == "QA Kitchen" and job["pickup"]["address"] == "100 QA Avenue"
+    assert job["pickup"]["name"] == "QA Kitchen" and job["pickup"]["address"] == "1500 Mission St"
     assert job["dropOff"]["address"] == "742 Evergreen Terrace, Apt 3B"
     assert job["order"]["items"] == [{"name": "QA Pasta", "quantity": 1}]
     assert job["order"]["totalAmount"] == "15.50" and job["nextActions"] == ["pickup"]
