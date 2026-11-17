@@ -88,8 +88,11 @@ Smash Bros Burgers next to Burger Palace. Support can do it by hand with `POST
 /api/orders/{id}/replacement`. Backup cards: customers may hold more than one
 card on file (the demo customer has two), every payment attempt names its card,
 and an engine can retry a decline on the next card; `payment_declines` in a
-scenario takes `times = 2` to decline both. The hand-wired engine does neither;
-it refunds and cancels.
+scenario takes `times = 2` to decline both. Credits: a ledger per customer that
+engines or support fill as compensation (`POST /api/credits`, one credit per
+order); the next quote and order apply the balance, the payment charges the
+rest, and a cancelled order gives its credit back (`GET /api/credits/me`). The
+hand-wired engine refunds and cancels.
 
 ## Break it on purpose
 

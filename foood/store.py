@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     import asyncio
 
     from foood.cart import Cart
+    from foood.credits import CreditEntry
     from foood.deliveries import Delivery, Earning, Rating
     from foood.drivers import Driver
     from foood.models import MenuCategory, MenuItem, Restaurant
@@ -157,6 +158,8 @@ class Store:
     decisions: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     #: questions engines asked support, keyed by question id
     questions: dict[str, Question] = field(default_factory=dict)
+    #: the customers' credit ledger, in order
+    credits: list[CreditEntry] = field(default_factory=list)
 
     def subscribe(self, event: str, listener: Callable[..., None]) -> None:
         self.listeners.setdefault(event, []).append(listener)

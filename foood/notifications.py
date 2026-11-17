@@ -63,6 +63,11 @@ TEXTS: dict[str, tuple[str, str, str]] = {
         "Another kitchen has your order",
         "{restaurant} will make your order {id} instead: {reason}",
     ),
+    "credit.issued": (
+        "CREDIT_ISSUED",
+        "Credit added",
+        "We added {amount} EGP to your account: {reason}",
+    ),
     "order.promise_moved": (
         "PROMISE_MOVED",
         "New delivery time",
@@ -188,8 +193,20 @@ def _on_replaced(store: Store, original: Order, replacement: Order, reason: str)
     )
 
 
+def _on_credit(store: Store, entry: Any) -> None:
+    notify(
+        store,
+        entry.customer_id,
+        "credit.issued",
+        orderId=entry.order_id,
+        amount=money(entry.amount),
+        reason=entry.reason,
+    )
+
+
 def install(store: Store) -> None:
     store.subscribe("payment.processed", lambda payment: _on_payment(store, payment))
+    store.subscribe("credit.issued", lambda entry: _on_credit(store, entry))
     store.subscribe(
         "order.replaced",
         lambda original, replacement, reason: _on_replaced(store, original, replacement, reason),
