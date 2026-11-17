@@ -22,7 +22,7 @@ from foood.deliveries import (
 )
 from foood.drivers import Driver
 from foood.orders import Order, confirm_paid, fail_payment, get_order, transition
-from foood.payments import Payment, payment_for_order, refund_payment
+from foood.payments import Payment, abandon, payment_for_order, refund_payment
 from foood.store import Store, iso, now
 
 router = APIRouter(prefix="/api", tags=["engine"])
@@ -49,6 +49,7 @@ class HandWiredEngine:
     def install(self, store: Store) -> None:
         self.store = store
         store.subscribe("payment.processed", self.on_payment)
+        store.subscribe("payment.unavailable", self.on_unavailable)
         store.subscribe("order.status", self.on_order_status)
         store.subscribe("driver.available", lambda driver: self.dispatch("a driver came online"))
         store.subscribe("delivery.dropped", self.on_dropped)
@@ -60,6 +61,12 @@ class HandWiredEngine:
         elif payment.status == "FAILED":
             decide(self.store, payment.order_id, "cancel", because="payment failed")
             fail_payment(self.store, payment.order_id, "PAYMENT_FAILED")
+
+    def on_unavailable(self, payment: Payment) -> None:
+        """The gateway refused to answer: a fixed reaction treats it like any payment failure."""
+        decide(self.store, payment.order_id, "cancel", because="payment gateway unavailable")
+        abandon(self.store, payment, "Payment gateway unavailable")
+        fail_payment(self.store, payment.order_id, "PAYMENT_GATEWAY_UNAVAILABLE")
 
     def on_order_status(self, order: Order, previous: str) -> None:
         if order.status == "READY_FOR_PICKUP" and delivery_for_order(self.store, order.id) is None:

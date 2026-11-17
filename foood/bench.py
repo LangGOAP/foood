@@ -71,6 +71,7 @@ class Run:
         self.store: Store = self.app.state.store
         self.placed: list[Placed] = []
         self.ticks = 0
+        self.unpaid: dict[str, str] = {}  # order id -> payment id refused by a gateway outage
         self.target = self.scenario.bench.orders or max(
             [i.order for i in self.scenario.injections] + [2]
         )
@@ -84,6 +85,7 @@ class Run:
 
     async def customer_tick(self, client: httpx.AsyncClient, sara: dict[str, str]) -> None:
         bench = self.scenario.bench
+        await self.tap_pay_again(client, sara)
         if len(self.placed) >= self.target:
             return
         due = self.ticks * TICK_SECONDS >= len(self.placed) * bench.interval_seconds
@@ -123,10 +125,19 @@ class Run:
         order = created.json()
         payment = await client.post("/api/payments", json={"orderId": order["id"]}, headers=sara)
         if payment.status_code == 201:
-            await client.post(
+            processed = await client.post(
                 f"/api/payments/{payment.json()['id']}/process", json={}, headers=sara
             )
+            if processed.status_code == 503:  # the gateway is down: the customer will tap again
+                self.unpaid[order["id"]] = payment.json()["id"]
         self.placed.append(Placed(number, order["id"], now(), notes))
+
+    async def tap_pay_again(self, client: httpx.AsyncClient, sara: dict[str, str]) -> None:
+        """A person whose payment did not go through taps pay again, until it does or cannot."""
+        for order_id, payment_id in list(self.unpaid.items()):
+            again = await client.post(f"/api/payments/{payment_id}/process", json={}, headers=sara)
+            if again.status_code != 503:
+                self.unpaid.pop(order_id)
 
     async def driver_tick(
         self, client: httpx.AsyncClient, headers: dict[str, str], user_id: str

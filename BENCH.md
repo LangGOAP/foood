@@ -7,9 +7,11 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 
 | Scenario | Engine | Seed | Orders | Delivered | Within promise | Cancelled | Consistent | Mean min | p95 min | Recovery decisions | Human prompts | LLM calls | Cost (USD) | Not recovered |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | unpriced | driver_drops |
-| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | unpriced | - |
-| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 26.1 | 26.1 | 2 | 0 | 0 | unpriced | accepts_then_cancels, restaurant_rejects |
-| payment-trouble | hand-wired | 7 | 2 | 1 | 1 | 1 | 2/2 | 12.1 | 12.1 | 1 | 0 | 0 | unpriced | payment_declines |
+| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | 0.0 | driver_drops |
+| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 0.0 | - |
+| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 26.1 | 26.1 | 2 | 0 | 0 | 0.0 | accepts_then_cancels, restaurant_rejects |
+| payment-trouble | hand-wired | 7 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 0 | 0.0 | gateway_down, payment_declines |
 
 4 run(s).
+
+Costs use the model prices each run file records: 0.75 in and 4.5 out, USD per million tokens (see `bench.env` for the source and date).

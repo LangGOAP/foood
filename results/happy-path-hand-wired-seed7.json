@@ -3,8 +3,12 @@
   "engine": "hand-wired",
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T14:26:16.760196Z",
+  "startedAt": "2026-11-17T18:28:24.947874Z",
   "virtualMinutes": 12.9,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5
+  },
   "summary": {
     "orders": 2,
     "delivered": 2,
@@ -17,17 +21,18 @@
     "humanPrompts": 0,
     "llmCalls": 0,
     "cost": 0.0,
+    "llmPriced": true,
     "failuresFired": [],
     "unrecovered": []
   },
   "orders": [
     {
       "number": 1,
-      "orderId": "8b2a86f1-0a35-45d8-acbb-99c52adfac0a",
-      "finalOrderId": "8b2a86f1-0a35-45d8-acbb-99c52adfac0a",
+      "orderId": "00204a48-cd02-4251-ae24-13fa6d9147b7",
+      "finalOrderId": "00204a48-cd02-4251-ae24-13fa6d9147b7",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T14:48:16.760196Z",
-      "deliveredAt": "2026-11-17T14:38:06.760196Z",
+      "promisedAt": "2026-11-17T18:50:24.947874Z",
+      "deliveredAt": "2026-11-17T18:40:14.947874Z",
       "withinPromise": true,
       "minutes": 11.8,
       "consistent": true,
@@ -38,16 +43,21 @@
       "recoveryDecisions": 0,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery",
+        "assign driver"
+      ],
       "cost": 0.0,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "f12957ad-6895-4377-889b-8e1ada0d4d9d",
-      "finalOrderId": "f12957ad-6895-4377-889b-8e1ada0d4d9d",
+      "orderId": "8d185b9c-e040-4e8c-b45c-a7af9382bba0",
+      "finalOrderId": "8d185b9c-e040-4e8c-b45c-a7af9382bba0",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T14:49:16.760196Z",
-      "deliveredAt": "2026-11-17T14:39:06.760196Z",
+      "promisedAt": "2026-11-17T18:51:24.947874Z",
+      "deliveredAt": "2026-11-17T18:41:14.947874Z",
       "withinPromise": true,
       "minutes": 11.8,
       "consistent": true,
@@ -58,6 +68,11 @@
       "recoveryDecisions": 0,
       "humanPrompts": 0,
       "llmCalls": 0,
+      "decisionNames": [
+        "confirm",
+        "create delivery",
+        "assign driver"
+      ],
       "cost": 0.0,
       "notes": []
     }

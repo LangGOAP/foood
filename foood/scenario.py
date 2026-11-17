@@ -41,6 +41,9 @@ FAILURES = {
     "driver_drops": "the assigned driver walks away, before or after pickup",
     "courier_delay": "the driver's phone moves at a fraction of the usual speed",
     "duplicate_submission": "the same order is submitted twice in a row",
+    "gateway_down": (
+        "the payment gateway is down for a while; every payment processed meanwhile is refused"
+    ),
 }
 DEFAULT_DELAY = {
     "restaurant_rejects": 8.0,
@@ -241,6 +244,23 @@ class Engine:
                 self.declines[order.id] = (injection.note or "Card declined", injection.times)
             elif injection.failure == "duplicate_submission":
                 self._resubmit(order)
+            elif injection.failure == "gateway_down":
+                self._gateway_down(order, injection)
+
+    def _gateway_down(self, order: Order, injection: Injection) -> None:
+        """The gateway goes down as this order is placed and comes back after the window."""
+        until = now() + timedelta(seconds=injection.for_seconds)
+        self.store.gateway_down_until = until
+        self.record("fired", order.id, failure="gateway_down", forSeconds=injection.for_seconds)
+        self.store.publish("payment.gateway_down", until=until)
+
+        def back() -> None:
+            if self.store.gateway_down_until == until:
+                self.store.gateway_down_until = None
+            self.record("cleared", order.id, failure="gateway_down")
+            self.store.publish("payment.gateway_up")
+
+        self.schedule(injection.for_seconds, "gateway up", back)
 
     def _resubmit(self, order: Order) -> None:
         """The double tap: the same customer sends the same order again, right away."""

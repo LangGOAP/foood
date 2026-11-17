@@ -162,6 +162,8 @@ class Store:
     tickers: list[Callable[[], None]] = field(default_factory=list)
     #: simulated-phone speed multipliers per driver user id (courier delays)
     speed_factors: dict[str, float] = field(default_factory=dict)
+    #: while set and in the future, the payment gateway refuses every payment (an outage)
+    gateway_down_until: datetime | None = None
     #: the loaded scenario's engine, if any
     engine: Engine | None = None
     #: order id -> what the order engine decided and why
