@@ -36,6 +36,8 @@ class Payment:
     amount: Decimal
     status: str = "PENDING"  # PENDING | PROCESSING | COMPLETED | FAILED | REFUNDED
     failure_reason: str | None = None
+    attempt: int = 1
+    method: dict[str, str] | None = None  # the card on file this attempt charges
     id: str = field(default_factory=new_id)
     created_at: datetime = field(default_factory=now)
     updated_at: datetime = field(default_factory=now)
@@ -48,6 +50,8 @@ class Payment:
             "amount": money(self.amount),
             "status": self.status,
             "failureReason": self.failure_reason,
+            "attempt": self.attempt,
+            "method": dict(self.method) if self.method else None,
             "createdAt": iso(self.created_at),
             "updatedAt": iso(self.updated_at),
         }
@@ -85,7 +89,44 @@ def charge(store: Store, payment: Payment) -> tuple[str, str | None]:
 
 
 def payment_for_order(store: Store, order_id: str) -> Payment | None:
-    return next((p for p in store.payments.values() if p.order_id == order_id), None)
+    """The latest attempt for an order (the completed one, when there is one)."""
+    attempts = [p for p in store.payments.values() if p.order_id == order_id]
+    if not attempts:
+        return None
+    done = [p for p in attempts if p.status in {"COMPLETED", "REFUNDED"}]
+    return max(done or attempts, key=lambda p: p.attempt)
+
+
+def settle(store: Store, payment: Payment, status: str, reason: str | None) -> None:
+    """Record the outcome on the attempt and the order, then let the engine decide."""
+    payment.status = status
+    payment.failure_reason = reason
+    payment.updated_at = now()
+    order = get_order(store, payment.order_id)
+    order.payment_status = status  # a fact about the order; what follows is the engine's call
+    order.updated_at = now()
+    store.publish("payment.processed", payment=payment)
+
+
+def retry_with_backup(store: Store, declined: Payment) -> Payment:
+    """For engines: charge the next card on file after a decline. Clients cannot call this."""
+    if declined.status != "FAILED":
+        raise ApiError(409, "Only a declined attempt can be retried", error="InvalidTransition")
+    order = get_order(store, declined.order_id)
+    if order.status not in PAYABLE:
+        raise ApiError(409, f"An order in {order.status} cannot be paid", error="OrderNotPayable")
+    customer = store.users[declined.customer_id]
+    tried = {p.method["id"] for p in store.payments.values() if p.order_id == order.id and p.method}
+    backup = next((c for c in customer.cards if c["id"] not in tried), None)
+    if backup is None:
+        raise ApiError(409, "No other card on file", error="NoBackupCard")
+    attempt = Payment(
+        order.id, customer.id, order.total, attempt=declined.attempt + 1, method=backup
+    )
+    store.payments[attempt.id] = attempt
+    status, reason = charge(store, attempt)
+    settle(store, attempt, status, reason)
+    return attempt
 
 
 def refund_payment(store: Store, payment: Payment, reason: str) -> Refund:
@@ -150,7 +191,8 @@ async def create_payment(
     if existing is not None and existing.status in {"PENDING", "PROCESSING"}:
         payment = existing
     else:
-        payment = Payment(order.id, user.id, order.total)
+        primary = user.cards[0] if user.cards else None
+        payment = Payment(order.id, user.id, order.total, method=primary)
         store.payments[payment.id] = payment
         if order.status == "CREATED":
             transition(store, order, "PAYMENT_PENDING")
@@ -178,14 +220,10 @@ async def process_payment(
         status, reason = "COMPLETED", None
     else:
         status, reason = charge(store, payment)
-    payment.status = status
-    payment.failure_reason = reason
-    payment.updated_at = now()
-    order = get_order(store, payment.order_id)
-    order.payment_status = status  # a fact about the order; what follows is the engine's call
-    order.updated_at = now()
-    store.publish("payment.processed", payment=payment)
-    return payment.to_json()
+    settle(store, payment, status, reason)
+    # an engine may have retried a decline on a backup card: answer with the latest attempt
+    latest = payment_for_order(store, payment.order_id) or payment
+    return latest.to_json()
 
 
 @router.get("/payments/{id}")

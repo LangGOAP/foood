@@ -25,7 +25,7 @@ TEXTS: dict[str, tuple[str, str, str]] = {
     "payment.completed": (
         "PAYMENT_COMPLETED",
         "Payment received",
-        "We received your payment for order {id}.",
+        "We received your payment for order {id}{card}.",
     ),
     "order.confirmed": (
         "ORDER_CONFIRMED",
@@ -89,6 +89,7 @@ class Notification:
             time=self.params.get("time", ""),
             reason=self.params.get("reason", ""),
             restaurant=self.params.get("restaurant", ""),
+            card=f" with {self.params['card']}" if self.params.get("card") else "",
         )
         if self.message_key == "order.cancelled":
             who = (
@@ -136,7 +137,8 @@ def _on_order_status(store: Store, order: Order, previous: str) -> None:
 
 def _on_payment(store: Store, payment: Payment) -> None:
     key = "payment.completed" if payment.status == "COMPLETED" else "payment.failed"
-    notify(store, payment.customer_id, key, orderId=payment.order_id)
+    card = payment.method["label"] if payment.method else None
+    notify(store, payment.customer_id, key, orderId=payment.order_id, card=card)
 
 
 def _on_refund(store: Store, payment: Payment, refund: Refund) -> None:
