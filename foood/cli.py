@@ -106,6 +106,30 @@ def bench(
     )
 
 
+@app.command(name="bench-all")
+def bench_all(
+    engines: str = typer.Option("hand-wired,langgraph,langgoap", help="Comma-separated engines."),
+    seeds: str = typer.Option("7,11,13", help="Comma-separated seeds."),
+) -> None:
+    """Every bundled scenario against every engine under every seed, then the table."""
+    import subprocess
+    import sys
+
+    from foood.bench import matrix
+
+    _load_dotenv()
+    results = matrix(engines=engines.split(","), seeds=[int(s) for s in seeds.split(",")])
+    for result in results:
+        summary = result["summary"]
+        typer.echo(
+            f"{result['scenario']:17} {result['engine']:11} seed {result['seed']:>2}: "
+            f"{summary['delivered']}/{summary['orders']} delivered, "
+            f"{summary['consistent']} consistent, llm {summary['llmCalls']}, "
+            f"not recovered: {', '.join(summary['unrecovered']) or 'none'}"
+        )
+    subprocess.run([sys.executable, "scripts/bench_table.py"], check=True)
+
+
 @app.command()
 def ask(
     text: str = typer.Argument(..., help="The order, in a sentence."),

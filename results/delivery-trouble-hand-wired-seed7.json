@@ -1,28 +1,26 @@
 {
   "scenario": "delivery-trouble",
   "engine": "hand-wired",
+  "model": null,
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T19:37:55.489639Z",
-  "virtualMinutes": 28.1,
-  "llmPrices": {
-    "inputPerMillionUsd": 0.75,
-    "outputPerMillionUsd": 4.5
-  },
+  "startedAt": "2026-11-17T03:06:54.835901Z",
+  "virtualMinutes": 25.3,
   "summary": {
     "orders": 4,
     "delivered": 3,
     "deliveredWithinPromise": 2,
     "cancelled": 1,
     "consistent": 4,
-    "meanMinutes": 16.7,
-    "p95Minutes": 25.0,
+    "meanMinutes": 15.2,
+    "p95Minutes": 22.2,
     "recoveryDecisions": 3,
     "humanPrompts": 0,
-    "llmCalls": 22,
-    "llmTokens": 5834,
-    "cost": 0.007,
-    "llmPriced": true,
+    "llmCalls": 0,
+    "messageCalls": 22,
+    "llmTokens": 5769,
+    "cost": 0.0,
+    "llmPriced": false,
     "failuresFired": [
       "courier_delay",
       "driver_drops",
@@ -35,13 +33,13 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "cbcfba8f-d7c8-49b6-8627-40266d04e332",
-      "finalOrderId": "cbcfba8f-d7c8-49b6-8627-40266d04e332",
+      "orderId": "545fffb2-0eb1-4822-83f2-d89c1094f83f",
+      "finalOrderId": "545fffb2-0eb1-4822-83f2-d89c1094f83f",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T19:59:55.489639Z",
-      "deliveredAt": "2026-11-17T19:51:00.489639Z",
+      "promisedAt": "2026-11-17T03:27:54.835901Z",
+      "deliveredAt": "2026-11-17T03:19:04.835901Z",
       "withinPromise": true,
-      "minutes": 13.1,
+      "minutes": 12.2,
       "consistent": true,
       "problems": [],
       "failures": [
@@ -51,7 +49,10 @@
       "decisions": 7,
       "recoveryDecisions": 0,
       "humanPrompts": 0,
-      "llmCalls": 5,
+      "llmCalls": 0,
+      "messageCalls": 5,
+      "llmTokens": 1295,
+      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -61,19 +62,17 @@
         "phrase",
         "phrase"
       ],
-      "llmTokens": 1328,
-      "cost": 0.0016,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "7e020aa9-438e-4572-ba36-1742cee4e565",
-      "finalOrderId": "7e020aa9-438e-4572-ba36-1742cee4e565",
+      "orderId": "ba2ad2d2-bcd1-4cbc-8688-db13a03d04b3",
+      "finalOrderId": "ba2ad2d2-bcd1-4cbc-8688-db13a03d04b3",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T20:00:55.489639Z",
-      "deliveredAt": "2026-11-17T19:51:00.489639Z",
+      "promisedAt": "2026-11-17T03:28:54.835901Z",
+      "deliveredAt": "2026-11-17T03:19:04.835901Z",
       "withinPromise": true,
-      "minutes": 12.1,
+      "minutes": 11.2,
       "consistent": true,
       "problems": [],
       "failures": [
@@ -83,7 +82,10 @@
       "decisions": 10,
       "recoveryDecisions": 1,
       "humanPrompts": 0,
-      "llmCalls": 6,
+      "llmCalls": 0,
+      "messageCalls": 6,
+      "llmTokens": 1588,
+      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -96,16 +98,14 @@
         "phrase",
         "phrase"
       ],
-      "llmTokens": 1570,
-      "cost": 0.0019,
       "notes": []
     },
     {
       "number": 3,
-      "orderId": "09135a82-c34a-4ddc-843c-b171cae7b571",
-      "finalOrderId": "09135a82-c34a-4ddc-843c-b171cae7b571",
+      "orderId": "733fff68-11fd-430b-874a-4631ac63c078",
+      "finalOrderId": "733fff68-11fd-430b-874a-4631ac63c078",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T20:01:55.489639Z",
+      "promisedAt": "2026-11-17T03:29:54.835901Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -118,7 +118,10 @@
       "decisions": 11,
       "recoveryDecisions": 2,
       "humanPrompts": 0,
-      "llmCalls": 6,
+      "llmCalls": 0,
+      "messageCalls": 6,
+      "llmTokens": 1554,
+      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -132,19 +135,17 @@
         "refund",
         "phrase"
       ],
-      "llmTokens": 1600,
-      "cost": 0.0019,
       "notes": []
     },
     {
       "number": 4,
-      "orderId": "713a3a9b-ce35-4fb4-9f24-9ddb593b6e45",
-      "finalOrderId": "713a3a9b-ce35-4fb4-9f24-9ddb593b6e45",
+      "orderId": "7b8094d0-3b2d-4689-ba16-624c6587108c",
+      "finalOrderId": "7b8094d0-3b2d-4689-ba16-624c6587108c",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T20:02:55.489639Z",
-      "deliveredAt": "2026-11-17T20:05:55.489639Z",
+      "promisedAt": "2026-11-17T03:30:54.835901Z",
+      "deliveredAt": "2026-11-17T03:32:09.835901Z",
       "withinPromise": false,
-      "minutes": 25.0,
+      "minutes": 22.2,
       "consistent": true,
       "problems": [],
       "failures": [
@@ -154,7 +155,10 @@
       "decisions": 8,
       "recoveryDecisions": 0,
       "humanPrompts": 0,
-      "llmCalls": 5,
+      "llmCalls": 0,
+      "messageCalls": 5,
+      "llmTokens": 1332,
+      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -165,8 +169,6 @@
         "phrase",
         "phrase"
       ],
-      "llmTokens": 1336,
-      "cost": 0.0016,
       "notes": []
     }
   ]

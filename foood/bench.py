@@ -449,9 +449,11 @@ class Run:
         unrecovered = sorted(
             {f for r in placed_rows if r["status"] != "DELIVERED" for f in r["failures"]}
         )
+        advisor = getattr(self.app.state.engine, "advisor", None)
         return {
             "scenario": self.scenario.name,
             "engine": self.engine_name,
+            "model": getattr(advisor, "model", None) if advisor is not None else None,
             "seed": self.seed,
             "foood": __version__,
             "startedAt": iso(started),
@@ -503,7 +505,8 @@ def run(
     result = asyncio.run(Run(load(scenario), engine, seed).execute())
     folder = out_dir or RESULTS
     folder.mkdir(parents=True, exist_ok=True)
-    path = folder / f"{result['scenario']}-{engine}-seed{seed}.json"
+    label = engine if not result.get("model") else f"{engine}+{result['model']}"
+    path = folder / f"{result['scenario']}-{label}-seed{seed}.json"
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     result["path"] = str(path)
     return result
@@ -622,3 +625,25 @@ def repeat(
 
 
 __all__ = ["Kitchen", "Run", "repeat", "run", "same_outcomes"]
+__all__ = ["Kitchen", "Run", "repeat", "run"]
+SCENARIOS_ALL = ["happy-path", "kitchen-trouble", "delivery-trouble", "payment-trouble", "incident"]
+ENGINES_ALL = ["hand-wired", "llm", "langgraph", "langgoap"]
+SEEDS_ALL = [7, 11, 13]
+
+
+def matrix(
+    scenarios: list[str] | None = None,
+    engines: list[str] | None = None,
+    seeds: list[int] | None = None,
+    out_dir: Path | None = None,
+) -> list[dict[str, Any]]:
+    """Every scenario against every engine under every seed; the schedule is this list."""
+    results = []
+    for scenario in scenarios or SCENARIOS_ALL:
+        for engine in engines or ENGINES_ALL:
+            for seed in seeds or SEEDS_ALL:
+                results.append(run(scenario, engine, seed, out_dir))
+    return results
+
+
+__all__ = ["Kitchen", "Run", "run"]

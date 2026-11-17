@@ -271,11 +271,7 @@ Smash Bros Burgers next to Burger Palace. Support can do it by hand with
 `POST /api/orders/{id}/replacement`. Backup cards: customers may hold more than
 one card on file (the demo customer has two), every payment attempt names its
 card, and an engine can retry a decline on the next card; `payment_declines`
-in a scenario takes `times = 2` to decline both. A gateway outage (`gateway_down`,
-`for_seconds`) refuses every payment processed in its window with a 503 and the
-platform announces the gateway going down and coming back; the hand-wired engine
-cancels, an engine that can wait retries the pending attempt
-(`retry_pending_payment`) when it is back. Credits: a ledger per customer that
+in a scenario takes `times = 2` to decline both. Credits: a ledger per customer that
 engines or support fill as compensation (`POST /api/credits`, one credit per
 order); the next quote and order apply the balance, the payment charges the
 rest, and a cancelled order gives its credit back (`GET /api/credits/me`). Dispatch strategies (`foood/dispatch.py`): longest idle, nearest first by
@@ -331,11 +327,6 @@ make bench                      # every bundled scenario against ENGINE (hand-wi
 uv run foood bench --scenario delivery-trouble --engine hand-wired --seed 7
 ```
 
-Add `--repeat 10` to run the same scenario, engine and seed ten times: the model is
-then the only source of variation, and `results/repeats/` keeps every run's summary
-with the distribution of what differed, rendered as a second table in `BENCH.md`.
-An engine without a model is the control; its runs must be identical.
-
 The bench runs a scenario with nobody at the apps: autopilots place and pay
 the orders, drive the deliveries when the simulated phone arrives, answer
 support's questions with the recommended option after a while, and accept the
@@ -344,13 +335,64 @@ tick by tick. Each run writes `results/<scenario>-<engine>-seed<n>.json`
 with, per order, the final status, whether it arrived within its promise, the
 minutes it took, whether its state is consistent, the failures fired against
 it, the engine's recovery decisions, human prompts, LLM calls and cost.
-Cost is computed with the model prices in `bench.env` (USD per million tokens,
-with the source and date in the file); every results file records the prices it
-was given, and a run without them says unpriced.
-[`BENCH.md`](BENCH.md) is generated from those files by `make bench-table` and
-CI fails when it is stale; no number in it is typed by hand. The hand-wired
-rows are the baseline every other engine is compared with, and they say
-plainly which failures it does not recover from.
+[`BENCH.md`](BENCH.md) and the table below are generated from those files by
+`make bench-table` and CI fails when either is stale; no number in them is
+typed by hand. The hand-wired rows are the baseline every other engine is
+compared with, and they say plainly which failures it does not recover from.
+`make bench-all` runs every bundled scenario, including `incident` (one bad
+evening, seven orders, six different failures), against every engine under
+seeds 7, 11 and 13; an engine that calls a model is labelled with the model and
+shown per seed so its variation is visible rather than averaged away.
+
+<!-- bench:start -->
+| Scenario | Engine | Seed | Orders | Delivered | Within promise | Cancelled | Consistent | Mean min | p95 min | Recovery decisions | Human prompts | LLM calls, decisions | LLM calls, language | LLM tokens | Cost (USD) | Not recovered |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 15.2 | 22.2 | 3 | 0 | 0 | 22 | 5769 | unpriced | driver_drops |
+| delivery-trouble | hand-wired | 11 | 4 | 3 | 2 | 1 | 4/4 | 15.2 | 22.2 | 3 | 0 | 0 | 22 | 5727 | unpriced | driver_drops |
+| delivery-trouble | hand-wired | 13 | 4 | 3 | 2 | 1 | 4/4 | 15.2 | 22.2 | 3 | 0 | 0 | 22 | 5799 | unpriced | driver_drops |
+| delivery-trouble | langgoap | 7 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 0 | 27 | 7127 | unpriced | - |
+| delivery-trouble | langgoap | 11 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 0 | 27 | 7064 | unpriced | - |
+| delivery-trouble | langgoap | 13 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 0 | 27 | 7097 | unpriced | - |
+| delivery-trouble | langgraph + gpt-5.4-mini | 7 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 26 | 8303 | unpriced | - |
+| delivery-trouble | langgraph + gpt-5.4-mini | 11 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 26 | 8173 | unpriced | - |
+| delivery-trouble | langgraph + gpt-5.4-mini | 13 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 26 | 8148 | unpriced | - |
+| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2605 | unpriced | - |
+| happy-path | hand-wired | 11 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2627 | unpriced | - |
+| happy-path | hand-wired | 13 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2600 | unpriced | - |
+| happy-path | langgoap | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2647 | unpriced | - |
+| happy-path | langgoap | 11 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2620 | unpriced | - |
+| happy-path | langgoap | 13 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2654 | unpriced | - |
+| happy-path | langgraph + gpt-5.4-mini | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2695 | unpriced | - |
+| happy-path | langgraph + gpt-5.4-mini | 11 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2618 | unpriced | - |
+| happy-path | langgraph + gpt-5.4-mini | 13 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 10 | 2614 | unpriced | - |
+| incident | hand-wired | 7 | 6 | 2 | 2 | 4 | 6/6 | 14.9 | 14.9 | 5 | 0 | 0 | 25 | 6641 | unpriced | accepts_then_cancels, driver_drops, payment_declines, restaurant_rejects |
+| incident | hand-wired | 11 | 6 | 2 | 2 | 4 | 6/6 | 14.9 | 14.9 | 5 | 0 | 0 | 25 | 6591 | unpriced | accepts_then_cancels, driver_drops, payment_declines, restaurant_rejects |
+| incident | hand-wired | 13 | 6 | 2 | 2 | 4 | 6/6 | 14.9 | 14.9 | 5 | 0 | 0 | 25 | 6690 | unpriced | accepts_then_cancels, driver_drops, payment_declines, restaurant_rejects |
+| incident | langgoap | 7 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 10 | 0 | 0 | 43 | 11469 | unpriced | - |
+| incident | langgoap | 11 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 10 | 0 | 0 | 43 | 11607 | unpriced | - |
+| incident | langgoap | 13 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 10 | 0 | 0 | 43 | 11414 | unpriced | - |
+| incident | langgraph + gpt-5.4-mini | 7 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 7 | 0 | 4 | 42 | 13691 | unpriced | - |
+| incident | langgraph + gpt-5.4-mini | 11 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 7 | 0 | 4 | 42 | 13820 | unpriced | - |
+| incident | langgraph + gpt-5.4-mini | 13 | 6 | 6 | 4 | 0 | 6/6 | 17.9 | 28.0 | 7 | 0 | 4 | 42 | 13988 | unpriced | - |
+| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 35.2 | 35.2 | 2 | 0 | 0 | 13 | 3437 | unpriced | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | hand-wired | 11 | 3 | 1 | 0 | 2 | 3/3 | 35.2 | 35.2 | 2 | 0 | 0 | 13 | 3528 | unpriced | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | hand-wired | 13 | 3 | 1 | 0 | 2 | 3/3 | 35.2 | 35.2 | 2 | 0 | 0 | 13 | 3486 | unpriced | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | langgoap | 7 | 3 | 3 | 2 | 0 | 3/3 | 18.8 | 35.9 | 7 | 0 | 0 | 22 | 5893 | unpriced | - |
+| kitchen-trouble | langgoap | 11 | 3 | 3 | 2 | 0 | 3/3 | 18.8 | 35.9 | 7 | 0 | 0 | 22 | 5879 | unpriced | - |
+| kitchen-trouble | langgoap | 13 | 3 | 3 | 2 | 0 | 3/3 | 18.8 | 35.9 | 7 | 0 | 0 | 22 | 5955 | unpriced | - |
+| kitchen-trouble | langgraph + gpt-5.4-mini | 7 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 24 | 8443 | unpriced | - |
+| kitchen-trouble | langgraph + gpt-5.4-mini | 11 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 24 | 8435 | unpriced | - |
+| kitchen-trouble | langgraph + gpt-5.4-mini | 13 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 24 | 8546 | unpriced | - |
+| payment-trouble | hand-wired | 7 | 2 | 1 | 1 | 1 | 2/2 | 11.2 | 11.2 | 1 | 0 | 0 | 6 | 1559 | unpriced | payment_declines |
+| payment-trouble | hand-wired | 11 | 2 | 1 | 1 | 1 | 2/2 | 11.2 | 11.2 | 1 | 0 | 0 | 6 | 1589 | unpriced | payment_declines |
+| payment-trouble | hand-wired | 13 | 2 | 1 | 1 | 1 | 2/2 | 11.2 | 11.2 | 1 | 0 | 0 | 6 | 1581 | unpriced | payment_declines |
+| payment-trouble | langgoap | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 2 | 0 | 0 | 11 | 2816 | unpriced | - |
+| payment-trouble | langgoap | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 2 | 0 | 0 | 11 | 2925 | unpriced | - |
+| payment-trouble | langgoap | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 2 | 0 | 0 | 11 | 2855 | unpriced | - |
+| payment-trouble | langgraph + gpt-5.4-mini | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 11 | 3567 | unpriced | - |
+| payment-trouble | langgraph + gpt-5.4-mini | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 11 | 3548 | unpriced | - |
+| payment-trouble | langgraph + gpt-5.4-mini | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 11 | 3512 | unpriced | - |
+<!-- bench:end -->
 
 ## Credits
 

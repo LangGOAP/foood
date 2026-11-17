@@ -1,28 +1,26 @@
 {
   "scenario": "kitchen-trouble",
   "engine": "hand-wired",
+  "model": null,
   "seed": 7,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T19:37:41.171559Z",
-  "virtualMinutes": 38.2,
-  "llmPrices": {
-    "inputPerMillionUsd": 0.75,
-    "outputPerMillionUsd": 4.5
-  },
+  "startedAt": "2026-11-17T03:04:07.999784Z",
+  "virtualMinutes": 37.2,
   "summary": {
     "orders": 3,
     "delivered": 1,
     "deliveredWithinPromise": 0,
     "cancelled": 2,
     "consistent": 3,
-    "meanMinutes": 36.1,
-    "p95Minutes": 36.1,
+    "meanMinutes": 35.2,
+    "p95Minutes": 35.2,
     "recoveryDecisions": 2,
     "humanPrompts": 0,
-    "llmCalls": 13,
-    "llmTokens": 3546,
-    "cost": 0.0042,
-    "llmPriced": true,
+    "llmCalls": 0,
+    "messageCalls": 13,
+    "llmTokens": 3437,
+    "cost": 0.0,
+    "llmPriced": false,
     "failuresFired": [
       "accepts_then_cancels",
       "prep_overrun",
@@ -36,10 +34,10 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "e45b7d15-f21b-4a31-9afd-5bb44c5fad57",
-      "finalOrderId": "e45b7d15-f21b-4a31-9afd-5bb44c5fad57",
+      "orderId": "ee7bf64d-a353-4c5d-b967-d01cedb56ab9",
+      "finalOrderId": "ee7bf64d-a353-4c5d-b967-d01cedb56ab9",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T19:59:41.171559Z",
+      "promisedAt": "2026-11-17T03:25:07.999784Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -52,7 +50,10 @@
       "decisions": 6,
       "recoveryDecisions": 1,
       "humanPrompts": 0,
-      "llmCalls": 4,
+      "llmCalls": 0,
+      "messageCalls": 4,
+      "llmTokens": 1077,
+      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -61,16 +62,14 @@
         "refund",
         "phrase"
       ],
-      "llmTokens": 1103,
-      "cost": 0.0013,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "df0f0554-7bba-4d82-9dc4-1884d869959b",
-      "finalOrderId": "df0f0554-7bba-4d82-9dc4-1884d869959b",
+      "orderId": "55b858e7-b694-4266-8022-4d3677c84123",
+      "finalOrderId": "55b858e7-b694-4266-8022-4d3677c84123",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T20:00:41.171559Z",
+      "promisedAt": "2026-11-17T03:26:07.999784Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -83,7 +82,10 @@
       "decisions": 6,
       "recoveryDecisions": 1,
       "humanPrompts": 0,
-      "llmCalls": 4,
+      "llmCalls": 0,
+      "messageCalls": 4,
+      "llmTokens": 1098,
+      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -92,19 +94,17 @@
         "refund",
         "phrase"
       ],
-      "llmTokens": 1099,
-      "cost": 0.0013,
       "notes": []
     },
     {
       "number": 3,
-      "orderId": "c8e9a53f-b159-4709-82cf-55b3f5d093d8",
-      "finalOrderId": "c8e9a53f-b159-4709-82cf-55b3f5d093d8",
+      "orderId": "14582096-9851-446e-86a4-b7586352121b",
+      "finalOrderId": "14582096-9851-446e-86a4-b7586352121b",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T20:01:41.171559Z",
-      "deliveredAt": "2026-11-17T20:15:46.171559Z",
+      "promisedAt": "2026-11-17T03:27:07.999784Z",
+      "deliveredAt": "2026-11-17T03:41:17.999784Z",
       "withinPromise": false,
-      "minutes": 36.1,
+      "minutes": 35.2,
       "consistent": true,
       "problems": [],
       "failures": [
@@ -114,7 +114,10 @@
       "decisions": 8,
       "recoveryDecisions": 0,
       "humanPrompts": 0,
-      "llmCalls": 5,
+      "llmCalls": 0,
+      "messageCalls": 5,
+      "llmTokens": 1262,
+      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -125,8 +128,6 @@
         "phrase",
         "phrase"
       ],
-      "llmTokens": 1344,
-      "cost": 0.0016,
       "notes": [
         "QA Pasta unavailable, picked another dish"
       ]

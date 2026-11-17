@@ -1,4 +1,4 @@
-.PHONY: install lint format test serve up down contract bench bench-table
+.PHONY: install lint format test serve up down contract bench bench-all bench-table
 
 include bench.env
 export FOOOD_LLM_PRICE_IN FOOOD_LLM_PRICE_OUT FOOOD_LLM_PRICES
@@ -36,8 +36,11 @@ contract:
 SEED ?= 7
 
 bench:  ## run every bundled scenario against ENGINE under SEED, then regenerate BENCH.md
-	for s in happy-path kitchen-trouble delivery-trouble payment-trouble storm bridge-closed; do uv run foood bench --scenario $$s --engine $(ENGINE) --seed $(SEED) || exit 1; done
+	for s in happy-path kitchen-trouble delivery-trouble payment-trouble storm bridge-closed incident; do uv run foood bench --scenario $$s --engine $(ENGINE) --seed $(SEED) || exit 1; done
 	uv run python scripts/bench_table.py
+
+bench-all:  ## every bundled scenario x every engine x seeds 7, 11, 13; then BENCH.md and the README table
+	uv run foood bench-all
 
 bench-table:
 	uv run python scripts/bench_table.py

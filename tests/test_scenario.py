@@ -53,6 +53,7 @@ def test_bundled_scenarios_parse() -> None:
         "bridge-closed",
         "delivery-trouble",
         "happy-path",
+        "incident",
         "kitchen-trouble",
         "payment-trouble",
         "storm",

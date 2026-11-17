@@ -1,0 +1,55 @@
+# One bad evening: seven orders, and something different goes wrong with six of them.
+name = "incident"
+description = "A rejection, a cancellation mid-prep, a decline on the first card, a long driver search, a drop after pickup, a crawling courier and the payment gateway down for a minute and a half, across seven orders in a quarter of an hour."
+seed = 5
+
+[kitchen]
+autopilot = true
+start_after = 5
+ready_after = 45
+
+[bench]
+orders = 7
+interval_seconds = 120
+drivers = 2
+
+[[inject]]
+order = 1
+failure = "restaurant_rejects"
+after_seconds = 8
+reason = "The grill is down"
+
+[[inject]]
+order = 2
+failure = "accepts_then_cancels"
+after_seconds = 20
+reason = "The last portion just went out"
+
+[[inject]]
+order = 3
+failure = "payment_declines"
+times = 1
+reason = "Insufficient funds"
+
+[[inject]]
+order = 4
+failure = "no_driver"
+for_seconds = 240
+
+[[inject]]
+order = 5
+failure = "driver_drops"
+after = "pickup"
+after_seconds = 15
+reason = "Scooter broke down on the bridge"
+
+[[inject]]
+order = 6
+failure = "courier_delay"
+factor = 0.2
+for_seconds = 300
+
+[[inject]]
+order = 7
+failure = "gateway_down"
+for_seconds = 90
