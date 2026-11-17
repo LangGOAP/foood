@@ -22,6 +22,7 @@ from foood.catalog import page_of
 from foood.drivers import Driver, available_drivers, driver_of
 from foood.errors import ApiError
 from foood.models import money, new_id
+from foood.money import CURRENCY
 from foood.orders import DELIVERY_FEE, Order, get_order, transition
 from foood.store import Store, User, iso, now
 
@@ -478,7 +479,7 @@ async def my_earnings(
     pending = sum((e.amount for e in entries if e.status(at) == "PENDING"), Decimal("0"))
     available = sum((e.amount for e in entries if e.status(at) == "AVAILABLE"), Decimal("0"))
     return {
-        "currency": "EGP",
+        "currency": CURRENCY,
         "pending": money(pending),
         "available": money(available),
         "balance": money(pending + available),

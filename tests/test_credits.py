@@ -22,7 +22,7 @@ async def test_support_issues_a_credit_and_the_customer_sees_it(client) -> None:
     admin = await login(client, "admin@example.com")
     me = (await client.get("/api/auth/me", headers=sara)).json()
     assert (await client.get("/api/credits/me", headers=sara)).json() == {
-        "currency": "EGP",
+        "currency": "USD",
         "balance": "0.00",
         "entries": [],
     }

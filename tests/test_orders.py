@@ -57,7 +57,7 @@ async def test_quote_then_order_from_the_cart(client) -> None:
         "subtotalAmount": "24.00",
         "deliveryFee": "3.00",
         "totalAmount": "27.00",
-        "currency": "EGP",
+        "currency": "USD",
     }
     key = str(uuid.uuid4())
     created = await client.post(
@@ -203,7 +203,7 @@ async def test_kitchen_board_transitions_and_summary(client) -> None:
         "delivered": 0,
         "cancelled": 0,
         "revenue": "24.00",
-        "currency": "EGP",
+        "currency": "USD",
     }
 
 

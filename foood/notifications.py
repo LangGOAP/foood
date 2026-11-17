@@ -14,6 +14,7 @@ from foood.deliveries import Delivery
 from foood.drivers import Driver
 from foood.errors import ApiError
 from foood.models import money, new_id
+from foood.money import dollars
 from foood.orders import Order
 from foood.payments import Payment, Refund
 from foood.store import Store, iso, now
@@ -66,7 +67,7 @@ TEXTS: dict[str, tuple[str, str, str]] = {
     "credit.issued": (
         "CREDIT_ISSUED",
         "Credit added",
-        "We added {amount} EGP to your account: {reason}",
+        "We added {amount} to your account: {reason}",
     ),
     "order.promise_moved": (
         "PROMISE_MOVED",
@@ -90,7 +91,7 @@ class Notification:
         short_id = self.params.get("orderId", "")[:8]
         message = template.format(
             id=short_id,
-            amount=self.params.get("amount", ""),
+            amount=dollars(self.params["amount"]) if self.params.get("amount") else "",
             time=self.params.get("time", ""),
             reason=self.params.get("reason", ""),
             restaurant=self.params.get("restaurant", ""),

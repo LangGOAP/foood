@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 from foood.auth import CurrentUser, StoreDep
 from foood.errors import ApiError
 from foood.models import money, new_id
+from foood.money import CURRENCY
 from foood.store import Store, User, iso, now
 
 router = APIRouter(prefix="/api", tags=["credits"])
@@ -86,7 +87,7 @@ def ledger(store: Store, customer_id: str) -> dict[str, Any]:
         reverse=True,
     )
     return {
-        "currency": "EGP",
+        "currency": CURRENCY,
         "balance": money(balance(store, customer_id)),
         "entries": [e.to_json() for e in entries],
     }

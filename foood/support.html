@@ -117,7 +117,7 @@ function renderOrders(orders) {
     <div class="card">
       <div class="row"><strong>${esc(o.restaurantName)} · ${esc(o.customerFirstName || "")}</strong>
         <span class="pill ${o.status === "CANCELLED" || o.status === "FAILED" ? "bad" : o.status === "DELIVERED" ? "ok" : ""}">${esc(o.status)}</span></div>
-      <div class="muted">${esc(o.id.slice(0,8))} · ${esc(o.items.map((i) => `${i.quantity}× ${i.name}`).join(", "))} · ${esc(o.totalAmount)} EGP · promised ${fmtTime(o.promisedAt)}${o.promiseBreached ? ' · <span class="pill bad">late</span>' : ""}${o.cancellationNote ? ` · ${esc(o.cancellationNote)}` : ""}</div>
+      <div class="muted">${esc(o.id.slice(0,8))} · ${esc(o.items.map((i) => `${i.quantity}× ${i.name}`).join(", "))} · $${esc(o.totalAmount)} · promised ${fmtTime(o.promisedAt)}${o.promiseBreached ? ' · <span class="pill bad">late</span>' : ""}${o.cancellationNote ? ` · ${esc(o.cancellationNote)}` : ""}</div>
       ${o.decisions.length ? `<ul class="decisions">${o.decisions.map((d) => `<li>${fmtTime(d.at)} <strong>${esc(d.decision)}</strong> — ${esc(d.because || "")}${d.licensePlate ? ` (${esc(d.licensePlate)})` : ""}</li>`).join("")}</ul>` : ""}
     </div>`).join("");
 }
