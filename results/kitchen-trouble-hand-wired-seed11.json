@@ -9,13 +9,17 @@
     "python": "3.13.14",
     "processor": "i386"
   },
-  "startedAt": "2026-11-17T12:53:04.441359Z",
-  "virtualMinutes": 37.2,
+  "startedAt": "2026-11-17T20:29:51.591824Z",
+  "virtualMinutes": 38.2,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5
+  },
   "timing": {
     "planningMs": 0,
     "modelMs": 0.0,
-    "languageMs": 12576.2,
-    "wallSeconds": 12.8
+    "languageMs": 10286.6,
+    "wallSeconds": 10.4
   },
   "summary": {
     "orders": 3,
@@ -23,17 +27,17 @@
     "deliveredWithinPromise": 0,
     "cancelled": 2,
     "consistent": 3,
-    "meanMinutes": 35.2,
-    "p95Minutes": 35.2,
+    "meanMinutes": 36.1,
+    "p95Minutes": 36.1,
     "recoveryDecisions": 2,
     "humanPrompts": 0,
     "llmCalls": 0,
     "messageCalls": 13,
-    "llmTokens": 3455,
-    "cost": 0.0,
+    "llmTokens": 3554,
+    "cost": 0.0042,
     "replans": 0,
     "meanPlanSteps": null,
-    "llmPriced": false,
+    "llmPriced": true,
     "failuresFired": [
       "accepts_then_cancels",
       "prep_overrun",
@@ -47,10 +51,10 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "136bb45b-bbb8-49d3-a5e5-ec7f776b48ab",
-      "finalOrderId": "136bb45b-bbb8-49d3-a5e5-ec7f776b48ab",
+      "orderId": "9ec86cfe-1037-4873-9279-8dd0eba31ae5",
+      "finalOrderId": "9ec86cfe-1037-4873-9279-8dd0eba31ae5",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T13:14:04.441359Z",
+      "promisedAt": "2026-11-17T20:51:51.591824Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -65,8 +69,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 4,
-      "llmTokens": 1073,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -75,19 +77,21 @@
         "refund",
         "phrase"
       ],
+      "llmTokens": 1097,
+      "cost": 0.0013,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 3912.5,
+      "languageMs": 3098.4,
       "replans": 0,
       "planSteps": null,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "28c51a04-0284-48ca-9cf3-679856965913",
-      "finalOrderId": "28c51a04-0284-48ca-9cf3-679856965913",
+      "orderId": "6f333c59-8970-4524-ab0e-45946cf5e8d8",
+      "finalOrderId": "6f333c59-8970-4524-ab0e-45946cf5e8d8",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T13:15:04.441359Z",
+      "promisedAt": "2026-11-17T20:52:51.591824Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -102,8 +106,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 4,
-      "llmTokens": 1088,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -112,22 +114,24 @@
         "refund",
         "phrase"
       ],
+      "llmTokens": 1111,
+      "cost": 0.0013,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 3952.3,
+      "languageMs": 3369.4,
       "replans": 0,
       "planSteps": null,
       "notes": []
     },
     {
       "number": 3,
-      "orderId": "bfd9a909-19e2-48a0-abad-095840a1cd2d",
-      "finalOrderId": "bfd9a909-19e2-48a0-abad-095840a1cd2d",
+      "orderId": "d1bbf4f5-b6f8-413a-9eca-6b2c3bae9619",
+      "finalOrderId": "d1bbf4f5-b6f8-413a-9eca-6b2c3bae9619",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T13:16:04.441359Z",
-      "deliveredAt": "2026-11-17T13:30:14.441359Z",
+      "promisedAt": "2026-11-17T20:53:51.591824Z",
+      "deliveredAt": "2026-11-17T21:07:56.591824Z",
       "withinPromise": false,
-      "minutes": 35.2,
+      "minutes": 36.1,
       "consistent": true,
       "problems": [],
       "failures": [
@@ -139,8 +143,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 5,
-      "llmTokens": 1294,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -151,9 +153,11 @@
         "phrase",
         "phrase"
       ],
+      "llmTokens": 1346,
+      "cost": 0.0016,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 4711.4,
+      "languageMs": 3818.8,
       "replans": 0,
       "planSteps": null,
       "notes": [

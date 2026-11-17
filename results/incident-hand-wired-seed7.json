@@ -9,35 +9,40 @@
     "python": "3.13.14",
     "processor": "i386"
   },
-  "startedAt": "2026-11-17T13:00:45.431683Z",
-  "virtualMinutes": 25.0,
+  "startedAt": "2026-11-17T20:37:41.299088Z",
+  "virtualMinutes": 25.9,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5
+  },
   "timing": {
     "planningMs": 0,
     "modelMs": 0.0,
-    "languageMs": 23999.5,
-    "wallSeconds": 24.3
+    "languageMs": 20828.3,
+    "wallSeconds": 21.1
   },
   "summary": {
-    "orders": 6,
+    "orders": 7,
     "delivered": 2,
     "deliveredWithinPromise": 2,
-    "cancelled": 4,
-    "consistent": 6,
-    "meanMinutes": 14.9,
-    "p95Minutes": 14.9,
-    "recoveryDecisions": 5,
+    "cancelled": 5,
+    "consistent": 7,
+    "meanMinutes": 15.8,
+    "p95Minutes": 15.8,
+    "recoveryDecisions": 6,
     "humanPrompts": 0,
     "llmCalls": 0,
     "messageCalls": 25,
-    "llmTokens": 6635,
-    "cost": 0.0,
+    "llmTokens": 6668,
+    "cost": 0.0078,
     "replans": 0,
     "meanPlanSteps": null,
-    "llmPriced": false,
+    "llmPriced": true,
     "failuresFired": [
       "accepts_then_cancels",
       "courier_delay",
       "driver_drops",
+      "gateway_down",
       "no_driver",
       "payment_declines",
       "restaurant_rejects"
@@ -45,6 +50,7 @@
     "unrecovered": [
       "accepts_then_cancels",
       "driver_drops",
+      "gateway_down",
       "payment_declines",
       "restaurant_rejects"
     ]
@@ -52,10 +58,10 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "1489713d-9281-46a6-b82a-3ba7b4fb8c55",
-      "finalOrderId": "1489713d-9281-46a6-b82a-3ba7b4fb8c55",
+      "orderId": "c089b20f-62f1-4739-b67e-e93bb92aecb9",
+      "finalOrderId": "c089b20f-62f1-4739-b67e-e93bb92aecb9",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T13:21:45.431683Z",
+      "promisedAt": "2026-11-17T20:59:41.299088Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -70,8 +76,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 4,
-      "llmTokens": 1064,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -80,19 +84,21 @@
         "refund",
         "phrase"
       ],
+      "llmTokens": 1060,
+      "cost": 0.0012,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 3563.5,
+      "languageMs": 3810.0,
       "replans": 0,
       "planSteps": null,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "7ffe5d64-e900-48d5-8cc5-8e9f239b1c9a",
-      "finalOrderId": "7ffe5d64-e900-48d5-8cc5-8e9f239b1c9a",
+      "orderId": "4db2a5bc-f508-4dc8-ae10-1ad06d6f2ab3",
+      "finalOrderId": "4db2a5bc-f508-4dc8-ae10-1ad06d6f2ab3",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T13:23:45.431683Z",
+      "promisedAt": "2026-11-17T21:01:41.299088Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -107,8 +113,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 4,
-      "llmTokens": 1110,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -117,19 +121,21 @@
         "refund",
         "phrase"
       ],
+      "llmTokens": 1113,
+      "cost": 0.0013,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 3649.1,
+      "languageMs": 3228.0,
       "replans": 0,
       "planSteps": null,
       "notes": []
     },
     {
       "number": 3,
-      "orderId": "34a1d416-44a5-403e-9b2c-681e2f998033",
-      "finalOrderId": "34a1d416-44a5-403e-9b2c-681e2f998033",
+      "orderId": "0b8cf648-074a-4042-a58c-a69a1e3c3ce8",
+      "finalOrderId": "0b8cf648-074a-4042-a58c-a69a1e3c3ce8",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T13:25:45.431683Z",
+      "promisedAt": "2026-11-17T21:03:41.299088Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -144,15 +150,15 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 1,
-      "llmTokens": 288,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "cancel"
       ],
+      "llmTokens": 276,
+      "cost": 0.0003,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 1375.2,
+      "languageMs": 698.3,
       "replans": 0,
       "planSteps": null,
       "notes": [
@@ -161,13 +167,13 @@
     },
     {
       "number": 4,
-      "orderId": "64518b6a-d52d-45ba-b4e3-a1a22915016b",
-      "finalOrderId": "64518b6a-d52d-45ba-b4e3-a1a22915016b",
+      "orderId": "4745f175-55bf-413c-af5c-eeb0caad368b",
+      "finalOrderId": "4745f175-55bf-413c-af5c-eeb0caad368b",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T13:27:45.431683Z",
-      "deliveredAt": "2026-11-17T13:21:40.431683Z",
+      "promisedAt": "2026-11-17T21:05:41.299088Z",
+      "deliveredAt": "2026-11-17T20:59:31.299088Z",
       "withinPromise": true,
-      "minutes": 14.9,
+      "minutes": 15.8,
       "consistent": true,
       "problems": [],
       "failures": [
@@ -179,8 +185,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 5,
-      "llmTokens": 1313,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -190,9 +194,11 @@
         "phrase",
         "phrase"
       ],
+      "llmTokens": 1287,
+      "cost": 0.0015,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 4428.6,
+      "languageMs": 3732.4,
       "replans": 0,
       "planSteps": null,
       "notes": [
@@ -201,10 +207,10 @@
     },
     {
       "number": 5,
-      "orderId": "81338429-651d-419d-b56e-8e63ce76d04a",
-      "finalOrderId": "81338429-651d-419d-b56e-8e63ce76d04a",
+      "orderId": "99f449d0-69b4-4d1c-b980-2779cc094314",
+      "finalOrderId": "99f449d0-69b4-4d1c-b980-2779cc094314",
       "status": "CANCELLED",
-      "promisedAt": "2026-11-17T13:29:45.431683Z",
+      "promisedAt": "2026-11-17T21:07:41.299088Z",
       "deliveredAt": null,
       "withinPromise": false,
       "minutes": null,
@@ -219,8 +225,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 6,
-      "llmTokens": 1565,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -233,9 +237,11 @@
         "refund",
         "phrase"
       ],
+      "llmTokens": 1608,
+      "cost": 0.0019,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 6160.0,
+      "languageMs": 4926.0,
       "replans": 0,
       "planSteps": null,
       "notes": [
@@ -244,13 +250,13 @@
     },
     {
       "number": 6,
-      "orderId": "7af206fc-ccfb-4b6e-b829-f9aab329ed0f",
-      "finalOrderId": "7af206fc-ccfb-4b6e-b829-f9aab329ed0f",
+      "orderId": "6ed93d2a-e704-488b-9854-c31e0a8cf369",
+      "finalOrderId": "6ed93d2a-e704-488b-9854-c31e0a8cf369",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-17T13:31:45.431683Z",
-      "deliveredAt": "2026-11-17T13:25:40.431683Z",
+      "promisedAt": "2026-11-17T21:09:41.299088Z",
+      "deliveredAt": "2026-11-17T21:03:31.299088Z",
       "withinPromise": true,
-      "minutes": 14.9,
+      "minutes": 15.8,
       "consistent": true,
       "problems": [],
       "failures": [
@@ -262,8 +268,6 @@
       "humanPrompts": 0,
       "llmCalls": 0,
       "messageCalls": 5,
-      "llmTokens": 1295,
-      "cost": 0.0,
       "decisionNames": [
         "phrase",
         "confirm",
@@ -274,9 +278,45 @@
         "phrase",
         "phrase"
       ],
+      "llmTokens": 1324,
+      "cost": 0.0016,
       "planningMs": 0,
       "modelMs": 0.0,
-      "languageMs": 4823.1,
+      "languageMs": 4433.6,
+      "replans": 0,
+      "planSteps": null,
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    },
+    {
+      "number": 7,
+      "orderId": "4da33d5e-28db-4d50-8dbd-da13d0479fbc",
+      "finalOrderId": "4da33d5e-28db-4d50-8dbd-da13d0479fbc",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T21:11:41.299088Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "gateway_down"
+      ],
+      "recovered": false,
+      "decisions": 1,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "messageCalls": 0,
+      "decisionNames": [
+        "cancel"
+      ],
+      "llmTokens": 0,
+      "cost": 0.0,
+      "planningMs": 0,
+      "modelMs": 0.0,
+      "languageMs": 0,
       "replans": 0,
       "planSteps": null,
       "notes": [
