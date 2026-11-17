@@ -10,23 +10,23 @@ clock with the headless autopilots, so the same inputs give the same numbers.
 | bridge-closed | llm + gpt-5.4 | 7 | 3 | 3 | 3 | 0 | 3/3 | 33.9 | 37.4 | 10 | 0 | 38 | 0 | 23 | 13 | 0.167 | - |
 | bridge-closed | llm + gpt-5.4 | 11 | 3 | 3 | 1 | 0 | 3/3 | 33.9 | 37.4 | 9 | 0 | 41 | 0 | 19 | 14 | 0.1733 | - |
 | bridge-closed | llm + gpt-5.4 | 13 | 3 | 3 | 1 | 0 | 3/3 | 33.9 | 37.4 | 9 | 0 | 41 | 0 | 18 | 11 | 0.1689 | - |
-| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 0 | 0 | 0 | 0 | 0.0 | driver_drops |
-| delivery-trouble | langgraph | 7 | 4 | 4 | 2 | 0 | 4/4 | 16.8 | 22.2 | 4 | 0 | 2 | 0 | 0 | 0 | unpriced | - |
+| delivery-trouble | hand-wired | 7 | 4 | 3 | 2 | 1 | 4/4 | 16.7 | 25.0 | 3 | 0 | 22 | 0 | 0 | 0 | 0.007 | driver_drops |
+| delivery-trouble | langgraph | 7 | 4 | 4 | 2 | 0 | 4/4 | 18.8 | 25.0 | 4 | 0 | 28 | 0 | 0 | 0 | 0.0098 | - |
 | delivery-trouble | llm + gpt-5.4 | 7 | 4 | 3 | 2 | 0 | 3/4 | 20.1 | 37.0 | 5 | 0 | 31 | 0 | 21 | 6 | 0.1236 | driver_drops |
 | delivery-trouble | llm + gpt-5.4 | 11 | 4 | 3 | 2 | 0 | 3/4 | 18.0 | 30.9 | 8 | 0 | 38 | 0 | 22 | 6 | 0.1524 | driver_drops |
 | delivery-trouble | llm + gpt-5.4 | 13 | 4 | 3 | 2 | 0 | 3/4 | 20.1 | 37.0 | 6 | 1 | 34 | 0 | 20 | 6 | 0.134 | driver_drops |
-| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 0 | 0 | 0 | 0 | 0.0 | - |
-| happy-path | langgraph | 7 | 2 | 2 | 2 | 0 | 2/2 | 10.9 | 10.9 | 0 | 0 | 0 | 0 | 0 | 0 | unpriced | - |
+| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 10 | 0 | 0 | 0 | 0.0031 | - |
+| happy-path | langgraph | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 10 | 0 | 0 | 0 | 0.0031 | - |
 | happy-path | llm + gpt-5.4 | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0327 | - |
 | happy-path | llm + gpt-5.4 | 11 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0326 | - |
 | happy-path | llm + gpt-5.4 | 13 | 2 | 2 | 2 | 0 | 2/2 | 11.8 | 11.8 | 0 | 0 | 8 | 0 | 10 | 0 | 0.0324 | - |
-| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 26.1 | 26.1 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0 | accepts_then_cancels, restaurant_rejects |
-| kitchen-trouble | langgraph | 7 | 3 | 3 | 2 | 0 | 3/3 | 17.1 | 30.8 | 6 | 0 | 3 | 0 | 0 | 0 | unpriced | - |
+| kitchen-trouble | hand-wired | 7 | 3 | 1 | 0 | 2 | 3/3 | 36.1 | 36.1 | 2 | 0 | 13 | 0 | 0 | 0 | 0.0042 | accepts_then_cancels, restaurant_rejects |
+| kitchen-trouble | langgraph | 7 | 3 | 3 | 2 | 0 | 3/3 | 20.1 | 35.8 | 6 | 0 | 27 | 0 | 0 | 0 | 0.0098 | - |
 | kitchen-trouble | llm + gpt-5.4 | 7 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 21 | 0 | 22 | 3 | 0.0916 | - |
 | kitchen-trouble | llm + gpt-5.4 | 11 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 21 | 0 | 22 | 1 | 0.0914 | - |
 | kitchen-trouble | llm + gpt-5.4 | 13 | 3 | 3 | 2 | 0 | 3/3 | 17.4 | 27.8 | 3 | 0 | 22 | 0 | 22 | 3 | 0.0961 | - |
-| payment-trouble | hand-wired | 7 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0 | gateway_down, payment_declines |
-| payment-trouble | langgraph | 7 | 2 | 2 | 2 | 0 | 2/2 | 11.2 | 11.2 | 1 | 0 | 1 | 0 | 0 | 0 | unpriced | - |
+| payment-trouble | hand-wired | 7 | 3 | 1 | 1 | 2 | 3/3 | 12.1 | 12.1 | 2 | 0 | 6 | 0 | 0 | 0 | 0.0018 | gateway_down, payment_declines |
+| payment-trouble | langgraph | 7 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 3 | 0 | 18 | 0 | 0 | 0 | 0.0063 | - |
 | payment-trouble | llm + gpt-5.4 | 7 | 3 | 3 | 2 | 0 | 3/3 | 19.7 | 34.8 | 14 | 0 | 42 | 0 | 16 | 1 | 0.1523 | - |
 | payment-trouble | llm + gpt-5.4 | 11 | 3 | 3 | 2 | 0 | 3/3 | 19.7 | 34.8 | 14 | 0 | 44 | 0 | 16 | 1 | 0.1591 | - |
 | payment-trouble | llm + gpt-5.4 | 13 | 3 | 3 | 2 | 0 | 3/3 | 15.7 | 22.8 | 16 | 0 | 49 | 0 | 17 | 4 | 0.1796 | - |
