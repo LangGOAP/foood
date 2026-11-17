@@ -86,12 +86,26 @@ class Kitchen:
 
 
 @dataclass(frozen=True)
+class Bench:
+    """How the headless bench drives a scenario: who orders what, and who delivers."""
+
+    orders: int | None = None  # default: enough to reach the last injected order, at least 2
+    interval_seconds: float = 60.0
+    restaurant: str = "QA Kitchen"
+    items: tuple[str, ...] = ("QA Pasta",)
+    drop_off: tuple[float, float] = (30.045, 31.25)
+    drivers: int = 2
+    support_delay_seconds: float = 30.0
+
+
+@dataclass(frozen=True)
 class Scenario:
     name: str
     description: str = ""
     seed: int = 0
     kitchen: Kitchen = Kitchen()
     injections: tuple[Injection, ...] = ()
+    bench: Bench = Bench()
 
 
 def parse(text: str) -> Scenario:
@@ -119,12 +133,18 @@ def parse(text: str) -> Scenario:
             )
         )
     kitchen = Kitchen(**raw.get("kitchen", {}))
+    bench_raw = dict(raw.get("bench", {}))
+    if "items" in bench_raw:
+        bench_raw["items"] = tuple(bench_raw["items"])
+    if "drop_off" in bench_raw:
+        bench_raw["drop_off"] = tuple(bench_raw["drop_off"])
     return Scenario(
         name=raw.get("name", "unnamed"),
         description=raw.get("description", ""),
         seed=int(raw.get("seed", 0)),
         kitchen=kitchen,
         injections=tuple(injections),
+        bench=Bench(**bench_raw),
     )
 
 

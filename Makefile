@@ -1,4 +1,4 @@
-.PHONY: install lint format test serve up down contract
+.PHONY: install lint format test serve up down contract bench bench-table
 
 install:
 	uv sync
@@ -28,3 +28,13 @@ down:  ## stop a foood up left running in another terminal
 
 contract:
 	uv run python scripts/contract_table.py
+
+ENGINE ?= hand-wired
+SEED ?= 7
+
+bench:  ## run every bundled scenario against ENGINE under SEED, then regenerate BENCH.md
+	for s in happy-path kitchen-trouble delivery-trouble payment-trouble; do uv run foood bench --scenario $$s --engine $(ENGINE) --seed $(SEED) || exit 1; done
+	uv run python scripts/bench_table.py
+
+bench-table:
+	uv run python scripts/bench_table.py

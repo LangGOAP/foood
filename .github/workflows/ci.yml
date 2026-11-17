@@ -21,3 +21,7 @@ jobs:
         run: |
           uv run python scripts/contract_table.py
           git diff --exit-code -- CONTRACT.md
+      - name: Bench table matches the committed runs
+        run: |
+          uv run python scripts/bench_table.py
+          git diff --exit-code -- BENCH.md

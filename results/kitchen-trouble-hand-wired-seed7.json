@@ -1,0 +1,100 @@
+{
+  "scenario": "kitchen-trouble",
+  "engine": "hand-wired",
+  "seed": 7,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T01:28:13.385537Z",
+  "virtualMinutes": 27.2,
+  "summary": {
+    "orders": 3,
+    "delivered": 1,
+    "deliveredWithinPromise": 0,
+    "cancelled": 2,
+    "consistent": 3,
+    "meanMinutes": 25.2,
+    "p95Minutes": 25.2,
+    "recoveryDecisions": 2,
+    "humanPrompts": 0,
+    "llmCalls": 0,
+    "cost": 0.0,
+    "failuresFired": [
+      "accepts_then_cancels",
+      "prep_overrun",
+      "restaurant_rejects"
+    ],
+    "unrecovered": [
+      "accepts_then_cancels",
+      "restaurant_rejects"
+    ]
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "5436e3af-05ff-4066-aa97-8c7e9ed9bea0",
+      "finalOrderId": "5436e3af-05ff-4066-aa97-8c7e9ed9bea0",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T01:49:13.385537Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "restaurant_rejects"
+      ],
+      "recovered": false,
+      "decisions": 2,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "68f0655f-daa4-4e44-83a1-7719b665dd1b",
+      "finalOrderId": "68f0655f-daa4-4e44-83a1-7719b665dd1b",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T01:50:13.385537Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "accepts_then_cancels"
+      ],
+      "recovered": false,
+      "decisions": 2,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "9f51a22b-77ff-4e0e-ae74-56e1ac77e94b",
+      "finalOrderId": "9f51a22b-77ff-4e0e-ae74-56e1ac77e94b",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T01:51:13.385537Z",
+      "deliveredAt": "2026-11-17T01:55:23.385537Z",
+      "withinPromise": false,
+      "minutes": 25.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "prep_overrun"
+      ],
+      "recovered": true,
+      "decisions": 3,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    }
+  ]
+}

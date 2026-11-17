@@ -55,5 +55,25 @@ def up(
     launch(host, port, apps, rebuild)
 
 
+@app.command()
+def bench(
+    scenario: str = typer.Option(..., help=SCENARIO_HELP),
+    engine: str = typer.Option("hand-wired", help=ENGINE_HELP),
+    seed: int = 7,
+) -> None:
+    """Run a scenario headless against an engine; writes a results/*.json file."""
+    from foood.bench import run
+
+    result = run(scenario, engine, seed)
+    summary = result["summary"]
+    typer.echo(
+        f"{result['scenario']} / {engine} / seed {seed}: "
+        f"{summary['delivered']}/{summary['orders']} delivered, "
+        f"{summary['deliveredWithinPromise']} within promise, "
+        f"{summary['consistent']} consistent, "
+        f"not recovered: {', '.join(summary['unrecovered']) or 'none'} -> {result['path']}"
+    )
+
+
 if __name__ == "__main__":
     app()

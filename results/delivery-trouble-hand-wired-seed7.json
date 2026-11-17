@@ -1,0 +1,119 @@
+{
+  "scenario": "delivery-trouble",
+  "engine": "hand-wired",
+  "seed": 7,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-17T01:28:14.729910Z",
+  "virtualMinutes": 25.3,
+  "summary": {
+    "orders": 4,
+    "delivered": 3,
+    "deliveredWithinPromise": 2,
+    "cancelled": 1,
+    "consistent": 4,
+    "meanMinutes": 15.2,
+    "p95Minutes": 22.2,
+    "recoveryDecisions": 3,
+    "humanPrompts": 0,
+    "llmCalls": 0,
+    "cost": 0.0,
+    "failuresFired": [
+      "courier_delay",
+      "driver_drops",
+      "no_driver"
+    ],
+    "unrecovered": [
+      "driver_drops"
+    ]
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "ca1571cf-aed4-4a88-85bf-0dbf5984ae02",
+      "finalOrderId": "ca1571cf-aed4-4a88-85bf-0dbf5984ae02",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T01:49:14.729910Z",
+      "deliveredAt": "2026-11-17T01:40:24.729910Z",
+      "withinPromise": true,
+      "minutes": 12.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "no_driver"
+      ],
+      "recovered": true,
+      "decisions": 2,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "619d6b2a-81a0-4913-9789-b2eed605e3be",
+      "finalOrderId": "619d6b2a-81a0-4913-9789-b2eed605e3be",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T01:50:14.729910Z",
+      "deliveredAt": "2026-11-17T01:40:24.729910Z",
+      "withinPromise": true,
+      "minutes": 11.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "driver_drops"
+      ],
+      "recovered": true,
+      "decisions": 4,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "e791d00c-bd62-4239-addc-cd49cc0cc162",
+      "finalOrderId": "e791d00c-bd62-4239-addc-cd49cc0cc162",
+      "status": "CANCELLED",
+      "promisedAt": "2026-11-17T01:51:14.729910Z",
+      "deliveredAt": null,
+      "withinPromise": false,
+      "minutes": null,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "driver_drops"
+      ],
+      "recovered": false,
+      "decisions": 5,
+      "recoveryDecisions": 2,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    },
+    {
+      "number": 4,
+      "orderId": "ac540cb5-c564-4480-ac82-34068604b27c",
+      "finalOrderId": "ac540cb5-c564-4480-ac82-34068604b27c",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-17T01:52:14.729910Z",
+      "deliveredAt": "2026-11-17T01:53:29.729910Z",
+      "withinPromise": false,
+      "minutes": 22.2,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "courier_delay"
+      ],
+      "recovered": true,
+      "decisions": 3,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 0,
+      "cost": 0.0,
+      "notes": []
+    }
+  ]
+}
