@@ -142,6 +142,32 @@ def install(store: Store) -> None:
     store.tickers.append(sweep)
 
 
+def plan_panel(decisions: list[dict[str, Any]], waiting_at: str | None) -> dict[str, Any] | None:
+    """What the page shows of an order's plan: the route, where it stands, why it changed.
+
+    Built only from the decisions every engine records; the hand-wired engine plans nothing.
+    """
+    plans = [d for d in decisions if d["decision"] in {"plan", "replan", "plan skips ahead"}]
+    if not plans:
+        return None
+    current = plans[-1]
+    steps = list(current.get("steps") or [])
+    position = steps.index(waiting_at) if waiting_at in steps else None
+    replans = [d for d in plans if d["decision"] == "replan"]
+    reasoning = [d for d in decisions if str(d["decision"]).startswith("llm: ")]
+    return {
+        "steps": steps,
+        "cost": current.get("planCost"),
+        "position": position,
+        "waitingAt": waiting_at,
+        "replans": len(replans),
+        "lastReplan": replans[-1].get("because") if replans else None,
+        "considered": current.get("considered") or [],
+        "lastReasoning": reasoning[-1].get("because") if reasoning else None,
+        "madeAt": current.get("at"),
+    }
+
+
 # --- routes ------------------------------------------------------------------------------------
 
 
@@ -184,15 +210,21 @@ async def overview(
     """What the support page shows: open questions, recent orders and decisions, the scenario."""
     _support_only(user)
     orders = sorted(store.orders.values(), key=lambda o: o.created_at, reverse=True)[:limit]
+    engine = getattr(request.app.state, "engine", None)
     rows = []
     for order in orders:
         row = order.to_json(store)
         restaurant = store.restaurants.get(order.restaurant_id)
         row["restaurantName"] = restaurant.name if restaurant else None
-        row["decisions"] = store.decisions.get(order.id, [])
+        decisions = store.decisions.get(order.id, [])
+        if order.replaces_order_id and not decisions:  # a replacement shares its original's thread
+            decisions = store.decisions.get(order.replaces_order_id, [])
+        row["decisions"] = decisions
+        waiting_at = getattr(engine, "waiting_at", None)
+        row["waitingAt"] = waiting_at(order.id) if callable(waiting_at) else None
+        row["plan"] = plan_panel(decisions, row["waitingAt"])
         rows.append(row)
     open_questions = [q.to_json() for q in store.questions.values() if q.status == "OPEN"]
-    engine = getattr(request.app.state, "engine", None)
     return {
         "engine": engine.name if engine else None,
         "scenario": store.engine.status() if store.engine else None,

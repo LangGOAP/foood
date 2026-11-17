@@ -68,10 +68,34 @@ class SubstitutionApproval(BaseModel):
 class Trace(NullTracer):
     """Plans, re-plans and the actions that ran, written to the order's decisions."""
 
-    def __init__(self, store: Store, waits: Iterable[str] = ()) -> None:
+    def __init__(
+        self,
+        store: Store,
+        current_order: Callable[[str], Order] | None = None,
+        waits: Iterable[str] = (),
+    ) -> None:
         self.store = store
         self.last_steps: dict[str, list[str]] = {}
+        self.current_order = current_order
         self.waits = frozenset(waits)  # the waits whose end is not an act of the engine's
+
+    def considered(self, thread: str) -> list[dict[str, Any]]:
+        """The other kitchens on the table when this plan was made, with what they would cost."""
+        if self.current_order is None:
+            return []
+        try:
+            order = self.current_order(thread)
+        except ApiError:
+            return []
+        customer = self.store.users[order.customer_id]
+        return [
+            {
+                "kitchen": a.restaurant.name,
+                "difference": str(a.difference(order)),
+                "needsApproval": a.needs_approval(order, customer),
+            }
+            for a in alternatives(self.store, order)[:3]
+        ]
 
     def on_plan_complete(self, plan: Any, duration_ms: float, thread_id: str | None = None) -> None:
         thread, steps = str(thread_id), [a.name for a in plan.actions]
@@ -84,6 +108,7 @@ class Trace(NullTracer):
             steps=steps,
             planCost=round(float(plan.total_cost), 2),
             planningMs=round(duration_ms, 1),
+            considered=self.considered(str(thread_id)),
         )
 
     def on_replan(
@@ -106,6 +131,7 @@ class Trace(NullTracer):
             because=reason,
             steps=steps,
             planCost=round(float(new_plan.total_cost), 2) if new_plan is not None else None,
+            considered=self.considered(str(thread_id)) if not skipped else [],
         )
 
     def on_plan_failed(self, reason: str, duration_ms: float, thread_id: str | None = None) -> None:
@@ -144,7 +170,7 @@ class GoapEngine:
         actions = self.actions()
         # a wait that only waits is the world moving, not an act of the engine's
         quiet_waits = [a.name for a in actions if a.is_wait and a.execute is None]
-        self.tracer = Trace(store, waits=quiet_waits)
+        self.tracer = Trace(store, self.current_order, waits=quiet_waits)
         self.goap = GoapGraph(
             actions,
             effects="observed",
@@ -538,10 +564,10 @@ class GoapEngine:
         self.questions[thread] = question.id
         decide(self.store, thread, "ask support", because="the substitution needs approval")
 
-    def waiting_at(self, thread: str) -> str | None:
-        """Where a thread is paused, for the support page and the tests: the wait's name, or
-        the kind of question asked."""
-        paused = self.goap.waiting(thread)
+    def waiting_at(self, order_id: str) -> str | None:
+        """Where an order's thread is paused, for the support page and the tests: the wait's
+        name, or the kind of question asked."""
+        paused = self.goap.waiting(self.threads.get(order_id, order_id))
         if paused is None:
             return None
         if paused["type"] == "goap_action_wait":
@@ -596,7 +622,7 @@ class GoapEngine:
 def mermaid() -> str:
     engine = GoapEngine()
     engine.store = Store()
-    engine.tracer = Trace(engine.store)
+    engine.tracer = Trace(engine.store, None)
     return GoapGraph(engine.actions(), sensors=[engine.sense]).compile().get_graph().draw_mermaid()
 
 
