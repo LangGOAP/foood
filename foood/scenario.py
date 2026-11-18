@@ -115,6 +115,7 @@ class Bench:
     drop_off: tuple[float, float] = (37.787, -122.3985)
     drivers: int = 2
     support_delay_seconds: float = 30.0
+    customer_delay_seconds: float = 20.0  # before the customer accepts a substitute offered
 
 
 @dataclass(frozen=True)

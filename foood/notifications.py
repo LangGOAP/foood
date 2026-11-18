@@ -64,6 +64,11 @@ TEXTS: dict[str, tuple[str, str, str]] = {
         "Another kitchen has your order",
         "{restaurant} will make your order {id} instead: {reason}",
     ),
+    "order.substitution_offered": (
+        "ORDER_SUBSTITUTION",
+        "An item ran out",
+        "Order {id}: {reason}. Choose a substitute in the app, or decline.",
+    ),
     "credit.issued": (
         "CREDIT_ISSUED",
         "Credit added",

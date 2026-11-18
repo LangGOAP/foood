@@ -189,6 +189,8 @@ class Store:
     credits: list[CreditEntry] = field(default_factory=list)
     #: the weather, the traffic and the road closures
     world: World = field(default_factory=World)
+    #: order id -> the substitution offer made to its customer (foood.replacements.Offer)
+    offers: dict[str, Any] = field(default_factory=dict)
 
     def subscribe(self, event: str, listener: Callable[..., None]) -> None:
         self.listeners.setdefault(event, []).append(listener)

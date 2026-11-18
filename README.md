@@ -120,6 +120,16 @@ drop-off is near the restaurant so it becomes their next job; a waiting
 delivery shows how long it has searched. The hand-wired engine uses none of
 these: it dispatches longest-idle, refunds and cancels, as most shops do.
 
+Substitutes go one step further (`candidate_pool`, `substitutes`,
+`offer_substitutes` in the same module): when the item itself is gone, whoever
+proposes candidate dishes, a model with its culinary knowledge or a person,
+hands their names in; the platform keeps only what an open kitchen within reach
+can make now (the order's own kitchen included, which spares a new delivery),
+prices each option as a replacement, and puts them to the customer, who accepts
+one or declines at `POST /api/orders/{id}/substitution`. Nothing not on an open
+menu is ever offered, whatever was proposed. The hand-wired engine does not
+substitute; it cancels, as before.
+
 ## Break it on purpose
 
 ```bash
@@ -163,9 +173,10 @@ with the distribution of what differed, rendered as a second table in `BENCH.md`
 An engine without a model is the control; its runs must be identical.
 
 The bench runs a scenario with nobody at the apps: autopilots place and pay
-the orders, drive the deliveries when the simulated phone arrives, and answer
-support's questions with the recommended option after a while, on a frozen
-clock advanced tick by tick. Each run writes `results/<scenario>-<engine>-seed<n>.json`
+the orders, drive the deliveries when the simulated phone arrives, answer
+support's questions with the recommended option after a while, and accept the
+first substitute offered after a moment's thought, on a frozen clock advanced
+tick by tick. Each run writes `results/<scenario>-<engine>-seed<n>.json`
 with, per order, the final status, whether it arrived within its promise, the
 minutes it took, whether its state is consistent, the failures fired against
 it, the engine's recovery decisions, human prompts, LLM calls and cost.
