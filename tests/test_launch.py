@@ -103,3 +103,28 @@ def test_the_checked_out_apps_carry_the_currency_switch() -> None:
         if not formatter.exists():
             pytest.skip("the app submodules are not checked out here")
         assert "EXPO_PUBLIC_CURRENCY" in formatter.read_text(encoding="utf-8")
+
+
+def test_every_app_gets_a_fixed_position_in_the_city() -> None:
+    from foood.launch import public_env
+
+    for app in APPS:
+        lat, lon = (
+            float(p) for p in public_env(app, "http://x")["EXPO_PUBLIC_FIXED_LOCATION"].split(",")
+        )
+        assert 37.70 <= lat <= 37.82 and -122.53 <= lon <= -122.35, app.name
+
+
+def test_the_export_stamp_tracks_the_app_build(tmp_path: Path) -> None:
+    """A changed fork (a new submodule commit) must re-export, not only a changed setting."""
+    from foood.launch import app_commit, stamp_inputs
+
+    app = APPS[0]
+    inputs = stamp_inputs(app, "http://localhost:3000")
+    assert inputs["EXPO_PUBLIC_CURRENCY"] == "USD"
+    commit = app_commit(app)
+    if commit is None:
+        import pytest
+
+        pytest.skip("the app submodules are not checked out here")
+    assert inputs["appCommit"] == commit and len(commit) == 40
