@@ -40,7 +40,8 @@ async def test_a_recorded_reading_places_the_expected_order() -> None:
         )
         assert reply.status_code == 200, reply.text
         body = reply.json()
-        assert body["status"] == "placed" and body["usage"] == {"model": "scripted", "tokens": 100}
+        assert body["status"] == "placed"
+        assert body["usage"] == {"model": "scripted", "tokens": 100, "cost": 0, "latencyMs": 30.0}
         order = body["order"]
         assert [(i["name"], i["quantity"]) for i in order["items"]] == [
             ("QA Burger", 2),

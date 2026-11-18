@@ -85,6 +85,44 @@ def by_model(decisions: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     return out
 
 
+def by_node(decisions: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Calls, tokens, cost and latency per node of the graph (the roster's names)."""
+    out: dict[str, dict[str, Any]] = {}
+    for d in decisions:
+        calls = int(d.get("llmCalls", 0) or 0)
+        if not calls:
+            continue
+        slot = out.setdefault(
+            str(d.get("node") or role_of(d)),
+            {"calls": 0, "tokens": 0, "cost": 0.0, "latencyMs": 0, "models": []},
+        )
+        slot["calls"] += calls
+        slot["tokens"] += int(d.get("llmTokens", 0) or 0)
+        slot["cost"] = round(slot["cost"] + float(d.get("cost", 0) or 0), 4)
+        slot["latencyMs"] += int(round(float(d.get("latencyMs", 0) or 0)))
+        model = str(d.get("model") or "unknown")
+        if model not in slot["models"]:
+            slot["models"].append(model)
+    return out
+
+
+def merge_nodes(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        for node, slot in row.get("llmByNode", {}).items():
+            total = out.setdefault(
+                node, {"calls": 0, "tokens": 0, "cost": 0.0, "latencyMs": 0, "models": []}
+            )
+            total["calls"] += slot["calls"]
+            total["tokens"] += slot["tokens"]
+            total["cost"] = round(total["cost"] + slot["cost"], 4)
+            total["latencyMs"] += slot["latencyMs"]
+            for model in slot["models"]:
+                if model not in total["models"]:
+                    total["models"].append(model)
+    return out
+
+
 def merge_models(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -382,6 +420,7 @@ class Run:
                     "llmCallsByRole": {r: v["calls"] for r, v in by_role(decisions).items()},
                     "modelMsByRole": {r: v["latencyMs"] for r, v in by_role(decisions).items()},
                     "llmByModel": by_model(decisions),
+                    "llmByNode": by_node(decisions),
                     "llmTokens": sum(int(d.get("llmTokens", 0) or 0) for d in decisions),
                     "worldCalls": store.world.calls_by_order.get(order.id, 0)
                     + (store.world.calls_by_order.get(final.id, 0) if final is not order else 0),
@@ -433,6 +472,7 @@ class Run:
                     for r in placed_rows
                 ),
                 "llmByModel": merge_models(placed_rows),
+                "llmByNode": merge_nodes(placed_rows),
                 "llmTokens": sum(r["llmTokens"] for r in placed_rows),
                 "worldCalls": sum(r["worldCalls"] for r in placed_rows),
                 "cost": round(sum(r["cost"] for r in placed_rows), 4),
@@ -500,6 +540,7 @@ LANGUAGE_FOOTPRINT = {
     "llmPriced",
     "llmCallsByRole",
     "llmByModel",
+    "llmByNode",
     "modelMsByRole",
 }
 

@@ -10,13 +10,15 @@ bench can report what the judgement cost.
 
 from __future__ import annotations
 
-import os
+import time
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from pydantic import BaseModel, Field
 
-DEFAULT_MODEL = "gpt-5.4-mini"
+from foood.llm import Usage
+from foood.nodes import chat_for, model_for, timeout_for
+
 MAX_RECOVERIES = 3
 CREDIT_MIN, CREDIT_MAX, CREDIT_DEFAULT = 1.0, 20.0, 5.0
 
@@ -73,28 +75,6 @@ class Recovery(BaseModel):
 
 
 @dataclass
-class Usage:
-    model: str
-    input_tokens: int = 0
-    output_tokens: int = 0
-
-    @property
-    def total_tokens(self) -> int:
-        return self.input_tokens + self.output_tokens
-
-    def cost(self) -> float | None:
-        """USD, only when prices are configured (FOOOD_LLM_PRICE_IN/OUT per million tokens)."""
-        price_in, price_out = os.environ.get("FOOOD_LLM_PRICE_IN"), os.environ.get(
-            "FOOOD_LLM_PRICE_OUT"
-        )
-        if not price_in or not price_out:
-            return None
-        return round(
-            (self.input_tokens * float(price_in) + self.output_tokens * float(price_out)) / 1e6, 6
-        )
-
-
-@dataclass
 class Context:
     """Everything the model is told. Facts only; the tools are the only verbs."""
 
@@ -145,25 +125,36 @@ class Advisor(Protocol):
 
 
 class OpenAIAdvisor:
-    """One structured call, no retries, a timeout; errors are the caller's to catch."""
+    """One structured call, no retries, a timeout; errors are the caller's to catch.
 
-    def __init__(self, model: str | None = None, timeout: float = 20.0) -> None:
+    The model is the roster's for the node (``decide`` by default, ``escalate`` for the
+    one frontier call when decide's answer is unusable), or the one given."""
+
+    def __init__(
+        self, model: str | None = None, timeout: float | None = None, node: str = "decide"
+    ) -> None:
         from langchain_openai import ChatOpenAI
 
-        self.model = model or os.environ.get("FOOOD_LLM_MODEL", DEFAULT_MODEL)
+        self.node = node
+        self.model = model or model_for(node) or "gpt-5.4-mini"
         self.chat = ChatOpenAI(
-            model=self.model, timeout=timeout, max_retries=0
+            model=self.model, timeout=timeout or timeout_for(node), max_retries=0
         ).with_structured_output(Recovery, include_raw=True)
 
     def advise(self, context: Context) -> tuple[Recovery, Usage]:
+        started = time.perf_counter()
         result = self.chat.invoke([("system", SYSTEM_PROMPT), ("user", context.prompt())])
+        latency = (time.perf_counter() - started) * 1000
         parsed = result["parsed"]
         if parsed is None:
             raise ValueError(f"unparsable answer: {result.get('parsing_error')}")
         raw = result["raw"]
         meta = getattr(raw, "usage_metadata", None) or {}
         usage = Usage(
-            self.model, int(meta.get("input_tokens", 0)), int(meta.get("output_tokens", 0))
+            self.model,
+            int(meta.get("input_tokens", 0)),
+            int(meta.get("output_tokens", 0)),
+            latency,
         )
         return parsed, usage
 
@@ -183,13 +174,11 @@ class ScriptedAdvisor:
         answer = self.answers.pop(0)
         if isinstance(answer, Exception):
             raise answer
-        return answer, Usage("scripted", self.tokens // 2, self.tokens // 2)
+        return answer, Usage("scripted", self.tokens // 2, self.tokens // 2, 50.0)
 
 
-def advisor_from_env() -> Advisor | None:
-    """The real advisor when a key is present and the model is not switched off."""
-    if os.environ.get("FOOOD_LLM", "").lower() in {"off", "0", "false", "no"}:
+def advisor_from_env(node: str = "decide") -> Advisor | None:
+    """The node's advisor when its model is on (the roster, a key, FOOOD_LLM not off)."""
+    if chat_for(node) is None:
         return None
-    if not os.environ.get("OPENAI_API_KEY"):
-        return None
-    return OpenAIAdvisor()
+    return OpenAIAdvisor(node=node)

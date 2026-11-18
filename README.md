@@ -145,6 +145,22 @@ applies the hand-wired reaction and the bench numbers match `main` exactly.
 Set `FOOOD_LLM_PRICE_IN` and `FOOOD_LLM_PRICE_OUT` (USD per million tokens)
 to have costs priced; otherwise only tokens are reported.
 
+### A model per node
+
+The graph is what lets a business process use different models for different
+needs, and `models.toml` says which: a small model for intake (extraction), the
+cheapest that writes well for the messages, a small tool-calling model for the
+world lookups, a classifier for a kitchen's free-text reason, a mid model with
+culinary knowledge for substitutes, a mid model for the judgement at `recover`,
+and the frontier model for one call only, when `decide`'s answer is unusable
+(an error, or a tool outside the allow-list); the hand-wired reaction remains
+the fallback after that. Each node has its own timeout and no retries.
+`FOOOD_MODELS` points at another file, `FOOOD_MODEL_<NODE>` sets one node,
+`FOOOD_MODEL_ALL` sets every node (the bench's model matrix), and `off`
+switches a node's model off so its deterministic fallback applies. Every call
+is recorded on the order with its node, its model, tokens, latency and cost at
+that model's price (`bench.env`), and the results files sum them per node.
+
 ### Ordering in a sentence
 
 ```bash

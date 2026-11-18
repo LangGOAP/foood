@@ -9,13 +9,13 @@ Any error, or no model, leaves the template in place.
 
 from __future__ import annotations
 
-import os
 from typing import Any, Protocol
 
 from pydantic import BaseModel, Field
 
 from foood.engine import decide
-from foood.llm import DEFAULT_MODEL, Model, OpenAIModel, Usage, model_from_env
+from foood.llm import Model, OpenAIModel, Usage
+from foood.nodes import client_for, model_for, timeout_for
 from foood.store import Store
 
 MAX_CHARS = 240
@@ -41,11 +41,14 @@ class Phraser(Protocol):
 class OpenAIPhraser:
     """The model writes the message from the facts; the template is the fallback on any doubt."""
 
-    def __init__(self, model: Model | str | None = None, timeout: float = 15.0) -> None:
+    def __init__(self, model: Model | str | None = None, timeout: float | None = None) -> None:
+        """The phrase node: two warm sentences, so the roster gives it the cheapest model."""
         self.client: Model = (
             model
             if model is not None and not isinstance(model, str)
-            else OpenAIModel(model or os.environ.get("FOOOD_LLM_MODEL") or DEFAULT_MODEL, timeout)
+            else OpenAIModel(
+                model or model_for("phrase") or "gpt-5.4-nano", timeout or timeout_for("phrase")
+            )
         )
         self.model = self.client.name
 
@@ -71,10 +74,9 @@ class ScriptedPhraser:
 
 
 def phraser_from_env() -> Phraser | None:
-    if os.environ.get("FOOOD_LLM", "").lower() in {"off", "0", "false", "no"}:
-        return None
-    model = model_from_env()
-    return OpenAIPhraser(model) if model is not None else None
+    """The phrase node's phraser when its model is on."""
+    client = client_for("phrase")
+    return OpenAIPhraser(client) if client is not None else None
 
 
 def facts_for(store: Store, notification: Any, template: str) -> dict[str, Any]:
@@ -114,6 +116,7 @@ def install(store: Store, phraser: Phraser) -> None:
                 "phrase",
                 because=notification.message_key,
                 llmRole="language",
+                node="phrase",
                 **usage.record(),
             )
         return text
