@@ -258,8 +258,18 @@ class LocationReport(BaseModel):
 async def report_location(
     body: LocationReport, user: CurrentUser, store: StoreDep
 ) -> dict[str, Any]:
-    if driver_of(store, user.id) is None:
+    driver = driver_of(store, user.id)
+    if driver is None:
         raise ApiError(403, "Only drivers report a location")
+    current = store.locations.get(user.id)
+    if (
+        current is not None
+        and current.simulated
+        and simulated_phones_win()
+        and current_delivery(store, driver) is not None
+    ):
+        # the platform is driving this phone; a web build's fixed position must not reset it
+        return {"driverId": user.id, **current.to_json()}
     moment = now()
     recorded = (
         body.recordedAt.astimezone(moment.tzinfo)
