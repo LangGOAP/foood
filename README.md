@@ -46,9 +46,8 @@ can refund payments and cancel deliveries.
 
 `make serve` runs the API alone with auto-reload; `make down` stops a
 `foood up` left running in another terminal. The apps live in `apps/` as git
-submodules (the restaurant app from the Delivery Plus repository, the customer
-and driver apps from our forks, which add a build-time currency offered upstream)
-and read the API address from `EXPO_PUBLIC_API_BASE_URL`; the web builds are
+submodules, all three from our forks, which add a build-time currency and a map
+that opens on the city (both offered upstream), and read the API address from `EXPO_PUBLIC_API_BASE_URL`; the web builds are
 made in English and dollars and get fixed browser positions in San Francisco (the customer at home by Union Square, the driver around the corner
 from the kitchens) so no app asks for geolocation, and the API's simulated driver phone moves the
 driver on the customer's map because a browser window cannot.

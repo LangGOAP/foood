@@ -6,4 +6,4 @@
 	url = https://github.com/LangGOAP/delivery-plus-driver-app.git
 [submodule "apps/restaurant"]
 	path = apps/restaurant
-	url = https://github.com/Delivery-Plus0/delivery-plus-restaurant-app.git
+	url = https://github.com/LangGOAP/delivery-plus-restaurant-app.git
