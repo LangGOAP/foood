@@ -113,3 +113,29 @@ def test_table_is_rendered_from_the_files(tmp_path: Path, monkeypatch) -> None:
     table = render(tmp_path)
     assert "| happy-path | hand-wired | 7 | 2 | 2 | 2 | 0 | 2/2 |" in table
     assert table.rstrip().endswith("1 run(s).")
+
+
+def test_a_run_ends_with_the_replacement_not_the_original() -> None:
+    """A placed order that was replaced is terminal; its replacement is the order that still has
+    to reach the door, so the run follows the chain before calling the evening over."""
+    from foood.bench import Placed, Run
+    from foood.orders import Order, OrderItem
+    from foood.scenario import load
+    from foood.store import now
+
+    bench = Run(load("happy-path"), "hand-wired", 7)
+    store = bench.store
+    kitchen = next(iter(store.restaurants.values()))
+    customer = store.user_by_email("demo.customer@example.com")
+    original = Order(customer.id, kitchen.id, [OrderItem("m", "QA Pasta", 10, 1)], "door")
+    replacement = Order(customer.id, kitchen.id, [OrderItem("m", "QA Pasta", 10, 1)], "door")
+    original.status, original.replaced_by_order_id = "CANCELLED", replacement.id
+    replacement.status, replacement.replaces_order_id = "CONFIRMED", original.id
+    store.orders[original.id] = original
+    store.orders[replacement.id] = replacement
+    bench.placed = [Placed(1, original.id, now())]
+    bench.target = 1
+    assert bench.final(original.id) is replacement
+    assert bench.finished() is False
+    replacement.status = "DELIVERED"
+    assert bench.finished() is True

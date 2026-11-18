@@ -242,11 +242,17 @@ class Run:
 
     # --- the loop ---------------------------------------------------------------------------
 
+    def final(self, order_id: str) -> Any:
+        """The order that reaches the door: follow a replacement chain to its end."""
+        order = self.store.orders[order_id]
+        while order.replaced_by_order_id:
+            order = self.store.orders[order.replaced_by_order_id]
+        return order
+
     def finished(self) -> bool:
         if len(self.placed) < self.target:
             return False
-        orders = [self.store.orders[p.order_id] for p in self.placed if p.order_id]
-        if any(o.status not in TERMINAL for o in orders):
+        if any(self.final(p.order_id).status not in TERMINAL for p in self.placed if p.order_id):
             return False
         return not any(d.status in ACTIVE for d in self.store.deliveries.values())
 
