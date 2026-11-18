@@ -128,3 +128,11 @@ def test_the_export_stamp_tracks_the_app_build(tmp_path: Path) -> None:
 
         pytest.skip("the app submodules are not checked out here")
     assert inputs["appCommit"] == commit and len(commit) == 40
+
+
+def test_make_up_takes_the_engine() -> None:
+    from foood.launch import ROOT
+
+    makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+    up = makefile[makefile.index("\nup:") :].split("\n\n", 1)[0]
+    assert "--engine $(ENGINE)" in up

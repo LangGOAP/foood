@@ -113,7 +113,7 @@ otherwise refunds and cancels.
 ## Break it on purpose
 
 ```bash
-make up SCENARIO=kitchen-trouble      # or: uv run foood up --scenario kitchen-trouble
+make up SCENARIO=kitchen-trouble ENGINE=hand-wired   # or: uv run foood up --scenario kitchen-trouble --engine hand-wired
 ```
 
 A scenario is a TOML file in `scenarios/` that can put the kitchen on autopilot
