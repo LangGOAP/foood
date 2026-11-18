@@ -125,6 +125,8 @@ async def test_who_may_see_a_driver(client) -> None:
 
 
 def test_dispatch_queue_is_longest_idle_first() -> None:
+    from datetime import timedelta
+
     from foood.drivers import Driver, available_drivers
     from foood.store import Store
 
@@ -139,6 +141,8 @@ def test_dispatch_queue_is_longest_idle_first() -> None:
     second.set_status("AVAILABLE")
     first.set_status("AVAILABLE")
     pending.set_status("AVAILABLE")  # not verified: never dispatched
+    # two drivers can come online within the clock's resolution; set who waited longer
+    second.available_since = first.available_since - timedelta(seconds=30)
     assert [d.user_id for d in available_drivers(store)] == ["b", "a"]
     second.set_status("BUSY")
     assert [d.user_id for d in available_drivers(store)] == ["a"]
