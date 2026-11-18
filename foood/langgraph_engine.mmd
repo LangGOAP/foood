@@ -8,6 +8,7 @@ graph TD;
 	begin(begin)
 	confirm(confirm)
 	dispatch(dispatch)
+	lookup(lookup)
 	recover(recover)
 	cleanup(cleanup)
 	answered(answered)
@@ -32,14 +33,15 @@ graph TD;
 	begin -.-> wait_payment;
 	confirm --> wait_kitchen;
 	dispatch --> wait_driver;
-	failure_card_declined --> recover;
-	failure_driver_dropped_after_pickup --> recover;
-	failure_driver_dropped_before_pickup --> recover;
-	failure_kitchen_cancelled_mid_prep --> recover;
-	failure_kitchen_rejected --> recover;
-	failure_no_driver --> recover;
-	failure_payment_gateway_down --> recover;
-	failure_prep_overrun --> recover;
+	failure_card_declined --> lookup;
+	failure_driver_dropped_after_pickup --> lookup;
+	failure_driver_dropped_before_pickup --> lookup;
+	failure_kitchen_cancelled_mid_prep --> lookup;
+	failure_kitchen_rejected --> lookup;
+	failure_no_driver --> lookup;
+	failure_payment_gateway_down --> lookup;
+	failure_prep_overrun --> lookup;
+	lookup --> recover;
 	recover -.-> __end__;
 	recover -.-> wait_driver;
 	recover -.-> wait_dropoff;

@@ -161,6 +161,20 @@ switches a node's model off so its deterministic fallback applies. Every call
 is recorded on the order with its node, its model, tokens, latency and cost at
 that model's price (`bench.env`), and the results files sum them per node.
 
+### Look up, then decide
+
+Every failure now goes through `lookup` before `recover`. The lookup node
+gathers the world's facts for the fork in code, through the same MCP tools a
+model would call: the weather in the kitchen's zone, the ride from the kitchen
+to the door now against a clear day and the promise, closed corridors, what is
+scheduled for the next half hour. A small tool-calling model (the roster's
+`lookup`) may look further with the same tools, two rounds at most, and its
+calls are counted as perception, apart from the decision. The decision node
+then sees facts and no tools at all, which is what lets it be a smaller model.
+The allow-list reads the conditions: a kitchen behind a closed corridor is no
+alternative tonight, so `replace_order` is withheld when none is reachable, and
+in rain or a storm a wider driver search comes first.
+
 ### Ordering in a sentence
 
 ```bash
