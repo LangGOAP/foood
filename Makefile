@@ -22,9 +22,10 @@ serve:
 	uv run foood serve --reload
 
 SCENARIO ?=
+ENGINE ?= hand-wired
 
-up:  ## API on :3000 plus the three apps on :8081-:8083 (exports them on first run); SCENARIO=name injects failures
-	uv run foood up $(if $(SCENARIO),--scenario $(SCENARIO),)
+up:  ## API on :3000 plus the three apps on :8081-:8083 (exports them on first run); SCENARIO=name injects failures, ENGINE=name picks the engine
+	uv run foood up $(if $(SCENARIO),--scenario $(SCENARIO),) --engine $(ENGINE)
 
 down:  ## stop a foood up left running in another terminal
 	-pkill -f "foood up" 2>/dev/null || true
@@ -32,7 +33,6 @@ down:  ## stop a foood up left running in another terminal
 contract:
 	uv run python scripts/contract_table.py
 
-ENGINE ?= hand-wired
 SEED ?= 7
 
 bench:  ## run every bundled scenario against ENGINE under SEED, then regenerate BENCH.md
