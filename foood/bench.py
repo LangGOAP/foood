@@ -114,9 +114,8 @@ class Run:
         self.scenario = dataclasses.replace(scenario, seed=seed, kitchen=kitchen)
         self.engine_name = engine_name
         self.seed = seed
-        self.app = create_app(
-            simulate=False, engine=make_engine(engine_name), scenario=self.scenario
-        )
+        self.engine = make_engine(engine_name)
+        self.app = create_app(simulate=False, engine=self.engine, scenario=self.scenario)
         self.store: Store = self.app.state.store
         self.placed: list[Placed] = []
         self.ticks = 0
@@ -408,6 +407,7 @@ class Run:
             "seed": self.seed,
             "foood": __version__,
             "startedAt": iso(started),
+            "model": getattr(self.engine, "model_name", None),
             "virtualMinutes": round(self.ticks * TICK_SECONDS / 60, 1),
             "llmPrices": prices,
             "summary": {

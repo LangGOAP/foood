@@ -143,7 +143,8 @@ def _arguments(raw: Any) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
-Script = Turn | Exception | Callable[[list[dict[str, Any]]], Turn | Exception]
+Scripted = Turn | tuple[str, list[tuple[str, dict[str, Any]]]] | Exception
+Script = Scripted | Callable[[list[dict[str, Any]]], Scripted]
 
 
 class ScriptedModel:
@@ -185,6 +186,9 @@ class ScriptedModel:
             answer = answer(input)
         if isinstance(answer, Exception):
             raise answer
+        if isinstance(answer, tuple):
+            text, calls = answer
+            return self.says(text, *calls)
         return answer
 
 

@@ -72,11 +72,39 @@ taken for an order with their reasons.
 
 ## One frontier model (this branch)
 
-This branch gives the platform one model, the frontier model of its family
-(`FOOOD_LLM_MODEL`, default `gpt-5.4`, with `OPENAI_API_KEY` from the environment
-or a `.env` file; `FOOOD_LLM=off` disables it and the numbers match `main`),
-and puts it to work one job at a time. Every call is recorded on the order's
-decisions with its model, tokens, latency and cost at that model's price.
+`foood up --engine llm` runs the order lifecycle with one model
+(`FOOOD_LLM_MODEL`, default `gpt-5.4`; `OPENAI_API_KEY` from the environment or
+a `.env` file) in `foood/agent_engine.py`. On every event that concerns an
+order, the model receives the event and a set of tools and calls them until it
+stops. The tools are the platform's actions (confirm the payment, send the order
+out, dispatch, widen the search, replace the order at another kitchen, offer
+substitutes and carry out the one the customer accepts, retry the backup card,
+issue a credit, move the promise, ask support, wait), lookups (the order's
+facts, the kitchens that can make it, the drivers online, the ride's ETA now)
+and the world's MCP read tools (`get_weather`, `get_traffic`, `eta`, `forecast`,
+`zones`); it has no access to the world's controls. Timers open further
+episodes: a delivery nobody takes, a kitchen running long, a promise that
+passes, and a change in the world for every order in flight.
+
+Limits: six model rounds and ten tool calls per episode, a timeout and no
+retries per call, and the hand-wired reaction when the model errs or exhausts
+its budget without acting. Each round is recorded on the order as a decision
+call with the model's name, tokens, latency and cost; each tool call is recorded
+with what it did. `FOOOD_LLM=off` (or no key) falls back to the hand-wired
+engine.
+
+### Ordering in a sentence
+
+```bash
+uv run foood ask "two QA burgers and fries to the office, ring twice"
+```
+
+`POST /api/orders/intake` (outside the Delivery Plus contract) runs the same
+loop with the cart as its tools: the model searches the open menus, fills the
+cart from one kitchen and places the order through the app's own endpoint; the
+same limits apply. When a dish is unknown or sold out, or the sentence is
+ambiguous, it asks one question instead of guessing. The call is recorded on the
+order as a language call.
 
 ### Messages in the model's words
 

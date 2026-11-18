@@ -11,7 +11,7 @@ RESULTS = ROOT / "results"
 OUT = ROOT / "BENCH.md"
 COLUMNS = [
     ("Scenario", lambda r: r["scenario"]),
-    ("Engine", lambda r: r["engine"]),
+    ("Engine", lambda r: f"{r['engine']} + {r['model']}" if r.get("model") else r["engine"]),
     ("Seed", lambda r: r["seed"]),
     ("Orders", lambda r: r["summary"]["orders"]),
     ("Delivered", lambda r: r["summary"]["delivered"]),
