@@ -80,7 +80,7 @@ def test_every_app_is_built_in_english_and_dollars() -> None:
         assert env["EXPO_PUBLIC_CURRENCY"] == "USD"
 
 
-def test_the_customer_and_driver_apps_come_from_the_forks() -> None:
+def test_the_three_apps_come_from_the_forks() -> None:
     """Upstream labels every amount EGP; our forks add EXPO_PUBLIC_CURRENCY (offered upstream)."""
     from configparser import ConfigParser
 
@@ -88,10 +88,9 @@ def test_the_customer_and_driver_apps_come_from_the_forks() -> None:
 
     modules = ConfigParser()
     modules.read(ROOT / ".gitmodules")
-    for name in ("customer", "driver"):
+    for name in ("customer", "driver", "restaurant"):
         url = modules[f'submodule "apps/{name}"']["url"]
         assert url == f"https://github.com/LangGOAP/delivery-plus-{name}-app.git"
-    assert "Delivery-Plus0" in modules['submodule "apps/restaurant"']["url"]
 
 
 def test_the_checked_out_apps_carry_the_currency_switch() -> None:

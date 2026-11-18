@@ -44,14 +44,14 @@ own end-to-end flows, QA Kitchen, belongs to `qa.restaurant@delivery-plus.test`
 with the password `Qa-Only-Passw0rd!`, and `admin@example.com` / `password123`
 can refund payments and cancel deliveries.
 
-`make serve` runs the API alone with auto-reload; `make down` stops a
-`foood up` left running in another terminal. The apps live in `apps/` as git
-submodules (the restaurant app from the Delivery Plus repository, the customer
-and driver apps from our forks, which add a build-time currency offered upstream)
-and read the API address from `EXPO_PUBLIC_API_BASE_URL`; the web builds are
-made in English and dollars and get fixed browser positions in San Francisco (the customer at home by Union Square, the driver around the corner
-from the kitchens) so no app asks for geolocation, and the API's simulated driver phone moves the
-driver on the customer's map because a browser window cannot.
+`make serve` runs the API alone with auto-reload; `make down` stops a `foood up`
+left running in another terminal. The apps live in `apps/` as git submodules
+from our forks, which add a build-time currency setting and a map that opens on
+the configured city (both offered upstream), and read the API address from
+`EXPO_PUBLIC_API_BASE_URL`. The web builds use English and dollars and fixed
+browser positions in San Francisco (the customer by Union Square, the driver
+near the kitchens); no app asks for geolocation; the API's simulated driver
+phone moves the driver on the customer's map.
 
 Every order placed in the customer app flows through payment, the restaurant
 app's kitchen board, dispatch to an online driver, the driver app's pickup and
