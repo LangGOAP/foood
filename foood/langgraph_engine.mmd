@@ -9,6 +9,10 @@ graph TD;
 	confirm(confirm)
 	dispatch(dispatch)
 	lookup(lookup)
+	classify(classify)
+	suggest(suggest)
+	declined(declined)
+	apply_substitution(apply_substitution)
 	recover(recover)
 	cleanup(cleanup)
 	answered(answered)
@@ -18,6 +22,7 @@ graph TD;
 	wait_pickup(wait_pickup)
 	wait_dropoff(wait_dropoff)
 	wait_support(wait_support)
+	wait_customer(wait_customer)
 	failure_card_declined(failure_card_declined)
 	failure_payment_gateway_down(failure_payment_gateway_down)
 	failure_kitchen_rejected(failure_kitchen_rejected)
@@ -31,7 +36,10 @@ graph TD;
 	answered --> recover;
 	begin -.-> wait_kitchen;
 	begin -.-> wait_payment;
+	classify -.-> recover;
+	classify -.-> suggest;
 	confirm --> wait_kitchen;
+	declined --> recover;
 	dispatch --> wait_driver;
 	failure_card_declined --> lookup;
 	failure_driver_dropped_after_pickup --> lookup;
@@ -41,7 +49,7 @@ graph TD;
 	failure_no_driver --> lookup;
 	failure_payment_gateway_down --> lookup;
 	failure_prep_overrun --> lookup;
-	lookup --> recover;
+	lookup --> classify;
 	recover -.-> __end__;
 	recover -.-> wait_driver;
 	recover -.-> wait_dropoff;
@@ -49,6 +57,11 @@ graph TD;
 	recover -.-> wait_payment;
 	recover -.-> wait_pickup;
 	recover -.-> wait_support;
+	suggest -.-> recover;
+	suggest -.-> wait_customer;
+	wait_customer -.-> apply_substitution;
+	wait_customer -.-> cleanup;
+	wait_customer -.-> declined;
 	wait_driver -.-> cleanup;
 	wait_driver -.-> failure_no_driver;
 	wait_driver -.-> wait_pickup;
@@ -69,7 +82,9 @@ graph TD;
 	wait_pickup -.-> wait_dropoff;
 	wait_support -.-> answered;
 	wait_support -.-> cleanup;
+	apply_substitution --> __end__;
 	cleanup --> __end__;
+	wait_customer -.-> wait_customer;
 	wait_driver -.-> wait_driver;
 	wait_dropoff -.-> wait_dropoff;
 	wait_kitchen -.-> wait_kitchen;

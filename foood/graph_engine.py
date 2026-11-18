@@ -63,12 +63,22 @@ from foood.recovery import (
     Recovery,
     allowed_for,
 )
-from foood.replacements import alternatives, replace
+from foood.replacements import (
+    alternatives,
+    answer_substitution,
+    candidate_pool,
+    offer_substitutes,
+    replace,
+    substitutes,
+)
 from foood.store import Store, iso, now
+from foood.suggest import Classifier, Suggester
 from foood.support import Question, ask
 from foood.world import READ_TOOLS, WorldTools, zone_of
 from foood.world_mcp import build_server, call_tool, tool_specs
 
+CUSTOMER_DEADLINE = 180.0  # seconds a substitution offer stays open before it counts as declined
+KITCHEN_FAILURES = {"kitchen_rejected", "kitchen_cancelled_mid_prep"}
 LOOKUP_INSTRUCTIONS = (
     "You look things up for a food delivery platform's recovery step. You are given the failure "
     "and the facts gathered so far. Call the world tools only when another fact would change what "
@@ -123,11 +133,15 @@ class LangGraphEngine:
         max_recoveries: int = MAX_RECOVERIES,
         escalator: Advisor | None = None,
         looker: Model | None = None,
+        classifier: Classifier | None = None,
+        suggester: Suggester | None = None,
     ) -> None:
         self.checkpoint_path = checkpoint_path
         self.advisor = advisor
         self.escalator = escalator  # the frontier model, one call when decide's answer is unusable
         self.looker = looker  # a small tool-calling model that may look further at the world
+        self.classifier = classifier  # a small model reading the kitchen's note
+        self.suggester = suggester  # a mid model proposing substitutes from the pool
         self.max_recoveries = max_recoveries
         self.pending: deque[tuple[str, dict[str, Any]]] = deque()
         self.draining = False
@@ -155,6 +169,13 @@ class LangGraphEngine:
             lambda original, replacement, reason: self.start(replacement.id, "wait_kitchen"),
         )
         self._subscribe("payment.processed", self._on_payment)
+        self._subscribe(
+            "order.substitution_answered",
+            lambda order, offer, alternative: self.push(
+                order.id,
+                {"kind": "order.substitution_answered", "accepted": alternative is not None},
+            ),
+        )
         self._subscribe("payment.unavailable", self._on_unavailable)
         self._subscribe("payment.gateway_up", self._on_gateway_up)
         self._subscribe("order.status", self._on_order_status)
@@ -224,7 +245,16 @@ class LangGraphEngine:
         )
 
     def tick(self) -> None:
-        """Time passing matters only when a promise is breached; one tick event per order then."""
+        """Time passing matters only when a promise is breached; one tick event per order then.
+        A substitution offer left open past its deadline counts as declined."""
+        moment = now()
+        for order_id, offer in list(self.store.offers.items()):
+            if offer.status != "OPEN":
+                continue
+            if (moment - offer.offered_at).total_seconds() >= CUSTOMER_DEADLINE:
+                order = self.store.orders.get(order_id)
+                if order is not None:
+                    answer_substitution(self.store, order, None, by="deadline")
         for order in list(self.store.orders.values()):
             if order.status in TERMINAL or not order.promise_breached:
                 continue
@@ -381,6 +411,116 @@ class LangGraphEngine:
                 )
             input_items = outputs
             previous = turn.response_id
+
+    def classify(self, order: Order, failure: str, world: dict[str, Any]) -> dict[str, Any]:
+        """The classify node: the kitchen's free-text note read into a kind, by a small model."""
+        note = order.cancellation_note or ""
+        if self.classifier is None or failure not in KITCHEN_FAILURES or not note.strip():
+            return world
+        items = [i.name for i in order.items]
+        try:
+            reason, usage = self.classifier.classify(note, items)
+        except Exception as exc:  # noqa: BLE001  # the note stays unread; the fork still runs
+            decide(
+                self.store,
+                order.id,
+                "classify error",
+                because=str(exc)[:200],
+                llmRole="perception",
+                node="classify",
+                llmCalls=1,
+            )
+            return world
+        decide(
+            self.store,
+            order.id,
+            f"classify: {reason.kind}",
+            because=note[:200],
+            llmRole="perception",
+            node="classify",
+            **usage.record(),
+        )
+        return {**world, "reason": reason.model_dump()}
+
+    def missing_items(self, order: Order) -> list[str]:
+        """The order's lines the kitchen no longer has on its menu."""
+        menu = {
+            i.name.casefold()
+            for i in self.store.menu_items.values()
+            if i.restaurant_id == order.restaurant_id and i.available and not i.archived
+        }
+        return [line.name for line in order.items if line.name.casefold() not in menu]
+
+    def wants_substitutes(self, order: Order, world: dict[str, Any]) -> bool:
+        reason = world.get("reason") or {}
+        if self.suggester is None or reason.get("kind") != "item_out":
+            return False
+        open_offer = self.store.offers.get(order.id)
+        if open_offer is not None:  # asked once; the answer went back to the fork already
+            return False
+        return bool(self.missing_items(order))
+
+    def suggest(self, order: Order, world: dict[str, Any]) -> bool:
+        """The suggest node: the model proposes from the pool, the platform grounds and prices,
+        the customer is asked. True when an offer went out."""
+        assert self.suggester is not None
+        store = self.store
+        missing = self.missing_items(order)
+        pool = candidate_pool(store, order)
+        try:
+            suggestions, usage = self.suggester.suggest(
+                [i.name for i in order.items], missing, pool
+            )
+        except Exception as exc:  # noqa: BLE001
+            decide(
+                store,
+                order.id,
+                "suggest error",
+                because=str(exc)[:200],
+                llmRole="perception",
+                node="suggest",
+                llmCalls=1,
+            )
+            return False
+        names = [str(c) for c in suggestions.candidates][:5]
+        decide(
+            store,
+            order.id,
+            "suggest: " + (", ".join(names) if names else "nothing"),
+            because=suggestions.note[:200],
+            llmRole="perception",
+            node="suggest",
+            **usage.record(),
+        )
+        options = substitutes(store, order, names)
+        if not options:
+            decide(store, order.id, "no substitute grounded", because="nothing on an open menu")
+            return False
+        reason = order.cancellation_note or f"{', '.join(missing)} ran out"
+        offer = offer_substitutes(store, order, options[:4], reason)
+        decide(
+            store,
+            order.id,
+            "offer substitutes",
+            because=", ".join(
+                f"{o.restaurant.name}: {', '.join(i.name for _, i in o.items)}"
+                for o in offer.options
+            ),
+        )
+        return True
+
+    def apply_substitution(self, order: Order) -> None:
+        offer = self.store.offers.get(order.id)
+        if offer is None or offer.chosen is None:
+            return
+        replace(self.store, order, offer.chosen, offer.reason)
+        decide(
+            self.store,
+            order.id,
+            "replace order",
+            because=f"{offer.chosen.restaurant.name} makes the accepted substitute",
+            replacementOrderId=order.replaced_by_order_id,
+        )
 
     def recover(self, order: Order, failure: str, state: OrderState) -> Outcome:
         """The fork. A model picks a tool inside the allow-list and the budget; otherwise, or
@@ -753,6 +893,40 @@ def build(engine: LangGraphEngine) -> Builder:
     def lookup(state: OrderState) -> OrderState:
         return {"world": engine.lookup(order_of(state), state["failure"])}
 
+    def classify(state: OrderState) -> OrderState:
+        return {
+            "world": engine.classify(order_of(state), state["failure"], state.get("world") or {})
+        }
+
+    def suggest(state: OrderState) -> OrderState:
+        offered = engine.suggest(order_of(state), state.get("world") or {})
+        return {"event": {"kind": "suggested", "offered": offered}}
+
+    def declined(state: OrderState) -> OrderState:
+        return {"world": {**(state.get("world") or {}), "substitutesDeclined": True}}
+
+    def apply_substitution(state: OrderState) -> OrderState:
+        engine.apply_substitution(order_of(state))
+        return {}
+
+    def after_classify(state: OrderState) -> str:
+        return (
+            "suggest"
+            if engine.wants_substitutes(order_of(state), state.get("world") or {})
+            else "recover"
+        )
+
+    def after_suggest(state: OrderState) -> str:
+        return "wait_customer" if state["event"].get("offered") else "recover"
+
+    def after_customer(state: OrderState) -> str:
+        event = state["event"]
+        if event["kind"] == "order.substitution_answered":
+            return "apply_substitution" if event.get("accepted") else "declined"
+        if event["kind"] == "order.status" and event["status"] in {"CANCELLED", "FAILED"}:
+            return "cleanup"
+        return "wait_customer"
+
     def recover(state: OrderState) -> OrderState:
         outcome = engine.recover(order_of(state), state["failure"], state)
         handled = list(state.get("handled", []))
@@ -886,6 +1060,10 @@ def build(engine: LangGraphEngine) -> Builder:
     graph.add_node("confirm", confirm)
     graph.add_node("dispatch", dispatch)
     graph.add_node("lookup", lookup)
+    graph.add_node("classify", classify)
+    graph.add_node("suggest", suggest)
+    graph.add_node("declined", declined)
+    graph.add_node("apply_substitution", apply_substitution)
     graph.add_node("recover", recover)
     graph.add_node("cleanup", cleanup)
     graph.add_node("answered", answered)
@@ -896,6 +1074,7 @@ def build(engine: LangGraphEngine) -> Builder:
         "wait_pickup",
         "wait_dropoff",
         "wait_support",
+        "wait_customer",
     ]
     for name in waits:
         graph.add_node(name, waiter(name))  # type: ignore[arg-type]  # node protocol vs Callable
@@ -911,8 +1090,17 @@ def build(engine: LangGraphEngine) -> Builder:
     ]
     for failure in failures:  # a tiny node per failure keeps the drawing honest about the forks
         graph.add_node(f"failure_{failure}", set_failure(failure))  # type: ignore[arg-type]
-        graph.add_edge(f"failure_{failure}", "lookup")  # look up, then decide
-    graph.add_edge("lookup", "recover")
+        graph.add_edge(f"failure_{failure}", "lookup")  # look up, classify, then decide
+    graph.add_edge("lookup", "classify")
+    graph.add_conditional_edges("classify", after_classify, ["suggest", "recover"])
+    graph.add_conditional_edges("suggest", after_suggest, ["wait_customer", "recover"])
+    graph.add_conditional_edges(
+        "wait_customer",
+        after_customer,
+        ["apply_substitution", "declined", "cleanup", "wait_customer"],
+    )
+    graph.add_edge("declined", "recover")
+    graph.add_edge("apply_substitution", END)
 
     graph.add_edge(START, "begin")
     graph.add_conditional_edges("begin", after_start, ["wait_payment", "wait_kitchen"])

@@ -175,6 +175,21 @@ The allow-list reads the conditions: a kitchen behind a closed corridor is no
 alternative tonight, so `replace_order` is withheld when none is reachable, and
 in rain or a storm a wider driver search comes first.
 
+### A model proposes, the platform grounds, the customer decides
+
+Two more small-model nodes sit between `lookup` and `recover` for the
+kitchen's failures. `classify` reads the kitchen's free-text note into a kind,
+because "the last portion just went out" and "the grill is down" call for
+different recoveries. When a dish ran out and the kitchen is fine, `suggest`
+proposes substitutes: a mid model with culinary knowledge picks up to five
+dishes from the pool of what open kitchens within reach can make now, the
+platform keeps only what is really on an open menu and prices each option as a
+replacement (`foood/replacements.py`), and the customer is asked. The thread
+waits at `wait_customer`; an accepted option becomes the replacement order, a
+declined one (or three minutes of silence) sends the fork its decision with that
+fact. Both nodes are perception calls, counted apart from the decision, and
+without them the fork behaves as before.
+
 ### Ordering in a sentence
 
 ```bash
