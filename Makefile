@@ -1,7 +1,7 @@
 .PHONY: install lint format test serve up down contract bench bench-table
 
 include bench.env
-export FOOOD_LLM_PRICE_IN FOOOD_LLM_PRICE_OUT
+export FOOOD_LLM_PRICE_IN FOOOD_LLM_PRICE_OUT FOOOD_LLM_PRICES
 
 install:
 	uv sync
