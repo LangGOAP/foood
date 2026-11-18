@@ -68,6 +68,23 @@ branches add theirs and change nothing else. `foood up --engine hand-wired` pick
 one, and `GET /api/_engine?orderId=...` lists the decisions taken for an order and
 why.
 
+## One frontier model (this branch)
+
+This branch gives the platform one model, the frontier model of its family
+(`FOOOD_LLM_MODEL`, default `gpt-5.4`, with `OPENAI_API_KEY` from the environment
+or a `.env` file; `FOOOD_LLM=off` disables it and the numbers match `main`),
+and puts it to work one job at a time. Every call is recorded on the order's
+decisions with its model, tokens, latency and cost at that model's price.
+
+### Messages in the model's words
+
+Every notification keeps its `messageKey` and `params`, which the customer app
+localises on its own; with a model available the server's `message` is written
+for the situation (`foood/messages.py`): the kitchen's reason in plain words,
+the card that paid, the credit added. Any error, an empty or overlong answer,
+or no model leaves the template from `main` in place, and each phrasing call is
+recorded on the order's decisions with its tokens.
+
 ## Support, the human in the loop
 
 The customer app has no approval screen and the apps stay unchanged, so when an
