@@ -51,6 +51,23 @@ ALLOWED: dict[str, list[str]] = {
         "refund_and_cancel",
     ],
 }
+HEAVY_WEATHER = {"rain", "storm"}
+
+
+def allowed_for(failure: str, world: dict[str, Any] | None = None) -> list[str]:
+    """The allow-list for a failure, read against the conditions the lookup node found:
+    no replacement when every other kitchen sits behind a closed corridor, and a wider
+    driver search first when the weather thins the pool."""
+    allowed = list(ALLOWED[failure])
+    facts = world or {}
+    if facts.get("alternativesReachable") == 0 and "replace_order" in allowed:
+        allowed.remove("replace_order")
+    if facts.get("weather") in HEAVY_WEATHER and "widen_dispatch" in allowed:
+        allowed.remove("widen_dispatch")
+        allowed.insert(0, "widen_dispatch")
+    return allowed
+
+
 TERMINAL_FAILURES = {
     "card_declined",
     "kitchen_rejected",
@@ -90,6 +107,7 @@ class Context:
     drivers_online: int
     support_answer: str | None = None
     notes: list[str] = field(default_factory=list)
+    world: dict[str, Any] = field(default_factory=dict)  # what the lookup node gathered
 
     def prompt(self) -> str:
         lines = [
@@ -101,6 +119,8 @@ class Context:
             f"Other kitchens that can make it: {self.alternatives or 'none'}",
             f"Drivers online and idle: {self.drivers_online}",
         ]
+        if self.world:
+            lines.append(f"World: {self.world}")
         if self.support_answer:
             lines.append(f"Support answered: {self.support_answer}")
         if self.notes:

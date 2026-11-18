@@ -149,6 +149,7 @@ def make_engine(name: str) -> OrderEngine:
         from pathlib import Path
 
         from foood.graph_engine import LangGraphEngine
+        from foood.nodes import client_for
         from foood.recovery import advisor_from_env
 
         path = os.environ.get("FOOOD_CHECKPOINTS")
@@ -156,6 +157,7 @@ def make_engine(name: str) -> OrderEngine:
             Path(path) if path else None,
             advisor=advisor_from_env("decide"),
             escalator=advisor_from_env("escalate"),
+            looker=client_for("lookup"),
         )
     try:
         return ENGINES[name]()

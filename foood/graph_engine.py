@@ -11,6 +11,7 @@ step puts a model there under controls, with this as the fallback.
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from collections import deque
 from collections.abc import Callable
@@ -26,6 +27,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command, interrupt
 
+from foood.agent_engine import mcp_payload
 from foood.credits import balance, issue_credit
 from foood.deliveries import (
     Delivery,
@@ -38,6 +40,7 @@ from foood.dispatch import stack_on_finishing, use
 from foood.drivers import Driver, available_drivers
 from foood.engine import decide
 from foood.errors import ApiError
+from foood.llm import Model, tool_spec
 from foood.money import dollars
 from foood.orders import TERMINAL, Order, confirm_paid, fail_payment, get_order, transition
 from foood.payments import (
@@ -58,10 +61,19 @@ from foood.recovery import (
     Advisor,
     Context,
     Recovery,
+    allowed_for,
 )
 from foood.replacements import alternatives, replace
 from foood.store import Store, iso, now
 from foood.support import Question, ask
+from foood.world import READ_TOOLS, WorldTools, zone_of
+from foood.world_mcp import build_server, call_tool, tool_specs
+
+LOOKUP_INSTRUCTIONS = (
+    "You look things up for a food delivery platform's recovery step. You are given the failure "
+    "and the facts gathered so far. Call the world tools only when another fact would change what "
+    "to do; you decide nothing. Answer 'done' when there is nothing to add."
+)
 
 Failure = Literal[
     "card_declined",
@@ -84,6 +96,7 @@ class OrderState(TypedDict, total=False):
     recoveries: int
     support_question: str  # the question recover is waiting on
     support_answer: str  # what support picked, for the next recover step
+    world: dict[str, Any]  # what the lookup node gathered for recover
 
 
 class Outcome(TypedDict, total=False):
@@ -109,10 +122,12 @@ class LangGraphEngine:
         advisor: Advisor | None = None,
         max_recoveries: int = MAX_RECOVERIES,
         escalator: Advisor | None = None,
+        looker: Model | None = None,
     ) -> None:
         self.checkpoint_path = checkpoint_path
         self.advisor = advisor
         self.escalator = escalator  # the frontier model, one call when decide's answer is unusable
+        self.looker = looker  # a small tool-calling model that may look further at the world
         self.max_recoveries = max_recoveries
         self.pending: deque[tuple[str, dict[str, Any]]] = deque()
         self.draining = False
@@ -129,6 +144,11 @@ class LangGraphEngine:
             else MemorySaver()
         )
         self.graph: Graph = build(self).compile(checkpointer=self.checkpointer)
+        self.world_server = build_server(store)
+        self.world_tools = [
+            tool_spec(s["name"], s["description"], s["parameters"])
+            for s in tool_specs(self.world_server, READ_TOOLS)
+        ]
         self._subscribe("order.placed", lambda order: self.start(order.id, "wait_payment"))
         self._subscribe(
             "order.replaced",
@@ -263,6 +283,105 @@ class LangGraphEngine:
 
     # recovery ------------------------------------------------------------------------------
 
+    def lookup(self, order: Order, failure: str) -> dict[str, Any]:
+        """The lookup node: the world's facts for the fork, gathered in code through the same
+        tools a model would call, plus whatever a small tool-calling model asks for on top.
+        The decision node then sees facts and no tools."""
+        store = self.store
+        if self.advisor is None:  # no model at the fork: nothing reads the facts, so none are read
+            return {}
+        tools = WorldTools(store, order.id)
+        kitchen = store.restaurants[order.restaurant_id]
+        zone = zone_of(kitchen.latitude, kitchen.longitude)
+        world: dict[str, Any] = {
+            "zone": zone,
+            "weather": tools.get_weather(zone)["kind"],
+            "forecast": tools.forecast(zone, 30),
+            "lookups": [],
+        }
+        if order.delivery_latitude is not None and order.delivery_longitude is not None:
+            start = (kitchen.latitude, kitchen.longitude)
+            door = (order.delivery_latitude, order.delivery_longitude)
+            traffic = tools.get_traffic(start, door)
+            world.update(
+                {
+                    "rideMinutes": traffic["minutes"],
+                    "clearRideMinutes": traffic["baseMinutes"],
+                    "delayFactor": traffic["delayFactor"],
+                    "closures": traffic["closures"],
+                    "promisedAt": iso(order.promised_at) if order.promised_at else None,
+                    "now": iso(now()),
+                }
+            )
+        else:
+            world.update({"closures": []})
+        if self.looker is not None:
+            self.look_further(order, failure, world)
+        return world
+
+    def look_further(self, order: Order, failure: str, world: dict[str, Any]) -> None:
+        """Up to two rounds of a small model choosing world tools; results join the facts."""
+        prompt = (
+            f"Failure: {failure}. Facts so far: {json.dumps(world, default=str)}. "
+            "If another look at the world would change the recovery, call the tools for it; "
+            "otherwise answer 'done' in one word."
+        )
+        input_items: list[dict[str, Any]] = [{"role": "user", "content": prompt}]
+        previous = None
+        counted = WorldTools(self.store, order.id)
+        for _ in range(2):
+            try:
+                turn = self.looker.complete(  # type: ignore[union-attr]
+                    LOOKUP_INSTRUCTIONS, input_items, self.world_tools, previous=previous
+                )
+            except Exception as exc:  # noqa: BLE001  # a slow or broken lookup model is a note
+                decide(
+                    self.store,
+                    order.id,
+                    "lookup error",
+                    because=str(exc)[:200],
+                    llmRole="perception",
+                    node="lookup",
+                    llmCalls=1,
+                )
+                return
+            names = [c.name for c in turn.tool_calls]
+            decide(
+                self.store,
+                order.id,
+                "lookup: " + (", ".join(names) if names else "done"),
+                because=(turn.text or "")[:200],
+                llmRole="perception",
+                node="lookup",
+                **turn.usage.record(),
+            )
+            if not turn.tool_calls:
+                return
+            outputs = []
+            for call in turn.tool_calls:
+                if call.name in READ_TOOLS:
+                    counted._count(call.name)
+                    try:
+                        result = mcp_payload(
+                            call_tool(self.world_server, call.name, call.arguments)
+                        )
+                    except Exception as exc:  # noqa: BLE001
+                        result = {"error": str(exc)[:200]}
+                else:
+                    result = {"error": f"no tool named {call.name}"}
+                world["lookups"].append(
+                    {"tool": call.name, "arguments": call.arguments, "result": result}
+                )
+                outputs.append(
+                    {
+                        "type": "function_call_output",
+                        "call_id": call.id,
+                        "output": json.dumps(result, default=str)[:4000],
+                    }
+                )
+            input_items = outputs
+            previous = turn.response_id
+
     def recover(self, order: Order, failure: str, state: OrderState) -> Outcome:
         """The fork. A model picks a tool inside the allow-list and the budget; otherwise, or
         when it errs, the hand-wired reaction applies."""
@@ -278,7 +397,7 @@ class LangGraphEngine:
         if attempt > self.max_recoveries:
             decide(self.store, order.id, "fallback", because="recovery budget exhausted")
             return self.hand_wired_reaction(order, failure)
-        context = self.context(order, failure, attempt)
+        context = self.context(order, failure, attempt, state.get("world") or {})
         recovery = self.consult(
             order, failure, context, self.advisor, "decide", final=self.escalator is None
         )
@@ -345,17 +464,33 @@ class LangGraphEngine:
         )
         return recovery
 
-    def context(self, order: Order, failure: str, attempt: int) -> Context:
+    def context(
+        self, order: Order, failure: str, attempt: int, world: dict[str, Any] | None = None
+    ) -> Context:
         store = self.store
         kitchen = store.restaurants[order.restaurant_id]
         customer = store.users[order.customer_id]
         delivery = delivery_for_order(store, order.id)
         options = alternatives(store, order)
+        facts = dict(world or {})
+        latitude, longitude = order.delivery_latitude, order.delivery_longitude
+        if facts.get("closures") is not None and latitude is not None and longitude is not None:
+            tools = WorldTools(store, order.id)
+            door = (latitude, longitude)
+            options = [  # a kitchen behind a closed corridor is no alternative tonight
+                a
+                for a in options
+                if not tools.get_traffic((a.restaurant.latitude, a.restaurant.longitude), door)[
+                    "closures"
+                ]
+            ]
+        facts["alternativesReachable"] = len(options)
         return Context(
             failure=failure,
             attempt=attempt,
             budget=self.max_recoveries,
-            allowed=list(ALLOWED[failure]),
+            allowed=allowed_for(failure, facts),
+            world=facts,
             order={
                 "id": order.id[:8],
                 "status": order.status,
@@ -615,6 +750,9 @@ def build(engine: LangGraphEngine) -> Builder:
         engine.dispatch("a delivery was created")
         return {}
 
+    def lookup(state: OrderState) -> OrderState:
+        return {"world": engine.lookup(order_of(state), state["failure"])}
+
     def recover(state: OrderState) -> OrderState:
         outcome = engine.recover(order_of(state), state["failure"], state)
         handled = list(state.get("handled", []))
@@ -747,6 +885,7 @@ def build(engine: LangGraphEngine) -> Builder:
     graph.add_node("begin", begin)
     graph.add_node("confirm", confirm)
     graph.add_node("dispatch", dispatch)
+    graph.add_node("lookup", lookup)
     graph.add_node("recover", recover)
     graph.add_node("cleanup", cleanup)
     graph.add_node("answered", answered)
@@ -772,7 +911,8 @@ def build(engine: LangGraphEngine) -> Builder:
     ]
     for failure in failures:  # a tiny node per failure keeps the drawing honest about the forks
         graph.add_node(f"failure_{failure}", set_failure(failure))  # type: ignore[arg-type]
-        graph.add_edge(f"failure_{failure}", "recover")
+        graph.add_edge(f"failure_{failure}", "lookup")  # look up, then decide
+    graph.add_edge("lookup", "recover")
 
     graph.add_edge(START, "begin")
     graph.add_conditional_edges("begin", after_start, ["wait_payment", "wait_kitchen"])
