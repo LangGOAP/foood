@@ -36,7 +36,7 @@ contract:
 SEED ?= 7
 
 bench:  ## run every bundled scenario against ENGINE under SEED, then regenerate BENCH.md
-	for s in happy-path kitchen-trouble delivery-trouble payment-trouble; do uv run foood bench --scenario $$s --engine $(ENGINE) --seed $(SEED) || exit 1; done
+	for s in happy-path kitchen-trouble delivery-trouble payment-trouble storm bridge-closed; do uv run foood bench --scenario $$s --engine $(ENGINE) --seed $(SEED) || exit 1; done
 	uv run python scripts/bench_table.py
 
 bench-table:

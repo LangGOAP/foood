@@ -1,0 +1,33 @@
+# Weather closes in: a storm over the kitchens, a driver who goes home, traffic downtown.
+name = "storm"
+description = "A storm breaks over the kitchens' zone as order 1 is confirmed and lasts seven minutes: kitchens take half as long again, couriers crawl, one driver goes offline for five minutes; order 3 meets heavy traffic downtown on the way to the door. Nothing fails outright; the promises do."
+seed = 9
+
+[kitchen]
+autopilot = true
+start_after = 5
+ready_after = 45
+
+[bench]
+orders = 5
+interval_seconds = 120
+drivers = 2
+
+[[inject]]
+order = 1
+failure = "storm"
+after_seconds = 20
+for_seconds = 420
+
+[[inject]]
+order = 1
+failure = "driver_offline"
+after_seconds = 20
+for_seconds = 300
+
+[[inject]]
+order = 3
+failure = "traffic"
+zone = "downtown"
+factor = 2.0
+for_seconds = 240

@@ -49,7 +49,14 @@ def _advance(engine, seconds: float) -> None:
 
 def test_bundled_scenarios_parse() -> None:
     names = sorted(p.stem for p in SCENARIOS.glob("*.toml"))
-    assert names == ["delivery-trouble", "happy-path", "kitchen-trouble", "payment-trouble"]
+    assert names == [
+        "bridge-closed",
+        "delivery-trouble",
+        "happy-path",
+        "kitchen-trouble",
+        "payment-trouble",
+        "storm",
+    ]
     for name in names:
         scenario = load(name)
         assert scenario.name == name and scenario.description
