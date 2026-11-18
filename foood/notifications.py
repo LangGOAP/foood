@@ -88,11 +88,13 @@ class Notification:
     message_key: str
     params: dict[str, str]
     is_read: bool = False
+    phrased: str | None = None  # a model's wording, when a phraser is installed
     id: str = field(default_factory=new_id)
     created_at: datetime = field(default_factory=now)
 
-    def to_json(self) -> dict[str, Any]:
-        kind, title, template = TEXTS[self.message_key]
+    def template_text(self) -> str:
+        """The deterministic wording, what the app shows when nothing better was written."""
+        _, _, template = TEXTS[self.message_key]
         short_id = self.params.get("orderId", "")[:8]
         message = template.format(
             id=short_id,
@@ -103,18 +105,21 @@ class Notification:
             card=f" with {self.params['card']}" if self.params.get("card") else "",
         )
         if self.message_key == "order.cancelled":
-            who = (
-                "Delivery Plus" if self.params.get("cancelledBy") == "SYSTEM" else "The restaurant"
-            )
+            by = self.params.get("cancelledBy") or ""
+            who = {"SYSTEM": "Delivery Plus", "CUSTOMER": "You"}.get(by, "The restaurant")
             note = self.params.get("note")
             message = f"{who} cancelled your order {short_id}"
             message += f": {note}" if note else "."
+        return message
+
+    def to_json(self) -> dict[str, Any]:
+        kind, title, _ = TEXTS[self.message_key]
         return {
             "id": self.id,
             "userId": self.user_id,
             "type": kind,
             "title": title,
-            "message": message,
+            "message": self.phrased or self.template_text(),
             "messageKey": self.message_key,
             "params": dict(self.params),
             "isRead": self.is_read,
@@ -125,6 +130,9 @@ class Notification:
 def notify(store: Store, user_id: str, message_key: str, **params: str | None) -> Notification:
     clean = {key: value for key, value in params.items() if value is not None}
     notification = Notification(user_id, message_key, clean)
+    phrase = store.hooks.get("phrase")
+    if phrase is not None:
+        notification.phrased = phrase(notification, notification.template_text())
     store.notifications.append(notification)
     return notification
 

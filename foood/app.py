@@ -26,6 +26,8 @@ from foood.engine import OrderEngine, make_engine
 from foood.engine import router as engine_router
 from foood.errors import install_error_handlers
 from foood.mapview import router as map_router
+from foood.messages import Phraser, phraser_from_env
+from foood.messages import install as install_phraser
 from foood.notifications import install as install_notifications
 from foood.notifications import router as notifications_router
 from foood.orders import router as orders_router
@@ -50,6 +52,7 @@ def create_app(
     simulate: bool = True,
     scenario: Scenario | None = None,
     engine: OrderEngine | None = None,
+    phraser: Phraser | None = None,
 ) -> FastAPI:
     """Build the service.
 
@@ -86,6 +89,9 @@ def create_app(
     install_world(app.state.store)
     app.state.engine = engine or make_engine(os.environ.get("FOOOD_ENGINE", "hand-wired"))
     app.state.engine.install(app.state.store)
+    chosen_phraser = phraser or phraser_from_env()
+    if chosen_phraser is not None:
+        install_phraser(app.state.store, chosen_phraser)
     install_tracking(app.state.store)
     install_support(app.state.store)
     if scenario is None and os.environ.get("FOOOD_SCENARIO"):
