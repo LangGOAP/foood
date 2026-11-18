@@ -170,6 +170,20 @@ tools. The allow-list depends on the conditions: `replace_order` is withheld
 when no alternative kitchen is reachable, and in rain or a storm a wider driver
 search comes first.
 
+### A model proposes, the platform grounds, the customer decides
+
+Two more small-model nodes sit between `lookup` and `recover` for the kitchen's
+failures. `classify` reads the kitchen's free-text note into a kind ("the last
+portion just went out", "the grill is down"). When a dish ran out and the
+kitchen is fine, `suggest` proposes substitutes: a mid-size model picks up to
+five dishes from what open kitchens within reach can make now, the platform
+keeps the dishes that are on an open menu and prices each as a replacement
+(`foood/replacements.py`), and the customer is asked. The thread waits at
+`wait_customer`; an accepted option becomes the replacement order, a declined
+one (or three minutes of silence) sends the fork its decision with that fact.
+Both nodes are perception calls, counted apart from the decision, and without
+them the fork behaves as before.
+
 ### Ordering in a sentence
 
 ```bash

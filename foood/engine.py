@@ -151,6 +151,7 @@ def make_engine(name: str) -> OrderEngine:
         from foood.graph_engine import LangGraphEngine
         from foood.nodes import client_for
         from foood.recovery import advisor_from_env
+        from foood.suggest import classifier_from_env, suggester_from_env
 
         path = os.environ.get("FOOOD_CHECKPOINTS")
         return LangGraphEngine(
@@ -158,6 +159,8 @@ def make_engine(name: str) -> OrderEngine:
             advisor=advisor_from_env("decide"),
             escalator=advisor_from_env("escalate"),
             looker=client_for("lookup"),
+            classifier=classifier_from_env(),
+            suggester=suggester_from_env(),
         )
     try:
         return ENGINES[name]()
