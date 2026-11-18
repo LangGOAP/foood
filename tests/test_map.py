@@ -41,3 +41,12 @@ async def test_the_page_is_served_without_a_sign_in(client) -> None:
 
 def test_the_banner_points_at_the_map() -> None:
     assert "http://localhost:3000/map" in banner("http://localhost:3000", APPS)
+
+
+def test_the_scenario_log_shows_local_times() -> None:
+    """The header and the support console show the viewer's clock; the log must not print UTC."""
+    from foood.mapview import PAGE
+
+    page = PAGE.read_text(encoding="utf-8")
+    assert "toLocaleTimeString" in page
+    assert "slice(11, 19)" not in page

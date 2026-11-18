@@ -110,8 +110,9 @@
   async function log() {
     try {
       const s = await (await fetch("/api/_scenario")).json();
+      const when = (at) => { const d = new Date(at || ""); return Number.isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour12: false }); };
       const lines = (s.log || []).slice(-6).map((e) =>
-        `${(e.at || "").slice(11, 19)}  ${e.event || ""}${e.orderId ? `  order ${short(e.orderId)}` : ""}${e.reason ? `  ${e.reason}` : ""}`);
+        `${when(e.at)}  ${e.event || ""}${e.orderId ? `  order ${short(e.orderId)}` : ""}${e.reason ? `  ${e.reason}` : ""}`);
       document.getElementById("log").textContent = lines.join("\n") || (s.name ? `scenario ${s.name}: nothing fired yet` : "no scenario loaded");
     } catch (e) { /* the log is a nicety */ }
   }
