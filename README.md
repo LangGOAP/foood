@@ -82,6 +82,17 @@ order's door with the line from its kitchen coloured by its status, and the
 drivers where their phones last reported, redrawn every two seconds from `GET
 /api/_map` (not part of the contract, like `/api/_engine`).
 
+The world (`foood/world.py`) holds the weather, the traffic and the road
+closures of a city cut into zones around the kitchens, with a corridor between
+each pair of zones that matters. Couriers slow down in rain and in traffic,
+kitchens take longer in a storm, a closed corridor turns a route into a detour.
+It is served as an MCP server at http://localhost:3000/mcp (streamable HTTP);
+any MCP client can read it (`get_weather`, `get_traffic`, `eta`, `forecast`,
+`zones`) or move it (`set_weather`, `set_traffic`, `close_road`, `schedule`);
+the engines consult the same tools, and a scenario moves the same state on
+schedule. The page at http://localhost:3000/world shows it and lets support move
+it by hand.
+
 ## Recovery actions
 
 Recovery actions are platform functions available to every engine. Replacement
@@ -131,11 +142,12 @@ differently. The bundled ones:
 
 The failures available to a scenario file are `restaurant_rejects`,
 `accepts_then_cancels`, `prep_overrun`, `payment_declines`, `no_driver`,
-`driver_drops` (before or after pickup), `courier_delay`, `duplicate_submission`
-and `gateway_down`; `foood/scenario.py` documents their fields. `GET
-/api/_scenario` shows what the loaded scenario has fired so far, and the tests
-in `tests/test_scenario.py` check that each failure ends in a consistent state
-across the order, its payment and its delivery.
+`driver_drops` (before or after pickup), `courier_delay`,
+`duplicate_submission`, `gateway_down`, and the world's `storm`, `traffic`,
+`road_closed` and `driver_offline`; `foood/scenario.py` documents their fields.
+`GET /api/_scenario` shows what the loaded scenario has fired so far, and the
+tests in `tests/test_scenario.py` check that each failure ends in a consistent
+state across the order, its payment and its delivery.
 
 ## Measure it
 

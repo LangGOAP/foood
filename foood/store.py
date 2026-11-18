@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import secrets
 import uuid
+from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -137,6 +138,20 @@ class RefreshSession:
 
 
 @dataclass
+class World:
+    """Weather, traffic and road closures, moved and read through ``foood.world`` (#43)."""
+
+    weather: dict[str, str] = field(default_factory=dict)  # zone -> kind; absent means clear
+    traffic: dict[str, float] = field(default_factory=dict)  # zone -> delay factor, 1.0 or more
+    closed: set[str] = field(default_factory=set)  # corridors
+    until: dict[tuple[str, str], datetime] = field(default_factory=dict)  # (kind, key) -> expiry
+    scheduled: list[tuple[datetime, dict[str, Any]]] = field(default_factory=list)
+    log: list[dict[str, Any]] = field(default_factory=list)
+    calls: Counter[str] = field(default_factory=Counter)  # read tool -> times asked
+    calls_by_order: Counter[str] = field(default_factory=Counter)
+
+
+@dataclass
 class Store:
     users: dict[str, User] = field(default_factory=dict)
     restaurants: dict[str, Restaurant] = field(default_factory=dict)
@@ -172,6 +187,8 @@ class Store:
     questions: dict[str, Question] = field(default_factory=dict)
     #: the customers' credit ledger, in order
     credits: list[CreditEntry] = field(default_factory=list)
+    #: the weather, the traffic and the road closures
+    world: World = field(default_factory=World)
 
     def subscribe(self, event: str, listener: Callable[..., None]) -> None:
         self.listeners.setdefault(event, []).append(listener)

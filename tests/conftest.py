@@ -8,6 +8,7 @@ import httpx
 import pytest
 
 from foood.app import create_app
+from foood.scenario import Scenario
 from foood.store import CLOCK
 
 
@@ -49,3 +50,21 @@ async def live() -> AsyncIterator[httpx.AsyncClient]:
         yield client
     server.should_exit = True
     await task
+
+
+async def _client(scenario: Scenario) -> AsyncIterator[httpx.AsyncClient]:
+    app = create_app(simulate=False, scenario=scenario)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as c:
+        c.store = app.state.store  # type: ignore[attr-defined]
+        c.engine = app.state.store.engine  # type: ignore[attr-defined]
+        yield c
+
+
+@pytest.fixture
+def scenario_client():
+    """Builds a client around a scenario: ``async with scenario_client(Scenario(...)) as c``."""
+    from contextlib import asynccontextmanager
+
+    return asynccontextmanager(_client)

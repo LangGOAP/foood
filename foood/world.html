@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>foood · the world</title>
+<style>
+  :root { --ink:#1b1b1b; --muted:#6b6b6b; --line:#e4e1dc; --card:#fff; --bg:#f6f4f0; --accent:#b4231f; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); }
+  header { display:flex; align-items:baseline; gap:12px; padding:14px 20px; background:var(--card); border-bottom:1px solid var(--line); }
+  header b { font-size:17px; }
+  header span { color:var(--muted); }
+  main { max-width:960px; margin:0 auto; padding:20px; display:grid; gap:18px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  h2 { margin:0 0 10px; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  table { border-collapse:collapse; width:100%; }
+  td, th { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); font-weight:normal; }
+  th { color:var(--muted); font-size:12px; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:#eee; }
+  .rain { background:#dbe9ff; } .storm { background:#c7d4ff; } .heat { background:#ffe3c2; } .closed { background:#ffd6d4; }
+  form { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px; }
+  input, select, button { font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  button { background:var(--ink); color:#fff; border-color:var(--ink); cursor:pointer; }
+  button.quiet { background:#fff; color:var(--ink); }
+  #signin { color:var(--muted); font-size:13px; }
+  pre { margin:0; font:12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space:pre-wrap; color:var(--muted); max-height:220px; overflow:auto; }
+  .note { color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<header><b>foood</b><span>· the world · <span id="mcp"></span></span><span id="signin" style="margin-left:auto"></span></header>
+<main>
+  <section>
+    <h2>Zones</h2>
+    <table><thead><tr><th>zone</th><th>weather</th><th>traffic</th><th>until</th></tr></thead><tbody id="zones"></tbody></table>
+  </section>
+  <section>
+    <h2>Corridors</h2>
+    <table><thead><tr><th>corridor</th><th>between</th><th>state</th></tr></thead><tbody id="corridors"></tbody></table>
+  </section>
+  <section>
+    <h2>Move it</h2>
+    <p class="note">Sign in as support to use these; any MCP client pointed at <code id="mcp2"></code> has the same tools.</p>
+    <form id="auth"><input id="email" value="admin@example.com"><input id="password" type="password" placeholder="password"><button>Sign in</button></form>
+    <form id="weather"><span>weather</span><select id="wzone"></select><select id="wkind"><option>clear</option><option>rain</option><option>storm</option><option>heat</option></select><input id="wfor" type="number" placeholder="seconds (optional)" min="0" style="width:170px"><button>Set</button></form>
+    <form id="traffic"><span>traffic</span><select id="tzone"></select><input id="tfactor" type="number" step="0.1" min="1" value="2.0" style="width:90px"><input id="tfor" type="number" placeholder="seconds (optional)" min="0" style="width:170px"><button>Set</button></form>
+    <form id="road"><span>road</span><select id="rcorridor"></select><select id="rclosed"><option value="true">close</option><option value="false">reopen</option></select><input id="rfor" type="number" placeholder="seconds (optional)" min="0" style="width:170px"><button>Apply</button></form>
+  </section>
+  <section>
+    <h2>Scheduled</h2>
+    <pre id="scheduled">nothing scheduled</pre>
+  </section>
+  <section>
+    <h2>Log</h2>
+    <pre id="log">nothing yet</pre>
+  </section>
+</main>
+<script>
+  let token = null;
+  const $ = (id) => document.getElementById(id);
+  const when = (at) => { const d = new Date(at || ""); return Number.isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour12: false }); };
+  async function refresh() {
+    const s = await (await fetch("/api/_world")).json();
+    $("mcp").textContent = `MCP at ${location.origin}${s.mcp}`; $("mcp2").textContent = `${location.origin}${s.mcp}`;
+    const until = (kind, key) => (s.log.slice().reverse().find((e) => e.event === kind && (e.zone === key || e.corridor === key)) || {}).until;
+    $("zones").innerHTML = Object.keys(s.zones).map((z) => `<tr><td>${z}</td><td><span class="pill ${s.weather[z]}">${s.weather[z]}</span></td><td>${s.traffic[z] ? `<span class="pill closed">×${s.traffic[z]}</span>` : "free"}</td><td>${when(until("weather", z)) || ""}</td></tr>`).join("");
+    $("corridors").innerHTML = Object.entries(s.corridors).map(([c, ends]) => `<tr><td>${c}</td><td>${ends.join(" – ")}</td><td>${s.closed.includes(c) ? '<span class="pill closed">closed</span>' : "open"}</td></tr>`).join("");
+    const zoneOptions = Object.keys(s.zones).map((z) => `<option>${z}</option>`).join("");
+    for (const id of ["wzone", "tzone"]) if (!$(id).options.length) $(id).innerHTML = zoneOptions;
+    if (!$("rcorridor").options.length) $("rcorridor").innerHTML = Object.keys(s.corridors).map((c) => `<option>${c}</option>`).join("");
+    $("scheduled").textContent = s.scheduled.length ? s.scheduled.map((e) => `${when(e.due)}  ${JSON.stringify(e.change)}`).join("\n") : "nothing scheduled";
+    $("log").textContent = s.log.length ? s.log.slice(-12).map((e) => `${when(e.at)}  ${e.event}  ${e.zone || e.corridor || ""}  ${e.kind || (e.factor !== undefined ? "×" + e.factor : "") || (e.closed !== undefined ? (e.closed ? "closed" : "open") : "")}${e.change ? "  " + JSON.stringify(e.change) : ""}`).join("\n") : "nothing yet";
+  }
+  async function post(path, body) {
+    if (!token) { alert("sign in first"); return; }
+    const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+    if (!r.ok) alert((await r.json()).message || r.status);
+    refresh();
+  }
+  const seconds = (id) => { const v = $(id).value; return v === "" ? null : Number(v); };
+  $("auth").onsubmit = async (e) => { e.preventDefault(); const r = await fetch("/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: $("email").value, password: $("password").value }) }); if (!r.ok) { alert("sign-in failed"); return; } token = (await r.json()).accessToken; $("signin").textContent = `signed in as ${$("email").value}`; $("auth").style.display = "none"; };
+  $("weather").onsubmit = (e) => { e.preventDefault(); post("/api/_world/weather", { zone: $("wzone").value, kind: $("wkind").value, for_seconds: seconds("wfor") }); };
+  $("traffic").onsubmit = (e) => { e.preventDefault(); post("/api/_world/traffic", { zone: $("tzone").value, factor: Number($("tfactor").value), for_seconds: seconds("tfor") }); };
+  $("road").onsubmit = (e) => { e.preventDefault(); post("/api/_world/road", { corridor: $("rcorridor").value, closed: $("rclosed").value === "true", for_seconds: seconds("rfor") }); };
+  refresh(); setInterval(refresh, 2000);
+</script>
+</body>
+</html>

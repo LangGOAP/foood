@@ -32,6 +32,7 @@ from foood.drivers import driver_of
 from foood.errors import ApiError
 from foood.orders import RIDE_SPEED_KMH, get_order
 from foood.store import Store, User, iso, now
+from foood.world import speed_factor
 
 router = APIRouter(prefix="/api", tags=["tracking"])
 
@@ -219,16 +220,26 @@ def simulate_step(store: Store, seconds: float = SIM_TICK_SECONDS) -> None:
             if moment - current.received_at < REAL_REPORT_GRACE:
                 continue  # a real device is sharing; leave it alone
         target = _destination(store, delivery)
-        step = step_km * store.speed_factors.get(driver.user_id, 1.0)
         if current is None:
             restaurant = store.restaurants[delivery.restaurant_id]
             # appear SIM_START_KM south-west of the restaurant, then drive in
             lat_offset = SIM_START_KM / 111.0 / math.sqrt(2)
             lng_offset = lat_offset / max(math.cos(math.radians(restaurant.latitude)), 1e-6)
-            origin = (restaurant.latitude - lat_offset, restaurant.longitude - lng_offset)
-            position = _step_towards(origin, target, step)
+            here = (restaurant.latitude - lat_offset, restaurant.longitude - lng_offset)
         else:
-            position = _step_towards((current.latitude, current.longitude), target, step)
+            here = (current.latitude, current.longitude)
+        # the courier's own trouble (a scenario's delay) times the world's (weather, traffic,
+        # roads); the ride is judged by its whole leg, kitchen to door, so a closed corridor
+        # counts throughout, not only while the courier is still on the kitchen's side
+        restaurant = store.restaurants[delivery.restaurant_id]
+        on_the_way = delivery.status != "DRIVER_ASSIGNED"
+        leg_start = (restaurant.latitude, restaurant.longitude) if on_the_way else here
+        step = (
+            step_km
+            * store.speed_factors.get(driver.user_id, 1.0)
+            * speed_factor(store, leg_start, target)
+        )
+        position = _step_towards(here, target, step)
         location = Location(
             driver.user_id, *position, recorded_at=moment, received_at=moment, simulated=True
         )

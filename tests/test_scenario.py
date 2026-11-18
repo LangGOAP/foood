@@ -2,35 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-
-import httpx
 import pytest
 
-from foood.app import create_app
 from foood.scenario import FAILURES, SCENARIOS, Injection, Kitchen, Scenario, load, parse
 from foood.store import CLOCK
 from tests.support import login
 
 QA_OWNER = "qa.restaurant@delivery-plus.test"
-
-
-async def _client(scenario: Scenario) -> AsyncIterator[httpx.AsyncClient]:
-    app = create_app(simulate=False, scenario=scenario)
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://test"
-    ) as c:
-        c.store = app.state.store  # type: ignore[attr-defined]
-        c.engine = app.state.store.engine  # type: ignore[attr-defined]
-        yield c
-
-
-@pytest.fixture
-def scenario_client():
-    """Builds a client around a scenario: ``async with scenario_client(Scenario(...)) as c``."""
-    from contextlib import asynccontextmanager
-
-    return asynccontextmanager(_client)
 
 
 async def _order(client, customer, item: str = "QA Pasta", pay: bool = True) -> dict:
@@ -93,7 +71,9 @@ def test_parse_rejects_bad_files() -> None:
 
 async def test_without_a_scenario_nothing_is_wired(client) -> None:
     assert client.store.engine is None and client.store.hooks == {}
-    assert len(client.store.tickers) == 1  # only support's deadline sweep, never a scenario timer
+    # support's deadline sweep and the world's clock, never a scenario timer
+    assert len(client.store.tickers) == 2
+    assert all(getattr(t, "__self__", None) is None for t in client.store.tickers)
     assert (await client.get("/api/_scenario")).json() == {"name": None, "log": []}
 
 
