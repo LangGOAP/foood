@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from foood import __version__
+from foood.agent_engine import router as intake_router
 from foood.auth import router as auth_router
 from foood.cart import router as cart_router
 from foood.catalog import router as catalog_router
@@ -115,6 +116,7 @@ def create_app(
     app.include_router(world_router)
     app.include_router(replacements_router)
     app.include_router(credits_router)
+    app.include_router(intake_router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

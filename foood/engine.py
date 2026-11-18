@@ -139,10 +139,14 @@ ENGINES: dict[str, type[OrderEngine]] = {"hand-wired": HandWiredEngine, "null": 
 
 
 def make_engine(name: str) -> OrderEngine:
+    if name == "llm":  # the tier where one frontier model runs the evening
+        from foood.agent_engine import from_env
+
+        return from_env()
     try:
         return ENGINES[name]()
     except KeyError:
-        raise ValueError(f"unknown engine {name!r}; one of {sorted(ENGINES)}") from None
+        raise ValueError(f"unknown engine {name!r}; one of {sorted(ENGINES) + ['llm']}") from None
 
 
 @router.get("/_engine")

@@ -70,11 +70,42 @@ why.
 
 ## One frontier model (this branch)
 
-This branch gives the platform one model, the frontier model of its family
-(`FOOOD_LLM_MODEL`, default `gpt-5.4`, with `OPENAI_API_KEY` from the environment
-or a `.env` file; `FOOOD_LLM=off` disables it and the numbers match `main`),
-and puts it to work one job at a time. Every call is recorded on the order's
-decisions with its model, tokens, latency and cost at that model's price.
+`foood up --engine llm` gives the platform one model, the frontier model of its
+family (`FOOOD_LLM_MODEL`, default `gpt-5.4`, with `OPENAI_API_KEY` from the
+environment or a `.env` file), and lets it run the evening
+(`foood/agent_engine.py`). This is the first refactoring, the one most teams
+ship: on every event that concerns an order the model is told what happened and
+given tools, and it calls what it likes until it stops. The tools are the
+platform's actions (confirm the payment, send the order out, dispatch, widen the
+search, replace the order at another kitchen, offer substitutes and carry out
+the one the customer accepts, retry the backup card, issue a credit, move the
+promise, ask support, wait), lookups (the order's facts, the kitchens that can
+make it, the drivers online, the ride's ETA now) and the world's MCP read tools
+(`get_weather`, `get_traffic`, `eta`, `forecast`, `zones`), never its controls.
+Timers stand in for the forks a graph would draw: a delivery nobody takes, a
+kitchen running long, a promise that passes, each raise one episode; so does a
+change in the world, for every order in flight.
+
+The guards are the ones a careful team would add and no more: six model rounds
+and ten tool calls per episode, a timeout and no retries per call, and the
+hand-wired reaction whenever the model errs or spends its budget without acting.
+Every round is a decision call recorded on the order with the model's name,
+tokens, latency and cost at that model's price; every tool call is recorded as
+what it did. `FOOOD_LLM=off` (or no key) makes the engine the hand-wired one,
+and the bench numbers match `main` exactly.
+
+### Ordering in a sentence
+
+```bash
+uv run foood ask "two QA burgers and fries to the office, ring twice"
+```
+
+`POST /api/orders/intake` (outside the Delivery Plus contract) is the same loop
+with the cart as its tools: the model searches the open menus, fills the cart
+from one kitchen and places the order through the same door the app uses, so
+every guard still applies; when a dish is unknown or sold out, or the sentence
+is ambiguous, it asks one question back instead of guessing. The call is
+recorded on the order as a language call.
 
 ### Messages in the model's words
 
