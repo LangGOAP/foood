@@ -48,6 +48,37 @@ def test_the_repeats_table_renders(tmp_path: Path) -> None:
     assert "| yes |" in table and table.rstrip().endswith("1 set(s).")
 
 
+def test_the_repeats_table_counts_decisions_apart_from_every_call(tmp_path: Path) -> None:
+    """The decisions column comes from each run's decision-role calls, not from the total of
+    every call (language and perception included); the total keeps its own column."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from bench_table import _deciding, render
+
+    graph_like = {
+        "distribution": {"llmCalls": {"62": 1, "63": 1}},
+        "runs": [
+            {"llmCalls": 62, "llmCallsByRole": {"decision": 4, "perception": 10, "language": 48}},
+            {"llmCalls": 63, "llmCallsByRole": {"decision": 4, "perception": 11, "language": 48}},
+        ],
+    }
+    assert _deciding(graph_like) == {"4": 2}
+    before_roles = {"distribution": {"llmCalls": {"5": 2}}, "runs": [{"llmCalls": 5}]}
+    assert _deciding(before_roles) == {"5": 2}  # a file from before the roles: the total
+
+    repeat("payment-trouble", "hand-wired", 7, 2, tmp_path)
+    table = render(tmp_path)
+    header, rows = None, []
+    for line in table.splitlines():
+        if line.startswith("| Scenario | Engine | Seed | Runs |"):
+            header = [c.strip() for c in line.strip("|").split("|")]
+        elif header and line.startswith("| payment-trouble | hand-wired |"):
+            rows.append([c.strip() for c in line.strip("|").split("|")])
+    assert header is not None and rows
+    row = dict(zip(header, rows[0], strict=True))
+    assert row["LLM calls, decisions"] == "0 ×2"
+    assert "LLM calls, all" in row
+
+
 def test_identical_means_the_same_outcomes_not_the_same_tokens() -> None:
     first = {"delivered": 6, "llmCalls": 4, "cost": 0.0076, "llmTokens": 6625, "messageCalls": 42}
     second = {**first, "cost": 0.0079, "llmTokens": 6681}

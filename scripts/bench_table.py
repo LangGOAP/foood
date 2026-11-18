@@ -28,10 +28,20 @@ COLUMNS = [
     ),
     ("Recovery decisions", lambda r: r["summary"]["recoveryDecisions"]),
     ("Human prompts", lambda r: r["summary"]["humanPrompts"]),
-    ("LLM calls", lambda r: r["summary"]["llmCalls"]),
+    ("LLM calls, decisions", lambda r: _role(r, "decision")),
+    ("LLM calls, perception", lambda r: _role(r, "perception")),
+    ("LLM calls, language", lambda r: _role(r, "language")),
+    ("World calls", lambda r: r["summary"].get("worldCalls", 0)),
     ("Cost (USD)", lambda r: r["summary"]["cost"] if r["summary"].get("llmPriced") else "unpriced"),
     ("Not recovered", lambda r: ", ".join(r["summary"]["unrecovered"]) or "-"),
 ]
+
+
+def _role(run: dict, role: str) -> int:
+    roles = run["summary"].get("llmCallsByRole")
+    if roles is None:  # a file from before the roles: every call counted as a decision
+        return run["summary"]["llmCalls"] if role == "decision" else 0
+    return roles[role]
 
 
 def render(results_dir: Path = RESULTS) -> str:
@@ -56,15 +66,23 @@ def render(results_dir: Path = RESULTS) -> str:
         {
             (r["llmPrices"]["inputPerMillionUsd"], r["llmPrices"]["outputPerMillionUsd"])
             for r in runs
-            if r.get("summary", {}).get("llmPriced") and r.get("llmPrices")
+            if r.get("summary", {}).get("llmPriced")
+            and r.get("llmPrices")
+            and r["llmPrices"]["inputPerMillionUsd"] is not None
         }
     )
-    if priced:
+    per_model: dict[str, tuple[float, float]] = {}
+    for r in runs:
+        for name, entry in (r.get("llmPrices", {}).get("perModel") or {}).items():
+            per_model[name] = (entry["in"], entry["out"])
+    if priced or per_model:
+        parts = [f"{name}: {i} in and {o} out" for name, (i, o) in sorted(per_model.items())]
+        parts += [f"{i} in and {o} out" for i, o in priced]
         lines += [
             "",
             "Costs use the model prices each run file records: "
-            + "; ".join(f"{i} in and {o} out, USD per million tokens" for i, o in priced)
-            + " (see `bench.env` for the source and date).",
+            + "; ".join(parts)
+            + ", USD per million tokens (see `bench.env` for the source and date).",
         ]
     sets = [
         json.loads(p.read_text(encoding="utf-8"))
@@ -88,6 +106,18 @@ def render(results_dir: Path = RESULTS) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _deciding(repeated: dict) -> dict:
+    """The decision calls per run, as a histogram; ``distribution.llmCalls`` counts every role."""
+    runs = repeated.get("runs") or []
+    if not runs or any("llmCallsByRole" not in run for run in runs):
+        return repeated["distribution"]["llmCalls"]  # a file from before the roles
+    out: dict[str, int] = {}
+    for run in runs:
+        key = str(run["llmCallsByRole"].get("decision", 0))
+        out[key] = out.get(key, 0) + 1
+    return dict(sorted(out.items(), key=lambda kv: int(kv[0])))
+
+
 def _counts(histogram: dict) -> str:
     return ", ".join(f"{value} ×{count}" for value, count in histogram.items()) or "-"
 
@@ -102,7 +132,8 @@ REPEAT_COLUMNS = [
     ("Seed", lambda r: r["seed"]),
     ("Runs", lambda r: r["times"]),
     ("Delivered", lambda r: _counts(r["distribution"]["delivered"])),
-    ("LLM calls, decisions", lambda r: _counts(r["distribution"]["llmCalls"])),
+    ("LLM calls, decisions", lambda r: _counts(_deciding(r))),
+    ("LLM calls, all", lambda r: _counts(r["distribution"]["llmCalls"])),
     ("Human prompts", lambda r: _counts(r["distribution"]["humanPrompts"])),
     ("Decisions taken", lambda r: _counts(r["distribution"]["decisionsTaken"])),
     ("Model ms (min / median / max)", lambda r: _triple(r["distribution"]["modelMs"])),

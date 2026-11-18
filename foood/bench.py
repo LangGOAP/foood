@@ -15,7 +15,6 @@ import asyncio
 import dataclasses
 import json
 import math
-import os
 import statistics
 from collections import Counter
 from collections.abc import Iterable
@@ -32,6 +31,7 @@ from foood.catalog import distance_km
 from foood.deliveries import ACTIVE, current_delivery
 from foood.drivers import driver_of
 from foood.engine import make_engine
+from foood.llm_prices import prices
 from foood.orders import TERMINAL
 from foood.scenario import Kitchen, Scenario, load
 from foood.store import CLOCK, PASSWORD, QA_PASSWORD, Store, iso, now
@@ -44,7 +44,56 @@ TICK_SECONDS = 5
 MAX_VIRTUAL_SECONDS = 3 * 3600
 ARRIVED_KM = 0.08
 DRIVER_ACCOUNTS = [("driver@example.com", PASSWORD), ("qa.driver@delivery-plus.test", QA_PASSWORD)]
-HAPPY_PATH = {"confirm", "create delivery", "assign driver"}
+NOT_RECOVERY = {"confirm", "create delivery", "assign driver", "intake", "phrase"}
+#: what a model call was for: deciding what happens next, turning text or the world into facts,
+#: or language (intake, messages); counted apart so a planner's zero decisions stays honest
+ROLES = ("decision", "perception", "language")
+LANGUAGE_DECISIONS = {"phrase", "intake"}
+
+
+def role_of(decision: dict[str, Any]) -> str:
+    role = decision.get("llmRole")
+    if role in ROLES:
+        return str(role)
+    return "language" if decision.get("decision") in LANGUAGE_DECISIONS else "decision"
+
+
+def by_role(decisions: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
+    out = {role: {"calls": 0, "latencyMs": 0} for role in ROLES}
+    for d in decisions:
+        calls = int(d.get("llmCalls", 0) or 0)
+        if not calls:
+            continue
+        slot = out[role_of(d)]
+        slot["calls"] += calls
+        slot["latencyMs"] += int(round(float(d.get("latencyMs", 0) or 0)))
+    return out
+
+
+def by_model(decisions: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for d in decisions:
+        calls = int(d.get("llmCalls", 0) or 0)
+        if not calls:
+            continue
+        slot = out.setdefault(
+            str(d.get("model") or "unknown"), {"calls": 0, "tokens": 0, "cost": 0.0}
+        )
+        slot["calls"] += calls
+        slot["tokens"] += int(d.get("llmTokens", 0) or 0)
+        slot["cost"] = round(slot["cost"] + float(d.get("cost", 0) or 0), 4)
+    return out
+
+
+def merge_models(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        for model, slot in row["llmByModel"].items():
+            total = out.setdefault(model, {"calls": 0, "tokens": 0, "cost": 0.0})
+            total["calls"] += slot["calls"]
+            total["tokens"] += slot["tokens"]
+            total["cost"] = round(total["cost"] + slot["cost"], 4)
+    return out
 
 
 @dataclass
@@ -321,11 +370,22 @@ class Run:
                     "failures": fired.get(order.id, []),
                     "recovered": bool(fired.get(order.id)) and final.status == "DELIVERED",
                     "decisions": len(decisions),
-                    "recoveryDecisions": sum(d["decision"] not in HAPPY_PATH for d in decisions),
+                    # platform actions taken off the happy path; a model's own rounds ("llm: ...")
+                    # are counted as decision calls, not as actions
+                    "recoveryDecisions": sum(
+                        d["decision"] not in NOT_RECOVERY and not d["decision"].startswith("llm:")
+                        for d in decisions
+                    ),
                     "humanPrompts": sum(
                         q.order_id in {order.id, final.id} for q in store.questions.values()
                     ),
                     "llmCalls": sum(int(d.get("llmCalls", 0)) for d in decisions),
+                    "llmCallsByRole": {r: v["calls"] for r, v in by_role(decisions).items()},
+                    "modelMsByRole": {r: v["latencyMs"] for r, v in by_role(decisions).items()},
+                    "llmByModel": by_model(decisions),
+                    "llmTokens": sum(int(d.get("llmTokens", 0) or 0) for d in decisions),
+                    "worldCalls": store.world.calls_by_order.get(order.id, 0)
+                    + (store.world.calls_by_order.get(final.id, 0) if final is not order else 0),
                     "decisionNames": [d["decision"] for d in decisions],
                     # money is spent only where a model was called; a planner's decisions
                     # carry a plan cost under their own key, not dollars
@@ -365,8 +425,21 @@ class Run:
                 "recoveryDecisions": sum(r["recoveryDecisions"] for r in placed_rows),
                 "humanPrompts": sum(r["humanPrompts"] for r in placed_rows),
                 "llmCalls": sum(r["llmCalls"] for r in placed_rows),
+                "llmCallsByRole": {
+                    role: sum(r["llmCallsByRole"][role] for r in placed_rows) for role in ROLES
+                },
+                "llmCallsDeciding": sum(
+                    r["llmCallsByRole"]["decision"] + r["llmCallsByRole"]["perception"]
+                    for r in placed_rows
+                ),
+                "llmByModel": merge_models(placed_rows),
+                "llmTokens": sum(r["llmTokens"] for r in placed_rows),
+                "worldCalls": sum(r["worldCalls"] for r in placed_rows),
                 "cost": round(sum(r["cost"] for r in placed_rows), 4),
-                "llmPriced": all(value is not None for value in prices.values()),
+                "llmPriced": bool(prices["perModel"])
+                or all(
+                    prices[key] is not None for key in ("inputPerMillionUsd", "outputPerMillionUsd")
+                ),
                 "failuresFired": sorted({f for r in placed_rows for f in r["failures"]}),
                 "unrecovered": unrecovered,
             },
@@ -387,20 +460,18 @@ def run(
     return result
 
 
-def llm_prices() -> dict[str, float | None]:
+def llm_prices() -> dict[str, Any]:
     """The model prices a run was given (USD per million tokens), so its cost has provenance.
 
-    Set FOOOD_LLM_PRICE_IN and FOOOD_LLM_PRICE_OUT (the bench targets read ``bench.env``);
-    without both, nothing is priced and the table says so.
+    ``FOOOD_LLM_PRICES`` prices each model by name; ``FOOOD_LLM_PRICE_IN`` / ``_OUT`` price
+    any other (the bench targets read both from ``bench.env``). Without either, nothing is
+    priced and the table says so.
     """
-
-    def read(name: str) -> float | None:
-        raw = os.environ.get(name, "").strip()
-        return float(raw) if raw else None
-
+    table = prices()
     return {
-        "inputPerMillionUsd": read("FOOOD_LLM_PRICE_IN"),
-        "outputPerMillionUsd": read("FOOOD_LLM_PRICE_OUT"),
+        "inputPerMillionUsd": table["default"]["in"],
+        "outputPerMillionUsd": table["default"]["out"],
+        "perModel": table["models"],
     }
 
 
@@ -422,7 +493,15 @@ def _spread(values: list[float]) -> dict[str, float] | None:
 
 #: What a phrasing model changes between otherwise identical runs: tokens and their price. A
 #: run's outcomes and decisions are compared without them.
-LANGUAGE_FOOTPRINT = {"cost", "llmTokens", "messageCalls", "llmPriced"}
+LANGUAGE_FOOTPRINT = {
+    "cost",
+    "llmTokens",
+    "messageCalls",
+    "llmPriced",
+    "llmCallsByRole",
+    "llmByModel",
+    "modelMsByRole",
+}
 
 
 def same_outcomes(summaries: list[dict[str, Any]]) -> bool:
@@ -454,7 +533,7 @@ def repeat(
         for r in runs
         for order in r["orders"]
         for name in order["decisionNames"]
-        if name not in HAPPY_PATH
+        if name not in NOT_RECOVERY and not name.startswith("llm:")
     )
     model_ms = [
         float(r["timing"]["modelMs"])

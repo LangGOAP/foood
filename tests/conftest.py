@@ -19,6 +19,13 @@ def _real_time() -> Iterator[None]:
     CLOCK.reset()
 
 
+@pytest.fixture(autouse=True)
+def _unpriced(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``make test`` exports bench.env; a test that wants prices sets them itself."""
+    for name in ("FOOOD_LLM_PRICE_IN", "FOOOD_LLM_PRICE_OUT", "FOOOD_LLM_PRICES"):
+        monkeypatch.delenv(name, raising=False)
+
+
 @pytest.fixture
 async def client() -> AsyncIterator[httpx.AsyncClient]:
     app = create_app()
