@@ -23,11 +23,20 @@ from fastapi import APIRouter, Request
 
 from foood.cart import CartItem, cart_of
 from foood.deliveries import Delivery, dispatch_pending, drop
-from foood.drivers import Driver
+from foood.drivers import Driver, available_drivers, go_offline, go_online
 from foood.errors import ApiError
 from foood.orders import Order, get_order, place_order, transition
 from foood.payments import Payment
 from foood.store import Store, iso, now
+from foood.world import (
+    CORRIDORS,
+    ZONES,
+    close_road,
+    prep_factor,
+    set_traffic,
+    set_weather,
+    zone_of,
+)
 
 router = APIRouter(prefix="/api", tags=["scenario"])
 
@@ -44,7 +53,12 @@ FAILURES = {
     "gateway_down": (
         "the payment gateway is down for a while; every payment processed meanwhile is refused"
     ),
+    "storm": "a storm over a zone (the kitchen's by default): couriers slow, kitchens take longer",
+    "traffic": "heavy traffic in a zone (the kitchen's by default): every route through it slows",
+    "road_closed": "a corridor between two zones is closed; routes between them become a detour",
+    "driver_offline": "the longest-idle driver goes offline for a while; the pool thins",
 }
+WORLD_FAILURES = {"storm", "traffic", "road_closed", "driver_offline"}
 DEFAULT_DELAY = {
     "restaurant_rejects": 8.0,
     "accepts_then_cancels": 20.0,
@@ -67,8 +81,10 @@ class Injection:
     for_seconds: float = 60.0
     reason: str | None = None
     after: str = "assigned"  # driver_drops: "assigned" or "pickup"
-    factor: float = 0.25  # courier_delay: speed multiplier
+    factor: float = 0.25  # courier_delay: speed multiplier; traffic: delay factor (1.0 or more)
     times: int = 1  # payment_declines: how many attempts (cards) decline
+    zone: str | None = None  # storm, traffic: the zone; default the kitchen's
+    corridor: str | None = None  # road_closed: the corridor; default market-street
 
     @property
     def delay(self) -> float:
@@ -123,6 +139,12 @@ def parse(text: str) -> Scenario:
             raise ValueError(f"{failure}: 'order' must be a positive order number")
         if item.get("after", "assigned") not in {"assigned", "pickup"}:
             raise ValueError(f"{failure}: 'after' must be 'assigned' or 'pickup'")
+        if item.get("zone") is not None and item["zone"] not in ZONES:
+            raise ValueError(f"{failure}: no zone {item['zone']!r}; one of {sorted(ZONES)}")
+        if item.get("corridor") is not None and item["corridor"] not in CORRIDORS:
+            raise ValueError(
+                f"{failure}: no corridor {item['corridor']!r}; one of {sorted(CORRIDORS)}"
+            )
         injections.append(
             Injection(
                 failure=failure,
@@ -131,8 +153,10 @@ def parse(text: str) -> Scenario:
                 for_seconds=float(item.get("for_seconds", 60)),
                 reason=item.get("reason"),
                 after=item.get("after", "assigned"),
-                factor=float(item.get("factor", 0.25)),
+                factor=float(item.get("factor", 2.0 if failure == "traffic" else 0.25)),
                 times=int(item.get("times", 1)),
+                zone=item.get("zone"),
+                corridor=item.get("corridor"),
             )
         )
     kitchen = Kitchen(**raw.get("kitchen", {}))
@@ -246,6 +270,47 @@ class Engine:
                 self._resubmit(order)
             elif injection.failure == "gateway_down":
                 self._gateway_down(order, injection)
+            elif injection.failure in WORLD_FAILURES:
+                self.schedule(
+                    injection.delay,
+                    f"{injection.failure} begins",
+                    lambda inj=injection: self._world(order, inj),  # type: ignore[misc]
+                )
+
+    def _world(self, order: Order, injection: Injection) -> None:
+        """Move the world (or the driver pool) for the injection's window, then move it back."""
+        store = self.store
+        restaurant = store.restaurants[order.restaurant_id]
+        zone = injection.zone or zone_of(restaurant.latitude, restaurant.longitude)
+        failure = injection.failure
+        if failure == "storm":
+            set_weather(store, zone, "storm")
+            self.record("fired", order.id, failure=failure, zone=zone)
+            undo: Callable[[], Any] = lambda: set_weather(store, zone, "clear")  # noqa: E731
+        elif failure == "traffic":
+            set_traffic(store, zone, max(1.0, injection.factor))
+            self.record("fired", order.id, failure=failure, zone=zone, factor=injection.factor)
+            undo = lambda: set_traffic(store, zone, 1.0)  # noqa: E731
+        elif failure == "road_closed":
+            corridor = injection.corridor or "market-street"
+            close_road(store, corridor, closed=True)
+            self.record("fired", order.id, failure=failure, corridor=corridor)
+            undo = lambda: close_road(store, corridor, closed=False)  # noqa: E731
+        else:  # driver_offline
+            queue = available_drivers(store)
+            if not queue:
+                self.record("fired", order.id, failure=failure, driver=None)
+                return
+            driver = queue[0]
+            go_offline(store, driver)
+            self.record("fired", order.id, failure=failure, driver=driver.user_id)
+            undo = lambda: go_online(store, driver)  # noqa: E731
+
+        def clear() -> None:
+            undo()
+            self.record("cleared", order.id, failure=failure)
+
+        self.schedule(injection.for_seconds, f"{failure} clears", clear)
 
     def _gateway_down(self, order: Order, injection: Injection) -> None:
         """The gateway goes down as this order is placed and comes back after the window."""
@@ -317,11 +382,13 @@ class Engine:
                 lambda: self._kitchen(order, "READY_FOR_PICKUP", "prep_overrun"),
             )
         elif kitchen.autopilot:
+            restaurant = self.store.restaurants[order.restaurant_id]
+            weather = prep_factor(self.store, zone_of(restaurant.latitude, restaurant.longitude))
             self.schedule(
                 kitchen.start_after, "kitchen starts", lambda: self._kitchen(order, "PREPARING")
             )
             self.schedule(
-                kitchen.start_after + kitchen.ready_after,
+                kitchen.start_after + kitchen.ready_after * weather,
                 "kitchen ready",
                 lambda: self._kitchen(order, "READY_FOR_PICKUP"),
             )

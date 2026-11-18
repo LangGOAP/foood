@@ -40,6 +40,9 @@ from foood.support import router as support_router
 from foood.tracking import install as install_tracking
 from foood.tracking import router as tracking_router
 from foood.tracking import run_simulator
+from foood.world import install as install_world
+from foood.world import router as world_router
+from foood.world_mcp import build_server, http_app
 
 
 def create_app(
@@ -55,17 +58,22 @@ def create_app(
     serves; ``scenario`` injects failures, defaulting to ``FOOOD_SCENARIO`` when set.
     """
 
+    the_store = store if store is not None else seed_demo(Store())
+    world_mcp = http_app(build_server(the_store))
+
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        task = asyncio.create_task(run_simulator(app.state.store)) if simulate else None
-        try:
-            yield
-        finally:
-            if task is not None:
-                task.cancel()
+        async with world_mcp.router.lifespan_context(world_mcp):  # the MCP transport's own lifespan
+            task = asyncio.create_task(run_simulator(app.state.store)) if simulate else None
+            try:
+                yield
+            finally:
+                if task is not None:
+                    task.cancel()
 
     app = FastAPI(title="foood", version=__version__, docs_url="/docs", lifespan=lifespan)
-    app.state.store = store if store is not None else seed_demo(Store())
+    app.state.store = the_store
+    app.mount("/mcp", world_mcp)  # the world as MCP tools, for any client (and the model tier)
     app.add_middleware(  # the apps run as web builds on other local ports
         CORSMiddleware,
         allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
@@ -75,6 +83,7 @@ def create_app(
     )
     # listeners run in subscription order: the customer hears about a stage before its side effects
     install_notifications(app.state.store)
+    install_world(app.state.store)
     app.state.engine = engine or make_engine(os.environ.get("FOOOD_ENGINE", "hand-wired"))
     app.state.engine.install(app.state.store)
     install_tracking(app.state.store)
@@ -97,6 +106,7 @@ def create_app(
     app.include_router(engine_router)
     app.include_router(support_router)
     app.include_router(map_router)
+    app.include_router(world_router)
     app.include_router(replacements_router)
     app.include_router(credits_router)
 
