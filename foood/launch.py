@@ -63,7 +63,12 @@ APPS = [
         "customer", 8081, ROOT / "apps" / "customer", {"EXPO_PUBLIC_FIXED_LOCATION": CUSTOMER_HOME}
     ),
     App("driver", 8082, ROOT / "apps" / "driver", {"EXPO_PUBLIC_FIXED_LOCATION": DRIVER_START}),
-    App("restaurant", 8083, ROOT / "apps" / "restaurant", {}),
+    App(
+        "restaurant",
+        8083,
+        ROOT / "apps" / "restaurant",
+        {"EXPO_PUBLIC_FIXED_LOCATION": CUSTOMER_HOME},  # the map opens on the city
+    ),
 ]
 
 CREDENTIALS = [
@@ -171,6 +176,26 @@ def public_env(app: App, api_url: str) -> dict[str, str]:
     return {"EXPO_PUBLIC_API_BASE_URL": api_url, **PUBLIC_ENV, **app.extra_env}
 
 
+def app_commit(app: App) -> str | None:
+    """The checked-out commit of the app's submodule, or None when it is not checked out."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(app.directory), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    sha = out.stdout.strip()
+    return sha if len(sha) == 40 else None
+
+
+def stamp_inputs(app: App, api_url: str) -> dict[str, str]:
+    """The export's inputs: its settings and the app's commit, so a changed fork re-exports."""
+    return {**public_env(app, api_url), "appCommit": app_commit(app) or "unknown"}
+
+
 def export_is_current(out_dir: Path, api_url: str, extra_env: dict[str, str]) -> bool:
     stamp = out_dir / STAMP
     if not stamp.is_file() or not (out_dir / "index.html").is_file():
@@ -192,7 +217,8 @@ def ensure_node_modules(app: App) -> None:
 def export_app(app: App, api_url: str, force: bool = False) -> Path:
     out = BUILD / app.name
     public = public_env(app, api_url)
-    if not force and export_is_current(out, api_url, public):
+    inputs = stamp_inputs(app, api_url)
+    if not force and export_is_current(out, api_url, inputs):
         return out
     ensure_node_modules(app)
     print(f"[{app.name}] exporting the web build against {api_url}", flush=True)
@@ -205,7 +231,7 @@ def export_app(app: App, api_url: str, force: bool = False) -> Path:
         check=True,
         stdout=sys.stderr,
     )
-    write_stamp(out, api_url, public)
+    write_stamp(out, api_url, inputs)
     return out
 
 
