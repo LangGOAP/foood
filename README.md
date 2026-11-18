@@ -121,6 +121,14 @@ near the restaurant so it becomes their next job; a waiting delivery shows how
 long it has searched. The hand-wired engine dispatches longest-idle and
 otherwise refunds and cancels.
 
+Substitutes (`candidate_pool`, `substitutes`, `offer_substitutes` in the same
+module): when the item itself is gone, a model or a person proposes candidate
+dishes by name; the platform keeps only what an open kitchen within reach can
+make now (the order's own kitchen included, which spares a new delivery), prices
+each option as a replacement, and puts them to the customer, who accepts one or
+declines at `POST /api/orders/{id}/substitution`. The hand-wired engine does not
+substitute; it cancels.
+
 ## Break it on purpose
 
 ```bash
@@ -164,19 +172,19 @@ summary with the distribution of what differed, rendered as a second table in
 `BENCH.md`. An engine without a model must produce identical runs.
 
 The bench runs a scenario with nobody at the apps: autopilots place and pay the
-orders, drive the deliveries when the simulated phone arrives, and answer
-support's questions with the recommended option after a while, on a frozen clock
-advanced tick by tick. Each run writes
-`results/<scenario>-<engine>-seed<n>.json` with, per order, the final status,
-whether it arrived within its promise, the minutes it took, whether its state is
-consistent, the failures fired against it, the engine's recovery decisions,
-human prompts, LLM calls and cost. Cost is computed with the model prices in
-`bench.env` (USD per million tokens, with the source and date in the file);
-every results file records the prices it was given, and a run without them says
-unpriced. [`BENCH.md`](BENCH.md) is generated from those files by `make
-bench-table` and CI fails when it is stale. The hand-wired rows are the
-baseline; their "Not recovered" column lists the failures the engine does not
-recover from.
+orders, drive the deliveries when the simulated phone arrives, answer support's
+questions with the recommended option after a while, and accept the first
+substitute offered after a moment's thought, on a frozen clock advanced tick by
+tick. Each run writes `results/<scenario>-<engine>-seed<n>.json` with, per
+order, the final status, whether it arrived within its promise, the minutes it
+took, whether its state is consistent, the failures fired against it, the
+engine's recovery decisions, human prompts, LLM calls and cost. Cost is computed
+with the model prices in `bench.env` (USD per million tokens, with the source
+and date in the file); every results file records the prices it was given, and a
+run without them says unpriced. [`BENCH.md`](BENCH.md) is generated from those
+files by `make bench-table` and CI fails when it is stale. The hand-wired rows
+are the baseline; their "Not recovered" column lists the failures the engine
+does not recover from.
 
 ## Credits
 

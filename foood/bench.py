@@ -86,6 +86,7 @@ class Run:
     async def customer_tick(self, client: httpx.AsyncClient, sara: dict[str, str]) -> None:
         bench = self.scenario.bench
         await self.tap_pay_again(client, sara)
+        await self.answer_offers(client, sara)
         if len(self.placed) >= self.target:
             return
         due = self.ticks * TICK_SECONDS >= len(self.placed) * bench.interval_seconds
@@ -169,6 +170,16 @@ class Run:
             action = "complete"
         if distance_km(location.latitude, location.longitude, *target) <= ARRIVED_KM:
             await client.post(f"/api/deliveries/{job.id}/{action}", json={}, headers=headers)
+
+    async def answer_offers(self, client: httpx.AsyncClient, sara: dict[str, str]) -> None:
+        """A willing customer: the first substitute offered, after a moment's thought."""
+        delay = self.scenario.bench.customer_delay_seconds
+        for order_id, offer in list(self.store.offers.items()):
+            if offer.status != "OPEN" or (now() - offer.offered_at).total_seconds() < delay:
+                continue
+            await client.post(
+                f"/api/orders/{order_id}/substitution", json={"accept": 0}, headers=sara
+            )
 
     async def support_tick(self, client: httpx.AsyncClient, admin: dict[str, str]) -> None:
         delay = self.scenario.bench.support_delay_seconds

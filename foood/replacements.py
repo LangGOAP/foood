@@ -7,11 +7,20 @@ it go ahead without asking support. ``replace`` creates the new order with the
 original payment carried over (a cheaper kitchen refunds the difference, a
 dearer one is waived), cancels what is left of the original and tells the
 customer. Nothing here decides; engines do.
+
+Substitutes (#45) are the same idea one step further: when the item itself is gone,
+whoever proposes candidate dishes (a model, a person) hands their names to
+``substitutes``, which keeps only what an open kitchen within reach can make now
+and prices each option as a replacement; ``offer_substitutes`` puts the priced
+options to the customer, who accepts one or declines through the order's
+``substitution`` route. Nothing not on an open menu is ever offered.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field
+from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
@@ -22,10 +31,11 @@ from foood.auth import CurrentUser, StoreDep
 from foood.catalog import distance_km
 from foood.deliveries import cancel_delivery, delivery_for_order
 from foood.errors import ApiError
-from foood.models import MenuItem, Restaurant, money
+from foood.models import MenuItem, Restaurant, money, new_id
+from foood.notifications import notify
 from foood.orders import TERMINAL, Order, OrderItem, get_order, promise_minutes, transition
 from foood.payments import Refund, payment_for_order
-from foood.store import Store, User, now
+from foood.store import Store, User, iso, now
 
 router = APIRouter(prefix="/api", tags=["replacements"])
 
@@ -35,6 +45,7 @@ class Alternative:
     restaurant: Restaurant
     items: list[tuple[OrderItem, MenuItem]]  # original line -> the other kitchen's item
     distance_km: float | None
+    substitutions: list[tuple[str, str]] = field(default_factory=list)  # (asked for, offered)
 
     @property
     def subtotal(self) -> Decimal:
@@ -63,10 +74,183 @@ class Alternative:
             "difference": money(self.difference(original)),
             "needsApproval": self.needs_approval(original, customer),
             "items": [
-                {"name": line.name, "quantity": line.quantity, "price": money(item.price)}
+                {"name": item.name, "quantity": line.quantity, "price": money(item.price)}
                 for line, item in self.items
             ],
+            "substitutes": [
+                {"for": asked, "item": offered} for asked, offered in self.substitutions
+            ],
         }
+
+
+def _within_reach(store: Store, order: Order, restaurant: Restaurant) -> float | None | bool:
+    """The distance to the door when the kitchen is open, approved and in range; False if not."""
+    if restaurant.status != "OPEN" or restaurant.approval_status != "APPROVED":
+        return False
+    if order.delivery_latitude is None or order.delivery_longitude is None:
+        return None
+    away = distance_km(
+        restaurant.latitude, restaurant.longitude, order.delivery_latitude, order.delivery_longitude
+    )
+    return False if away > restaurant.delivery_radius_km else away
+
+
+def _menu(store: Store, restaurant: Restaurant) -> list[MenuItem]:
+    return [
+        i
+        for i in store.menu_items.values()
+        if i.restaurant_id == restaurant.id and i.available and not i.archived
+    ]
+
+
+STOP_WORDS = {"the", "a", "an", "with", "and", "of", "style"}
+
+
+def _words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]+", text.casefold()) if w not in STOP_WORDS}
+
+
+def matches(candidate: str, item_name: str) -> bool:
+    """A candidate names an item exactly, or one's words are all in the other's."""
+    if candidate.casefold().strip() == item_name.casefold().strip():
+        return True
+    asked, offered = _words(candidate), _words(item_name)
+    return bool(asked) and bool(offered) and (asked <= offered or offered <= asked)
+
+
+def candidate_pool(store: Store, order: Order) -> list[dict[str, Any]]:
+    """What open kitchens within reach can make now, minus the order's own sold-out items: the
+    list a proposer (a model with its culinary knowledge, a person) picks substitutes from."""
+    gone = {
+        line.name.casefold()
+        for line in order.items
+        if not any(
+            i.name.casefold() == line.name.casefold()
+            for i in _menu(store, store.restaurants[order.restaurant_id])
+        )
+    }
+    pool: list[dict[str, Any]] = []
+    for restaurant in store.restaurants.values():
+        reach = _within_reach(store, order, restaurant)
+        if reach is False:
+            continue
+        for item in sorted(_menu(store, restaurant), key=lambda i: i.name):
+            if restaurant.id == order.restaurant_id and item.name.casefold() in gone:
+                continue
+            pool.append(
+                {
+                    "restaurantId": restaurant.id,
+                    "restaurant": restaurant.name,
+                    "item": item.name,
+                    "price": money(item.price),
+                }
+            )
+    return pool
+
+
+def substitutes(store: Store, order: Order, candidates: list[str]) -> list[Alternative]:
+    """Kitchens that can make the order with the candidates standing in for what they lack.
+
+    A line the kitchen still carries maps to itself; a line it lacks maps to the cheapest of
+    its items that a candidate names; a kitchen that cannot cover every line is left out. The
+    order's own kitchen counts (a substitute from the same kitchen spares a new delivery).
+    """
+    found: list[Alternative] = []
+    for restaurant in store.restaurants.values():
+        reach = _within_reach(store, order, restaurant)
+        if reach is False:
+            continue
+        menu = _menu(store, restaurant)
+        by_name = {i.name.casefold(): i for i in menu}
+        mapped: list[tuple[OrderItem, MenuItem]] = []
+        swapped: list[tuple[str, str]] = []
+        for line in order.items:
+            item = by_name.get(line.name.casefold())
+            if item is None:
+                options = [i for i in menu if any(matches(c, i.name) for c in candidates)]
+                if not options:
+                    break
+                item = min(options, key=lambda i: (i.price, i.name))
+                swapped.append((line.name, item.name))
+            mapped.append((line, item))
+        else:
+            if restaurant.id == order.restaurant_id and not swapped:
+                continue  # nothing to offer from the kitchen that already has the order
+            found.append(Alternative(restaurant, mapped, None if reach is None else reach, swapped))
+    found.sort(key=lambda a: (a.subtotal, a.distance_km or 0.0, a.restaurant.name))
+    return found
+
+
+@dataclass
+class Offer:
+    """Priced substitutes put to the customer; one open offer per order at a time."""
+
+    order_id: str
+    reason: str
+    options: list[Alternative]
+    status: str = "OPEN"  # OPEN | ACCEPTED | DECLINED
+    choice: int | None = None
+    answered_by: str | None = None
+    answered_at: datetime | None = None
+    id: str = field(default_factory=new_id)
+    offered_at: datetime = field(default_factory=now)
+
+    @property
+    def chosen(self) -> Alternative | None:
+        return self.options[self.choice] if self.choice is not None else None
+
+    def to_json(self, order: Order, customer: User) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "orderId": self.order_id,
+            "reason": self.reason,
+            "status": self.status,
+            "choice": self.choice,
+            "options": [
+                {"optionId": index, **option.to_json(order, customer)}
+                for index, option in enumerate(self.options)
+            ],
+            "offeredAt": iso(self.offered_at),
+            "answeredAt": iso(self.answered_at) if self.answered_at else None,
+        }
+
+
+def offer_substitutes(store: Store, order: Order, options: list[Alternative], reason: str) -> Offer:
+    """Put priced substitutes to the customer: a notification, an open offer, an event."""
+    if not options:
+        raise ValueError("an offer needs at least one option")
+    open_offer = store.offers.get(order.id)
+    if open_offer is not None and open_offer.status == "OPEN":
+        raise ValueError("the customer already has an open offer on this order")
+    offer = Offer(order.id, reason, list(options))
+    store.offers[order.id] = offer
+    notify(
+        store,
+        order.customer_id,
+        "order.substitution_offered",
+        orderId=order.id,
+        reason=reason,
+        options=str(len(options)),
+    )
+    store.publish("order.substitution_offered", order=order, offer=offer)
+    return offer
+
+
+def answer_substitution(store: Store, order: Order, choice: int | None, by: str) -> Offer:
+    """The customer's answer: the index of the option taken, or None to decline."""
+    offer: Offer | None = store.offers.get(order.id)
+    if offer is None:
+        raise ValueError("no substitution was offered on this order")
+    if offer.status != "OPEN":
+        raise ApiError(409, "This offer was already answered", error="Conflict")
+    if choice is not None and not 0 <= choice < len(offer.options):
+        raise ApiError(400, "No such option", error="Bad Request")
+    offer.choice = choice
+    offer.status = "DECLINED" if choice is None else "ACCEPTED"
+    offer.answered_by = by
+    offer.answered_at = now()
+    store.publish("order.substitution_answered", order=order, offer=offer, alternative=offer.chosen)
+    return offer
 
 
 def alternatives(store: Store, order: Order) -> list[Alternative]:
@@ -192,3 +376,40 @@ async def create_replacement(
     if not options:
         raise ApiError(409, "No other kitchen can make this order", error="NoAlternative")
     return replace(store, order, options[0], body.reason).to_json()
+
+
+class SubstitutionAnswer(BaseModel):
+    accept: int | None = None
+    decline: bool = False
+
+
+def _party(order: Order, user: User, store: Store) -> None:
+    restaurant = store.restaurants.get(order.restaurant_id)
+    owner = restaurant is not None and restaurant.owner_id == user.id
+    if not (user.role == "ADMIN" or order.customer_id == user.id or owner):
+        raise ApiError(403, "You do not have access to this order")
+
+
+@router.get("/orders/{id}/substitution")
+async def show_substitution(id: str, user: CurrentUser, store: StoreDep) -> dict[str, Any]:
+    order = get_order(store, id)
+    _party(order, user, store)
+    offer: Offer | None = store.offers.get(order.id)
+    if offer is None:
+        raise ApiError(404, "No substitution was offered on this order", error="NotFound")
+    return offer.to_json(order, store.users[order.customer_id])
+
+
+@router.post("/orders/{id}/substitution")
+async def answer_substitution_route(
+    id: str, body: SubstitutionAnswer, user: CurrentUser, store: StoreDep
+) -> dict[str, Any]:
+    order = get_order(store, id)
+    if not (user.role == "ADMIN" or order.customer_id == user.id):
+        raise ApiError(403, "Only the customer answers")
+    if body.accept is None and not body.decline:
+        raise ApiError(400, "Say which option you accept, or decline", error="Bad Request")
+    if store.offers.get(order.id) is None:
+        raise ApiError(404, "No substitution was offered on this order", error="NotFound")
+    offer = answer_substitution(store, order, None if body.decline else body.accept, by=user.id)
+    return offer.to_json(order, store.users[order.customer_id])
