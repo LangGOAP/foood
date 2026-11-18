@@ -1,0 +1,37 @@
+# The road between the kitchens and downtown closes for a quarter of an hour.
+name = "bridge-closed"
+description = "Market Street, the corridor between the kitchens' zone and the door, closes a minute after order 1 is placed and stays closed for three quarters of an hour, with the streets around it jammed: orders 1 and 2 ride the whole detour with promises made for the direct road; order 3 rides out of it as it reopens."
+seed = 4
+
+[kitchen]
+autopilot = true
+start_after = 5
+ready_after = 45
+
+[bench]
+orders = 3
+interval_seconds = 600
+drivers = 2
+
+[[inject]]
+order = 1
+failure = "road_closed"
+corridor = "market-street"
+after_seconds = 60
+for_seconds = 2700
+
+[[inject]]
+order = 1
+failure = "traffic"
+zone = "civic"
+factor = 1.5
+after_seconds = 60
+for_seconds = 2700
+
+[[inject]]
+order = 1
+failure = "traffic"
+zone = "downtown"
+factor = 1.5
+after_seconds = 60
+for_seconds = 2700

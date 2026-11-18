@@ -57,6 +57,25 @@ def test_delivery_trouble_recovers_a_drop_before_pickup_only(tmp_path: Path) -> 
     assert result["summary"]["consistent"] == 4
 
 
+def test_a_storm_breaks_promises_but_hand_wired_delivers(tmp_path: Path) -> None:
+    result = run("storm", "hand-wired", 7, tmp_path)
+    summary = result["summary"]
+    assert summary["orders"] == 5 and summary["delivered"] == 5 and summary["cancelled"] == 0
+    assert summary["deliveredWithinPromise"] < 5  # the storm and the traffic, not a failure
+    assert summary["failuresFired"] == ["driver_offline", "storm", "traffic"]
+    assert summary["unrecovered"] == [] and summary["consistent"] == 5
+    assert summary["recoveryDecisions"] == 0  # the baseline never notices the weather
+
+
+def test_a_closed_road_makes_the_detour_late_and_hand_wired_delivers(tmp_path: Path) -> None:
+    result = run("bridge-closed", "hand-wired", 7, tmp_path)
+    summary = result["summary"]
+    assert summary["orders"] == 3 and summary["delivered"] == 3
+    assert summary["deliveredWithinPromise"] <= 1  # orders 1 and 2 take the detour
+    assert summary["failuresFired"] == ["road_closed", "traffic"] and summary["unrecovered"] == []
+    assert summary["consistent"] == 3
+
+
 def test_same_inputs_same_numbers(tmp_path: Path) -> None:
     first = run("payment-trouble", "hand-wired", 7, tmp_path / "a")
     second = run("payment-trouble", "hand-wired", 7, tmp_path / "b")
