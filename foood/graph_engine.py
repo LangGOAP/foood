@@ -108,9 +108,11 @@ class LangGraphEngine:
         checkpoint_path: Path | None = None,
         advisor: Advisor | None = None,
         max_recoveries: int = MAX_RECOVERIES,
+        escalator: Advisor | None = None,
     ) -> None:
         self.checkpoint_path = checkpoint_path
         self.advisor = advisor
+        self.escalator = escalator  # the frontier model, one call when decide's answer is unusable
         self.max_recoveries = max_recoveries
         self.pending: deque[tuple[str, dict[str, Any]]] = deque()
         self.draining = False
@@ -277,34 +279,13 @@ class LangGraphEngine:
             decide(self.store, order.id, "fallback", because="recovery budget exhausted")
             return self.hand_wired_reaction(order, failure)
         context = self.context(order, failure, attempt)
-        try:
-            recovery, usage = self.advisor.advise(context)
-        except Exception as exc:  # noqa: BLE001  # whatever the model or the network did
-            decide(self.store, order.id, "fallback", because=f"model error: {exc}", llmCalls=1)
-            return self.hand_wired_reaction(order, failure)
-        cost = usage.cost()
-        if recovery.tool not in context.allowed:
-            decide(
-                self.store,
-                order.id,
-                "fallback",
-                because=f"model picked {recovery.tool}, not allowed for {failure}",
-                llmCalls=1,
-                llmTokens=usage.total_tokens,
-                cost=cost or 0,
-                model=usage.model,
-            )
-            return self.hand_wired_reaction(order, failure)
-        decide(
-            self.store,
-            order.id,
-            f"llm: {recovery.tool}",
-            because=recovery.reasoning,
-            llmCalls=1,
-            llmTokens=usage.total_tokens,
-            cost=cost or 0,
-            model=usage.model,
+        recovery = self.consult(
+            order, failure, context, self.advisor, "decide", final=self.escalator is None
         )
+        if recovery is None and self.escalator is not None:
+            recovery = self.consult(order, failure, context, self.escalator, "escalate")
+        if recovery is None:
+            return self.hand_wired_reaction(order, failure)
         try:
             return self.apply(order, failure, recovery, attempt)
         except ApiError as refused:  # the platform said no: the hand-wired reaction still applies
@@ -315,6 +296,54 @@ class LangGraphEngine:
                 because=f"{recovery.tool} refused: {refused.detail}",
             )
             return self.hand_wired_reaction(order, failure)
+
+    def consult(
+        self,
+        order: Order,
+        failure: str,
+        context: Context,
+        advisor: Advisor,
+        node: str,
+        final: bool = True,
+    ) -> Recovery | None:
+        """One node's answer, recorded; None when the model erred or picked outside the list.
+        An unusable answer is a fallback when nothing follows, an escalation when a stronger
+        node is consulted next."""
+        unusable = "fallback" if final else "escalated"
+        try:
+            recovery, usage = advisor.advise(context)
+        except Exception as exc:  # noqa: BLE001  # whatever the model or the network did
+            decide(
+                self.store,
+                order.id,
+                unusable,
+                because=f"model error: {exc}",
+                llmRole="decision",
+                node=node,
+                llmCalls=1,
+            )
+            return None
+        if recovery.tool not in context.allowed:
+            decide(
+                self.store,
+                order.id,
+                unusable,
+                because=f"model picked {recovery.tool}, not allowed for {failure}",
+                llmRole="decision",
+                node=node,
+                **usage.record(),
+            )
+            return None
+        decide(
+            self.store,
+            order.id,
+            f"{'llm' if node == 'decide' else node}: {recovery.tool}",
+            because=recovery.reasoning,
+            llmRole="decision",
+            node=node,
+            **usage.record(),
+        )
+        return recovery
 
     def context(self, order: Order, failure: str, attempt: int) -> Context:
         store = self.store

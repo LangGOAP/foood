@@ -9,7 +9,7 @@ guard still in force (cart drift, radius, duplicates, phone verification).
 
 from __future__ import annotations
 
-import os
+import time
 from dataclasses import dataclass, field
 from typing import Any, Protocol, TypedDict
 
@@ -21,8 +21,9 @@ from foood.auth import CurrentUser, StoreDep
 from foood.cart import CartItem, cart_of
 from foood.engine import decide
 from foood.errors import ApiError
+from foood.llm import Usage
+from foood.nodes import chat_for, model_for, timeout_for
 from foood.orders import place_order
-from foood.recovery import DEFAULT_MODEL, Usage
 from foood.store import Store, User
 
 router = APIRouter(prefix="/api", tags=["intake"])
@@ -61,27 +62,34 @@ class IntakeAdvisor(Protocol):
 
 
 class OpenAIIntake:
-    def __init__(self, model: str | None = None, timeout: float = 20.0) -> None:
+    """The intake node: extraction, so the roster gives it a small model."""
+
+    def __init__(self, model: str | None = None, timeout: float | None = None) -> None:
         from langchain_openai import ChatOpenAI
 
-        self.model = model or os.environ.get("FOOOD_LLM_MODEL", DEFAULT_MODEL)
+        self.model = model or model_for("intake") or "gpt-5.4-mini"
         self.chat = ChatOpenAI(
-            model=self.model, timeout=timeout, max_retries=0
+            model=self.model, timeout=timeout or timeout_for("intake"), max_retries=0
         ).with_structured_output(IntakeRequest, include_raw=True)
 
     def understand(self, text: str, catalogue: str) -> tuple[IntakeRequest, Usage]:
+        started = time.perf_counter()
         result = self.chat.invoke(
             [
                 ("system", SYSTEM_PROMPT),
                 ("user", f"Open kitchens and menus:\n{catalogue}\n\nRequest: {text}"),
             ]
         )
+        latency = (time.perf_counter() - started) * 1000
         parsed = result["parsed"]
         if parsed is None:
             raise ValueError(f"unparsable answer: {result.get('parsing_error')}")
         meta = getattr(result["raw"], "usage_metadata", None) or {}
         return parsed, Usage(
-            self.model, int(meta.get("input_tokens", 0)), int(meta.get("output_tokens", 0))
+            self.model,
+            int(meta.get("input_tokens", 0)),
+            int(meta.get("output_tokens", 0)),
+            latency,
         )
 
 
@@ -95,13 +103,12 @@ class ScriptedIntake:
         reading = self.readings.pop(0)
         if isinstance(reading, Exception):
             raise reading
-        return reading, Usage("scripted", 60, 40)
+        return reading, Usage("scripted", 60, 40, 30.0)
 
 
 def intake_from_env() -> IntakeAdvisor | None:
-    if os.environ.get("FOOOD_LLM", "").lower() in {"off", "0", "false", "no"}:
-        return None
-    if not os.environ.get("OPENAI_API_KEY"):
+    """The intake node's advisor when its model is on."""
+    if chat_for("intake") is None:
         return None
     return OpenAIIntake()
 
@@ -154,7 +161,12 @@ class Intake:
         reading, usage = self.advisor.understand(state["text"], catalogue_text(self.store))
         return {
             "reading": reading.model_dump(),
-            "usage": {"model": usage.model, "tokens": usage.total_tokens},
+            "usage": {
+                "model": usage.model,
+                "tokens": usage.total_tokens,
+                "cost": usage.cost() or 0,
+                "latencyMs": round(usage.latency_ms, 1),
+            },
         }
 
     def resolve(self, state: IntakeState) -> IntakeState:
@@ -252,10 +264,13 @@ class Intake:
             order.id,
             "intake",
             because=text,
+            llmRole="language",
+            node="intake",
             llmCalls=1,
             llmTokens=int(usage.get("tokens", 0)),
-            cost=0,
+            cost=usage.get("cost", 0),
             model=usage.get("model"),
+            latencyMs=usage.get("latencyMs", 0),
         )
         return {
             "status": "placed",

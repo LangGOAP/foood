@@ -1,0 +1,23 @@
+# Which model runs which node of the LangGraph engine (#48). Names are OpenAI model ids;
+# "off" switches a node's model off and its deterministic fallback applies. The environment
+# overrides this file: FOOOD_MODELS points at another file, FOOOD_MODEL_<NODE> sets one node,
+# FOOOD_MODEL_ALL sets every node (the bench's model matrix). No node retries a call.
+# Prices per model live in bench.env, with their source and date.
+
+[nodes]
+intake = "gpt-5.4-mini"    # a sentence into a structured request: extraction, a small model
+phrase = "gpt-5.4-nano"    # one or two warm sentences from facts: the cheapest that writes well
+lookup = "gpt-5.4-nano"    # which world tools to call: tool calling, a small model
+classify = "gpt-5.4-nano"  # a kitchen's free-text reason into a kind: classification
+suggest = "gpt-5.4-mini"   # substitute dishes from the pool: culinary knowledge, a mid model
+decide = "gpt-5.4-mini"    # one allowed tool from the facts: the judgement node
+escalate = "gpt-5.4"       # the frontier model, one call, only when decide's answer is unusable
+
+[timeouts]  # seconds per call
+intake = 20
+phrase = 15
+lookup = 15
+classify = 10
+suggest = 20
+decide = 20
+escalate = 30
