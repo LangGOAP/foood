@@ -1,0 +1,416 @@
+{
+  "scenario": "kitchen-trouble",
+  "engine": "langgraph",
+  "seed": 13,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-19T00:01:07.039341Z",
+  "model": null,
+  "virtualMinutes": 37.9,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5,
+    "perModel": {
+      "gpt-5.4": {
+        "in": 2.5,
+        "out": 15.0
+      },
+      "gpt-5.4-mini": {
+        "in": 0.75,
+        "out": 4.5
+      },
+      "gpt-5.4-nano": {
+        "in": 0.2,
+        "out": 1.25
+      }
+    }
+  },
+  "summary": {
+    "orders": 3,
+    "delivered": 3,
+    "deliveredWithinPromise": 2,
+    "cancelled": 0,
+    "consistent": 3,
+    "meanMinutes": 19.4,
+    "p95Minutes": 35.8,
+    "recoveryDecisions": 13,
+    "humanPrompts": 0,
+    "llmCalls": 36,
+    "llmCallsByRole": {
+      "decision": 2,
+      "perception": 9,
+      "language": 25
+    },
+    "llmCallsDeciding": 11,
+    "llmByModel": {
+      "gpt-5.4-nano": {
+        "calls": 33,
+        "tokens": 9487,
+        "cost": 0.0036
+      },
+      "gpt-5.4-mini": {
+        "calls": 3,
+        "tokens": 2707,
+        "cost": 0.0028
+      }
+    },
+    "llmByNode": {
+      "phrase": {
+        "calls": 25,
+        "tokens": 5599,
+        "cost": 0.0025,
+        "latencyMs": 27920,
+        "models": [
+          "gpt-5.4-nano"
+        ]
+      },
+      "lookup": {
+        "calls": 6,
+        "tokens": 3450,
+        "cost": 0.0009,
+        "latencyMs": 6169,
+        "models": [
+          "gpt-5.4-nano"
+        ]
+      },
+      "classify": {
+        "calls": 2,
+        "tokens": 438,
+        "cost": 0.0002,
+        "latencyMs": 2205,
+        "models": [
+          "gpt-5.4-nano"
+        ]
+      },
+      "decide": {
+        "calls": 2,
+        "tokens": 2073,
+        "cost": 0.0021,
+        "latencyMs": 2628,
+        "models": [
+          "gpt-5.4-mini"
+        ]
+      },
+      "suggest": {
+        "calls": 1,
+        "tokens": 634,
+        "cost": 0.0007,
+        "latencyMs": 1066,
+        "models": [
+          "gpt-5.4-mini"
+        ]
+      }
+    },
+    "llmTokens": 12194,
+    "worldCalls": 20,
+    "cost": 0.0056,
+    "llmPriced": true,
+    "failuresFired": [
+      "accepts_then_cancels",
+      "prep_overrun",
+      "restaurant_rejects"
+    ],
+    "unrecovered": []
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "30e64a35-2d1a-4320-8d49-b20a15c979f7",
+      "finalOrderId": "21a68ea3-fb9b-419e-9cdc-21e776453b1f",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:23:07.039341Z",
+      "deliveredAt": "2026-11-19T00:13:12.039341Z",
+      "withinPromise": true,
+      "minutes": 12.1,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "restaurant_rejects"
+      ],
+      "recovered": true,
+      "decisions": 16,
+      "recoveryDecisions": 4,
+      "humanPrompts": 0,
+      "llmCalls": 12,
+      "llmCallsByRole": {
+        "decision": 1,
+        "perception": 3,
+        "language": 8
+      },
+      "modelMsByRole": {
+        "decision": 1150,
+        "perception": 3390,
+        "language": 9250
+      },
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 11,
+          "tokens": 3111,
+          "cost": 0.0012
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 1021,
+          "cost": 0.001
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 8,
+          "tokens": 1746,
+          "cost": 0.0008,
+          "latencyMs": 9250,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "lookup": {
+          "calls": 2,
+          "tokens": 1148,
+          "cost": 0.0003,
+          "latencyMs": 1905,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 1,
+          "tokens": 217,
+          "cost": 0.0001,
+          "latencyMs": 1485,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decide": {
+          "calls": 1,
+          "tokens": 1021,
+          "cost": 0.001,
+          "latencyMs": 1150,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 4132,
+      "worldCalls": 7,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "phrase",
+        "lookup: zones",
+        "lookup: get_weather, forecast",
+        "classify: item_out",
+        "llm: replace_order",
+        "replace order",
+        "phrase",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0019,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "5e888b90-f3a0-4c3c-a5b9-008d1f991bb7",
+      "finalOrderId": "bc96a42d-6eb5-4b19-8a15-360bc0ea8859",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:24:07.039341Z",
+      "deliveredAt": "2026-11-19T00:12:27.039341Z",
+      "withinPromise": true,
+      "minutes": 10.3,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "accepts_then_cancels"
+      ],
+      "recovered": true,
+      "decisions": 18,
+      "recoveryDecisions": 6,
+      "humanPrompts": 0,
+      "llmCalls": 13,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 4,
+        "language": 9
+      },
+      "modelMsByRole": {
+        "decision": 0,
+        "perception": 3929,
+        "language": 9786
+      },
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 12,
+          "tokens": 3456,
+          "cost": 0.0013
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 634,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 9,
+          "tokens": 2081,
+          "cost": 0.0009,
+          "latencyMs": 9786,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "lookup": {
+          "calls": 2,
+          "tokens": 1154,
+          "cost": 0.0003,
+          "latencyMs": 2143,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 1,
+          "tokens": 221,
+          "cost": 0.0001,
+          "latencyMs": 720,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 634,
+          "cost": 0.0007,
+          "latencyMs": 1066,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 4090,
+      "worldCalls": 6,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "phrase",
+        "lookup: zones",
+        "lookup: get_weather, forecast",
+        "classify: item_out",
+        "suggest: QA Pasta, Spaghetti Carbonara, Penne Arrabbiata, QA Soup, Margherita",
+        "phrase",
+        "offer substitutes",
+        "replace order",
+        "phrase",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0017,
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "f0fb7e1f-1958-49d0-9ef2-58eba4f50be4",
+      "finalOrderId": "85c048af-5bab-4a35-8e19-6aa940fad7e6",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:25:07.039341Z",
+      "deliveredAt": "2026-11-19T00:38:57.039341Z",
+      "withinPromise": false,
+      "minutes": 35.8,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "prep_overrun"
+      ],
+      "recovered": true,
+      "decisions": 15,
+      "recoveryDecisions": 3,
+      "humanPrompts": 0,
+      "llmCalls": 11,
+      "llmCallsByRole": {
+        "decision": 1,
+        "perception": 2,
+        "language": 8
+      },
+      "modelMsByRole": {
+        "decision": 1478,
+        "perception": 2121,
+        "language": 8884
+      },
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 10,
+          "tokens": 2920,
+          "cost": 0.0011
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 1052,
+          "cost": 0.0011
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 8,
+          "tokens": 1772,
+          "cost": 0.0008,
+          "latencyMs": 8884,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "lookup": {
+          "calls": 2,
+          "tokens": 1148,
+          "cost": 0.0003,
+          "latencyMs": 2121,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decide": {
+          "calls": 1,
+          "tokens": 1052,
+          "cost": 0.0011,
+          "latencyMs": 1478,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 3972,
+      "worldCalls": 7,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "lookup: zones",
+        "lookup: get_weather, forecast",
+        "llm: replace_order",
+        "phrase",
+        "replace order",
+        "phrase",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.002,
+      "notes": [
+        "QA Pasta unavailable, picked another dish"
+      ]
+    }
+  ]
+}
