@@ -1,0 +1,332 @@
+{
+  "model": "gpt-5.4-nano",
+  "fixture": "tests/fixtures/substitutes.toml",
+  "at": "2026-11-19T02:34:52.131780Z",
+  "cases": 11,
+  "passed": 9,
+  "grounded": 11,
+  "cost": 0.0021,
+  "rows": [
+    {
+      "kitchen": "QA Kitchen",
+      "ordered": [
+        "QA Pasta"
+      ],
+      "missing": "QA Pasta",
+      "acceptable": [
+        "QA Pasta",
+        "Spaghetti Carbonara",
+        "Penne Arrabbiata"
+      ],
+      "proposed": [
+        "QA Pasta",
+        "Spaghetti Carbonara",
+        "Penne Arrabbiata",
+        "Quattro Formaggi",
+        "Tiramisu"
+      ],
+      "grounded": [
+        "QA Pasta",
+        "Spaghetti Carbonara",
+        "Penne Arrabbiata",
+        "Quattro Formaggi",
+        "Tiramisu"
+      ],
+      "first": "QA Pasta",
+      "pass": true,
+      "tokens": 635,
+      "cost": 0.000184,
+      "latencyMs": 1513.4
+    },
+    {
+      "kitchen": "QA Kitchen",
+      "ordered": [
+        "QA Burger"
+      ],
+      "missing": "QA Burger",
+      "acceptable": [
+        "QA Burger",
+        "Classic Burger",
+        "Double Smash",
+        "Mushroom Swiss"
+      ],
+      "proposed": [
+        "QA Burger",
+        "Classic Burger at Smash Bros Burgers",
+        "Chef's Special at Burger Palace",
+        "Double Smash at Burger Palace",
+        "Mushroom Swiss at Burger Palace"
+      ],
+      "grounded": [
+        "QA Burger",
+        "Classic Burger",
+        "Chef's Special",
+        "Double Smash",
+        "Mushroom Swiss"
+      ],
+      "first": "QA Burger",
+      "pass": true,
+      "tokens": 641,
+      "cost": 0.000191,
+      "latencyMs": 1095.2
+    },
+    {
+      "kitchen": "QA Kitchen",
+      "ordered": [
+        "QA Fries"
+      ],
+      "missing": "QA Fries",
+      "acceptable": [
+        "QA Fries",
+        "Fries",
+        "Sweet Potato Fries",
+        "Onion Rings"
+      ],
+      "proposed": [
+        "QA Fries",
+        "Fries at Smash Bros Burgers",
+        "Fries at Burger Palace",
+        "Onion Rings",
+        "Chips & Guacamole"
+      ],
+      "grounded": [
+        "QA Fries",
+        "Fries",
+        "Onion Rings",
+        "Chips & Guacamole"
+      ],
+      "first": "QA Fries",
+      "pass": true,
+      "tokens": 636,
+      "cost": 0.000185,
+      "latencyMs": 1286.4
+    },
+    {
+      "kitchen": "Pizza Napoli",
+      "ordered": [
+        "Margherita"
+      ],
+      "missing": "Margherita",
+      "acceptable": [
+        "Margherita",
+        "Quattro Formaggi",
+        "Diavola"
+      ],
+      "proposed": [
+        "Margherita at Luigi's Pizzeria",
+        "Quattro Formaggi at Pizza Napoli",
+        "Diavola at Pizza Napoli",
+        "Diavola at Luigi's Pizzeria",
+        "Penne Arrabbiata at Pizza Napoli"
+      ],
+      "grounded": [
+        "Margherita",
+        "Quattro Formaggi",
+        "Diavola",
+        "Penne Arrabbiata"
+      ],
+      "first": "Margherita",
+      "pass": true,
+      "tokens": 656,
+      "cost": 0.000209,
+      "latencyMs": 1625.3
+    },
+    {
+      "kitchen": "Pizza Napoli",
+      "ordered": [
+        "Spaghetti Carbonara"
+      ],
+      "missing": "Spaghetti Carbonara",
+      "acceptable": [
+        "Penne Arrabbiata",
+        "QA Pasta"
+      ],
+      "proposed": [
+        "QA Pasta at QA Kitchen",
+        "QA Pasta at QA Bistro"
+      ],
+      "grounded": [
+        "QA Pasta"
+      ],
+      "first": "QA Pasta",
+      "pass": true,
+      "tokens": 635,
+      "cost": 0.000182,
+      "latencyMs": 1255.6
+    },
+    {
+      "kitchen": "Burger Palace",
+      "ordered": [
+        "Crispy Chicken Sandwich"
+      ],
+      "missing": "Crispy Chicken Sandwich",
+      "acceptable": [
+        "Classic Burger",
+        "Chicken Shawarma Plate",
+        "Mushroom Swiss",
+        "Double Smash"
+      ],
+      "proposed": [
+        "Chef's Special at Burger Palace",
+        "Double Smash at Burger Palace",
+        "Classic Burger at Burger Palace",
+        "Classic Burger at Smash Bros Burgers",
+        "QA Burger at QA Bistro"
+      ],
+      "grounded": [
+        "Chef's Special",
+        "Double Smash",
+        "Classic Burger",
+        "QA Burger"
+      ],
+      "first": "Chef's Special",
+      "pass": false,
+      "tokens": 646,
+      "cost": 0.000193,
+      "latencyMs": 1235.3
+    },
+    {
+      "kitchen": "Burger Palace",
+      "ordered": [
+        "Vanilla Shake"
+      ],
+      "missing": "Vanilla Shake",
+      "acceptable": [
+        "Cola"
+      ],
+      "proposed": [
+        "Tiramisu at Pizza Napoli",
+        "Tiramisu at Luigi's Pizzeria",
+        "QA Soup at QA Bistro",
+        "Cola at Burger Palace",
+        "Cola at Smash Bros Burgers"
+      ],
+      "grounded": [
+        "Tiramisu",
+        "QA Soup",
+        "Cola"
+      ],
+      "first": "Tiramisu",
+      "pass": false,
+      "tokens": 655,
+      "cost": 0.000207,
+      "latencyMs": 1279.7
+    },
+    {
+      "kitchen": "Sakura Sushi",
+      "ordered": [
+        "Tonkotsu Ramen"
+      ],
+      "missing": "Tonkotsu Ramen",
+      "acceptable": [
+        "Spicy Tuna Roll",
+        "California Roll",
+        "QA Soup",
+        "Spaghetti Carbonara",
+        "Penne Arrabbiata",
+        "QA Pasta"
+      ],
+      "proposed": [
+        "QA Pasta at QA Bistro",
+        "QA Pasta at QA Kitchen",
+        "Spaghetti Carbonara at Pizza Napoli",
+        "Penne Arrabbiata at Pizza Napoli",
+        "Quattro Formaggi at Pizza Napoli"
+      ],
+      "grounded": [
+        "QA Pasta",
+        "Spaghetti Carbonara",
+        "Penne Arrabbiata",
+        "Quattro Formaggi"
+      ],
+      "first": "QA Pasta",
+      "pass": true,
+      "tokens": 673,
+      "cost": 0.000211,
+      "latencyMs": 1566.4
+    },
+    {
+      "kitchen": "Taco Fiesta",
+      "ordered": [
+        "Baja Fish Tacos"
+      ],
+      "missing": "Baja Fish Tacos",
+      "acceptable": [
+        "Al Pastor Tacos",
+        "Carne Asada Burrito"
+      ],
+      "proposed": [
+        "Al Pastor Tacos",
+        "Carne Asada Burrito",
+        "Chips & Guacamole"
+      ],
+      "grounded": [
+        "Al Pastor Tacos",
+        "Carne Asada Burrito",
+        "Chips & Guacamole"
+      ],
+      "first": "Al Pastor Tacos",
+      "pass": true,
+      "tokens": 633,
+      "cost": 0.000177,
+      "latencyMs": 1096.5
+    },
+    {
+      "kitchen": "Luigi's Pizzeria",
+      "ordered": [
+        "Diavola"
+      ],
+      "missing": "Diavola",
+      "acceptable": [
+        "Diavola",
+        "Margherita",
+        "Quattro Formaggi"
+      ],
+      "proposed": [
+        "Diavola at Pizza Napoli",
+        "Margherita at Pizza Napoli",
+        "Spaghetti Carbonara at Pizza Napoli",
+        "Penne Arrabbiata at Pizza Napoli",
+        "Quattro Formaggi at Pizza Napoli"
+      ],
+      "grounded": [
+        "Diavola",
+        "Margherita"
+      ],
+      "first": "Diavola",
+      "pass": true,
+      "tokens": 646,
+      "cost": 0.000199,
+      "latencyMs": 1402.3
+    },
+    {
+      "kitchen": "Smash Bros Burgers",
+      "ordered": [
+        "Classic Burger",
+        "Fries"
+      ],
+      "missing": "Fries",
+      "acceptable": [
+        "Fries",
+        "QA Fries",
+        "Onion Rings"
+      ],
+      "proposed": [
+        "QA Fries at QA Bistro",
+        "Fries at Burger Palace",
+        "QA Fries at QA Kitchen",
+        "Onion Rings at Burger Palace",
+        "Crispy Chicken Sandwich at Burger Palace"
+      ],
+      "grounded": [
+        "QA Fries",
+        "Fries"
+      ],
+      "first": "QA Fries",
+      "pass": true,
+      "tokens": 646,
+      "cost": 0.000194,
+      "latencyMs": 1575.1
+    }
+  ]
+}
