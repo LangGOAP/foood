@@ -57,6 +57,7 @@ from foood.payments import (
 from foood.replacements import Alternative, alternatives, replace
 from foood.store import Store, iso, now
 from foood.support import Question, ask
+from foood.world import WorldTools, zone_of
 
 WAITS = {
     "await_payment",
@@ -180,6 +181,7 @@ class GoapEngine:
         self.checkpoint_path = checkpoint_path
         self.max_actions = max_actions
         self.pending: deque[tuple[str, dict[str, Any]]] = deque()
+        self._world: dict[str, tuple[tuple[str, int], dict[str, Any]]] = {}
         self.draining = False
         self.threads: dict[str, str] = {}  # any order id -> its thread (the first order's id)
         self.questions: dict[str, str] = {}  # thread -> open support question id
@@ -228,6 +230,7 @@ class GoapEngine:
             ),
         )
         self._subscribe("support.answered", self._on_answered)
+        self._subscribe("world.changed", self._on_world_changed)
         self._subscribe(
             "driver.available", lambda driver: self.dispatch_all("a driver came online")
         )
@@ -299,7 +302,9 @@ class GoapEngine:
             e.order_id in self.thread_orders(ws["order_id"]) and e.amount > 0 for e in store.credits
         )
         cancelled = order.status in {"CANCELLED", "FAILED"}
+        world = self.world_facts(order, ws["order_id"])
         return {
+            **world,
             "current_order_id": order.id,
             "gateway_up": not gateway_is_down(store),
             "paid": paid,
@@ -319,7 +324,54 @@ class GoapEngine:
             "compensated_if_late": (not late) or credited,
         }
 
-    LATENESS = ("late", "credited", "compensated_if_late")
+    #: facts every wait watches besides its own: lateness, and the world turning against the promise
+    LATENESS = ("late", "credited", "compensated_if_late", "promise_at_risk")
+
+    def world_facts(self, order: Order, thread: str) -> dict[str, Any]:
+        """The world as facts, read through the same MCP tools a model would call and counted
+        against the order; one read per tick, since the sensor runs after every event."""
+        store = self.store
+        stamp = (iso(now()), len(store.world.log))
+        cached = self._world.get(thread)
+        if cached is not None and cached[0] == stamp:
+            return dict(cached[1])
+        tools = WorldTools(store, thread)
+        kitchen = store.restaurants[order.restaurant_id]
+        zone = zone_of(kitchen.latitude, kitchen.longitude)
+        weather = tools.get_weather(zone)["kind"]
+        facts: dict[str, Any] = {
+            "zone": zone,
+            "door_zone": None,
+            "rain": weather in {"rain", "storm"},
+            "route_delay_high": False,
+            "corridor_closed": False,
+            "ride_minutes": 0,
+            "promise_at_risk": False,
+            "drivers_thin": len(available_drivers(store)) <= 1,
+        }
+        if order.delivery_latitude is not None and order.delivery_longitude is not None:
+            door = (order.delivery_latitude, order.delivery_longitude)
+            traffic = tools.get_traffic((kitchen.latitude, kitchen.longitude), door)
+            door_weather = tools.get_weather(zone_of(*door))["kind"]
+            left = (order.promised_at - now()).total_seconds() / 60 if order.promised_at else None
+            facts.update(
+                {
+                    "door_zone": zone_of(*door),
+                    "rain": facts["rain"] or door_weather in {"rain", "storm"},
+                    "route_delay_high": traffic["delayFactor"] >= 1.5,
+                    "corridor_closed": bool(traffic["closures"]),
+                    "ride_minutes": traffic["minutes"],
+                    # even leaving now, the courier could not make the promise
+                    "promise_at_risk": (
+                        left is not None
+                        and order.status not in TERMINAL
+                        and order.status != "DELIVERED"
+                        and traffic["minutes"] > left
+                    ),
+                }
+            )
+        self._world[thread] = (stamp, dict(facts))
+        return facts
 
     def observed(self, ws: dict[str, Any], *keys: str) -> dict[str, Any]:
         """The facts an action is answerable for, read fresh from the platform.
@@ -404,7 +456,20 @@ class GoapEngine:
                 return 50.0
             choice: Alternative = options[0]
             extra = max(0.0, float(choice.difference(order)))
-            return 3.0 + extra + choice.restaurant.prep_minutes / 10 + (choice.distance_km or 1.0)
+            jam = 0.0
+            if order.delivery_latitude is not None and order.delivery_longitude is not None:
+                traffic = WorldTools(self.store, world_state.get("order_id")).get_traffic(
+                    (choice.restaurant.latitude, choice.restaurant.longitude),
+                    (order.delivery_latitude, order.delivery_longitude),
+                )
+                jam = (traffic["delayFactor"] - 1.0) * 5.0  # a slow route to the door costs
+            return (
+                3.0
+                + extra
+                + choice.restaurant.prep_minutes / 10
+                + (choice.distance_km or 1.0)
+                + jam
+            )
 
         def ask_substitution(ws: dict[str, Any]) -> dict[str, Any]:
             answer = ws.get("substitution") or {}
@@ -439,6 +504,19 @@ class GoapEngine:
                 **self.observed({**ws, "accepted_delay": True}, "kitchen"),
                 "accepted_delay": True,
             }
+
+        def widen_cost(world_state: dict[str, Any]) -> float:
+            return 1.0 if world_state.get("rain") or world_state.get("drivers_thin") else 2.0
+
+        def searching_cost(world_state: dict[str, Any]) -> float:
+            return 7.0 if world_state.get("promise_at_risk") else 5.0
+
+        def delay_cost(world_state: dict[str, Any]) -> float:
+            return 8.0 if world_state.get("promise_at_risk") else 6.0
+
+        def credit_cost(world_state: dict[str, Any]) -> float:
+            # the weather's lateness is the house's to make up for, cheaply
+            return 2.0 if world_state.get("rain") or world_state.get("route_delay_high") else 3.0
 
         def credit(ws: dict[str, Any]) -> dict[str, Any]:
             order = order_of(ws)
@@ -483,7 +561,7 @@ class GoapEngine:
                 "accept_kitchen_delay",
                 {"kitchen": "late"},
                 {"kitchen": "cooking", "accepted_delay": True},
-                cost=6.0,
+                cost=delay_cost,
                 execute=accept_delay,
             ),
             ActionSpec(
@@ -534,14 +612,14 @@ class GoapEngine:
                 "widen_dispatch",
                 {"delivery": "stalled", "widened": False},
                 {"delivery": "searching", "widened": True, "accepted_wait": True},
-                cost=2.0,
+                cost=widen_cost,
                 execute=widen,
             ),
             ActionSpec(
                 "keep_searching",
                 {"delivery": "stalled"},
                 {"delivery": "searching", "accepted_wait": True},
-                cost=5.0,
+                cost=searching_cost,
                 execute=accept_wait,
             ),
             ActionSpec(
@@ -562,7 +640,7 @@ class GoapEngine:
                 "issue_credit",
                 {"late": True, "credited": False},
                 {"credited": True, "compensated_if_late": True},
-                cost=3.0,
+                cost=credit_cost,
                 execute=credit,
             ),
         ]
@@ -589,6 +667,15 @@ class GoapEngine:
         for thread in set(self.threads.values()):
             if self.waiting_at(thread) == "await_gateway":
                 self.pending.append((thread, {"kind": "payment.gateway_up"}))
+        self.drain()
+
+    def _on_world_changed(self, change: dict[str, Any]) -> None:
+        """The weather or the roads moved: every waiting thread looks again; a wait whose
+        facts changed ends, and the planner re-plans from the real state."""
+        self._world.clear()
+        for thread in set(self.threads.values()):
+            if self.waiting_at(thread) in WAITS:
+                self.pending.append((thread, {"kind": "world.changed", "change": change}))
         self.drain()
 
     def _on_replaced(self, original: Order, replacement: Order, reason: str) -> None:

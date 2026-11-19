@@ -229,6 +229,22 @@ is called after intake; the drawing is in
 resumes every thread after a restart. The bench rows for `langgoap` in
 [`BENCH.md`](BENCH.md) are produced with the model off.
 
+### The planner reads the world
+
+The sensor now reads the world through the same MCP tools the other tiers use,
+once per tick and counted against the order: the kitchen's and the door's zone,
+rain or a storm, a slow or closed route, the ride's minutes now, whether the
+promise is at risk (even leaving this minute the courier could not make it)
+and whether the driver pool is thin. No new transitions came with them, only
+facts and costs: a replacement prices the traffic on the new route, widening
+the driver search is the cheapest move when rain or a thin pool is the trouble,
+waiting for a driver or accepting a slow kitchen is dearer once the promise is
+at risk, and a credit for weather-caused lateness is cheap, because it is the
+house's to make up for. Every wait watches `promise_at_risk` beside its own
+facts, and a `world.changed` event wakes every waiting thread, so a storm or a
+closed corridor is a re-plan from the real state, not a surprise at the next
+failure. Decision calls stay at zero; the world calls are in the results.
+
 ## Support, the human in the loop
 
 The customer app has no approval screen and the apps stay unchanged, so when an
