@@ -113,9 +113,9 @@ async def test_a_world_change_wakes_the_plan() -> None:
         assert "promise_at_risk" in str(last.get("because")) or "state_deviation" in str(
             last.get("because")
         )
-        assert (
-            c.engine.waiting_at(order["id"]) == "await_kitchen"
-        )  # nothing to do yet; still a plan
+        # the planner sent a courier ahead: a promise at risk is a fact the goal cares about
+        assert "act: pre_dispatch" in [d["decision"] for d in await _decisions(c, order["id"])]
+        assert c.engine.waiting_at(order["id"]) in {"await_driver", "await_pickup"}
 
 
 async def test_without_weather_the_facts_are_quiet_and_waits_are_undisturbed() -> None:

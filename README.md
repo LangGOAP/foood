@@ -238,6 +238,28 @@ a `world.changed` event wakes every waiting thread; a storm or a closed corridor
 triggers a re-plan. Decision calls remain zero; world calls are counted in the
 results.
 
+### Planning ahead, and the model as a sensor
+
+The goal is `delivered`, `compensated_if_late` and `promise_at_risk: False`. The
+actions for it: `pre_dispatch` sends a courier to the kitchen before the food is
+ready when the ride, not the kitchen, is the delay; `switch_kitchen_early` moves
+the order to a kitchen that would have it at the door sooner, by prep time and
+the ride from it now; `reroute` tells a courier already on the road the way
+round a closure; and `accept_late_risk`, the most expensive, carries on when
+nothing better exists and leaves the credit to settle it.
+
+Inside the planner, models are used for perception only. The roster's `classify`
+model reads a kitchen's free-text note into the fact `reason_kind` (a dish ran
+out, or the kitchen is down), once per order, recorded with the model that read
+it. When a dish ran out and no other kitchen makes the same food, the `suggest`
+model proposes substitutes from what open kitchens can make, the platform keeps
+those on a menu and prices them; `offer_substitutes` puts them to the customer
+and waits (three minutes of silence counts as a decline);
+`replace_with_substitute` carries out the accepted one. Both calls are counted
+as perception; decision calls remain zero. `offer_pickup` (the customer
+collecting the food when no courier can come) needs a pickup flow the platform
+does not have and is not implemented.
+
 ## Support console
 
 The customer app has no approval screen; an engine that needs a person asks

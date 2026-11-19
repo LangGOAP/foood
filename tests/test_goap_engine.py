@@ -67,7 +67,7 @@ def test_the_tracer_learns_the_quiet_waits_from_the_actions() -> None:
     quiet = {a.name for a in engine.actions() if a.is_wait and a.execute is None}
     assert engine.tracer.waits == quiet
     assert {"await_payment", "await_kitchen", "await_dropoff"} <= quiet
-    assert "dispatch" not in quiet
+    assert "offer_substitutes" not in quiet and "dispatch" not in quiet
 
 
 def test_the_drawing_is_committed_and_current() -> None:
