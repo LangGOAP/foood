@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, langgraph, langgoap]
+    branches: [main, llm, langgraph, langgoap]
   pull_request:
 
 jobs:
