@@ -151,8 +151,13 @@ def make_engine(name: str) -> OrderEngine:
         path = os.environ.get("FOOOD_CHECKPOINTS")
         if name == "langgoap":
             from foood.goap_engine import GoapEngine
+            from foood.suggest import classifier_from_env, suggester_from_env
 
-            return GoapEngine(Path(path) if path else None)
+            return GoapEngine(
+                Path(path) if path else None,
+                classifier=classifier_from_env(),
+                suggester=suggester_from_env(),
+            )
         from foood.graph_engine import LangGraphEngine
         from foood.nodes import client_for
         from foood.recovery import advisor_from_env

@@ -54,10 +54,19 @@ from foood.payments import (
     retry_pending_payment,
     retry_with_backup,
 )
-from foood.replacements import Alternative, alternatives, replace
+from foood.replacements import (
+    Alternative,
+    alternatives,
+    answer_substitution,
+    candidate_pool,
+    offer_substitutes,
+    replace,
+    substitutes,
+)
 from foood.store import Store, iso, now
+from foood.suggest import Classifier, Suggester
 from foood.support import Question, ask
-from foood.world import WorldTools, zone_of
+from foood.world import WorldTools, eta_minutes, reroute, zone_of
 
 WAITS = {
     "await_payment",
@@ -66,7 +75,9 @@ WAITS = {
     "await_driver",
     "await_pickup",
     "await_dropoff",
+    "await_customer",
 }
+CUSTOMER_DEADLINE = 180.0  # seconds a substitution offer stays open before it counts as declined
 TIMED_WAITS = {"await_kitchen", "await_driver"}
 CREDIT_FOR_LATENESS = Decimal("5.00")
 
@@ -177,7 +188,17 @@ class Trace(NullTracer):
 class GoapEngine:
     name = "langgoap"
 
-    def __init__(self, checkpoint_path: Path | None = None, max_actions: int = 60) -> None:
+    def __init__(
+        self,
+        checkpoint_path: Path | None = None,
+        max_actions: int = 60,
+        classifier: Classifier | None = None,
+        suggester: Suggester | None = None,
+    ) -> None:
+        self.classifier = classifier  # the model as a sensor: a kitchen's note into a kind
+        self.suggester = suggester  # the model as a sensor: substitute candidates from the pool
+        self._reasons: dict[str, dict[str, Any]] = {}  # order id -> the note's classification
+        self._substitutes: dict[str, list[Any]] = {}  # order id -> grounded, priced options
         self.checkpoint_path = checkpoint_path
         self.max_actions = max_actions
         self.pending: deque[tuple[str, dict[str, Any]]] = deque()
@@ -231,6 +252,10 @@ class GoapEngine:
         )
         self._subscribe("support.answered", self._on_answered)
         self._subscribe("world.changed", self._on_world_changed)
+        self._subscribe(
+            "order.substitution_answered",
+            lambda order, offer, alternative: self.push(order.id, "order.substitution_answered"),
+        )
         self._subscribe(
             "driver.available", lambda driver: self.dispatch_all("a driver came online")
         )
@@ -303,8 +328,46 @@ class GoapEngine:
         )
         cancelled = order.status in {"CANCELLED", "FAILED"}
         world = self.world_facts(order, ws["order_id"])
+        if ws.get("accepted_risk"):
+            world["promise_at_risk"] = (
+                False  # the planner looked, found nothing better, and said so
+            )
+        on_the_road = delivery is not None and delivery.status in {
+            "DRIVER_ASSIGNED",
+            "PICKED_UP",
+            "IN_TRANSIT",
+        }
+        offer = store.offers.get(order.id)
+        substitute_answer = (
+            "none"
+            if offer is None or offer.status == "OPEN"
+            else ("accepted" if offer.status == "ACCEPTED" else "declined")
+        )
+        if offer is not None and offer.status == "ACCEPTED" and order.replaced_by_order_id:
+            substitute_answer = "done"
         return {
             **world,
+            "on_the_road": on_the_road,
+            "rerouted": delivery is not None and delivery.id in store.world.rerouted,
+            # the kitchen alone would miss the promise: a courier sent ahead cannot help that
+            "kitchen_slow": kitchen in {"cooking", "late"}
+            and order.promised_at is not None
+            and store.restaurants[order.restaurant_id].prep_minutes
+            > (order.promised_at - now()).total_seconds() / 60,
+            "alternative_faster": (
+                self.faster_kitchen(order, options) is not None
+                if kitchen in {"cooking", "late"} and world["promise_at_risk"]
+                else False
+            ),
+            "reason_kind": (
+                self.reason_kind(order, ws["order_id"]) if kitchen == "failed" else "unknown"
+            ),
+            "substitute_available": (
+                substitute_answer == "none"
+                and kitchen == "failed"
+                and bool(self.substitute_options(order, ws["order_id"], options))
+            ),
+            "substitute_answer": substitute_answer,
             "current_order_id": order.id,
             "gateway_up": not gateway_is_down(store),
             "paid": paid,
@@ -323,6 +386,117 @@ class GoapEngine:
             "delivered": order.status == "DELIVERED",
             "compensated_if_late": (not late) or credited,
         }
+
+    def faster_kitchen(self, order: Order, options: list[Alternative]) -> Alternative | None:
+        """Another kitchen that would have the food at the door sooner than this one, by its
+        prep time and the ride from it now, with no closed corridor on the way."""
+        if order.delivery_latitude is None or order.delivery_longitude is None:
+            return None
+        store = self.store
+        door = (order.delivery_latitude, order.delivery_longitude)
+        kitchen = store.restaurants[order.restaurant_id]
+        current = kitchen.prep_minutes + eta_minutes(
+            store, (kitchen.latitude, kitchen.longitude), door
+        )
+        tools = WorldTools(store, self.threads.get(order.id, order.id))
+        for option in options:
+            start = (option.restaurant.latitude, option.restaurant.longitude)
+            traffic = tools.get_traffic(start, door)
+            if traffic["closures"]:
+                continue
+            if option.restaurant.prep_minutes + traffic["minutes"] < current:
+                return option
+        return None
+
+    def reason_kind(self, order: Order, thread: str) -> str:
+        """The kitchen's free-text note read into a kind by a small model, once per order; the
+        fact carries where it came from, and 'unknown' when there is no model or no note."""
+        if order.id in self._reasons:
+            return str(self._reasons[order.id]["kind"])
+        note = order.cancellation_note or ""
+        if self.classifier is None or not note.strip():
+            return "unknown"
+        try:
+            reason, usage = self.classifier.classify(note, [i.name for i in order.items])
+        except Exception as exc:  # noqa: BLE001  # the note stays unread; the plan goes on
+            decide(
+                self.store,
+                thread,
+                "sense: classify error",
+                because=str(exc)[:200],
+                llmRole="perception",
+                node="classify",
+                llmCalls=1,
+            )
+            self._reasons[order.id] = {"kind": "unknown", "source": "error"}
+            return "unknown"
+        self._reasons[order.id] = {"kind": reason.kind, "item": reason.item, "source": usage.model}
+        decide(
+            self.store,
+            thread,
+            f"sense: reason {reason.kind}",
+            because=f"{note[:160]!r}, read by {usage.model}",
+            llmRole="perception",
+            node="classify",
+            **usage.record(),
+        )
+        return str(reason.kind)
+
+    def substitute_options(
+        self, order: Order, thread: str, options: list[Alternative]
+    ) -> list[Alternative]:
+        """Substitutes the customer could accept: a model proposes from what open kitchens can
+        make, the platform keeps what is on a menu and prices it; asked once per order, and
+        only when the note says a dish ran out or no kitchen makes the same items."""
+        if order.id in self._substitutes:
+            return self._substitutes[order.id]
+        if self.suggester is None:
+            return []
+        kind = self.reason_kind(order, thread)
+        if kind != "item_out" and options:
+            return []  # the kitchen failed and another makes the same food: no need to ask
+        missing = self.missing_items(order)
+        if not missing:
+            return []
+        pool = candidate_pool(self.store, order)
+        try:
+            suggestions, usage = self.suggester.suggest(
+                [i.name for i in order.items], missing, pool
+            )
+        except Exception as exc:  # noqa: BLE001
+            decide(
+                self.store,
+                thread,
+                "sense: suggest error",
+                because=str(exc)[:200],
+                llmRole="perception",
+                node="suggest",
+                llmCalls=1,
+            )
+            self._substitutes[order.id] = []
+            return []
+        names = [str(c) for c in suggestions.candidates][:5]
+        grounded = substitutes(self.store, order, names)[:4]
+        self._substitutes[order.id] = grounded
+        decide(
+            self.store,
+            thread,
+            "sense: substitutes",
+            because=f"{', '.join(names) or 'nothing'} proposed by {usage.model}; "
+            f"{len(grounded)} on an open menu",
+            llmRole="perception",
+            node="suggest",
+            **usage.record(),
+        )
+        return grounded
+
+    def missing_items(self, order: Order) -> list[str]:
+        menu = {
+            i.name.casefold()
+            for i in self.store.menu_items.values()
+            if i.restaurant_id == order.restaurant_id and i.available and not i.archived
+        }
+        return [line.name for line in order.items if line.name.casefold() not in menu]
 
     #: facts every wait watches besides its own: lateness, and the world turning against the promise
     LATENESS = ("late", "credited", "compensated_if_late", "promise_at_risk")
@@ -395,6 +569,7 @@ class GoapEngine:
             "await_driver": ("delivery",),
             "await_pickup": ("delivery",),
             "await_dropoff": ("delivery", "delivered"),
+            "await_customer": ("substitute_answer", "substitute_available"),
         }
 
         def wait(name: str) -> Callable[[dict[str, Any]], dict[str, Any]]:
@@ -504,6 +679,94 @@ class GoapEngine:
                 **self.observed({**ws, "accepted_delay": True}, "kitchen"),
                 "accepted_delay": True,
             }
+
+        def pre_dispatch(ws: dict[str, Any]) -> dict[str, Any]:
+            order = order_of(ws)
+            if delivery_for_order(self.store, order.id) is None:
+                create_delivery(self.store, order)
+            self.dispatch_all("the promise is at risk: a courier is sent ahead")
+            return {**self.observed(ws, "delivery", "promise_at_risk"), "accepted_risk": True}
+
+        def do_reroute(ws: dict[str, Any]) -> dict[str, Any]:
+            order = order_of(ws)
+            delivery = delivery_for_order(self.store, order.id)
+            if delivery is None:
+                raise ApiError(409, "no courier to tell")
+            reroute(self.store, delivery.id)
+            return {**self.observed(ws, "rerouted", "promise_at_risk"), "accepted_risk": True}
+
+        def switch_early(ws: dict[str, Any]) -> dict[str, Any]:
+            order = order_of(ws)
+            choice = self.faster_kitchen(order, alternatives(self.store, order))
+            if choice is None:
+                raise ApiError(409, "no faster kitchen tonight")
+            replacement = replace(
+                self.store, order, choice, "the promise could not be kept from this kitchen"
+            )
+            self.threads[replacement.id] = self.threads.get(order.id, ws["order_id"])
+            fresh = self.observed(
+                ws, "current_order_id", "kitchen", "delivery", "alternative", "promise_at_risk"
+            )
+            return {**fresh, "accepted_delay": False, "accepted_wait": False}
+
+        def accept_risk(ws: dict[str, Any]) -> dict[str, Any]:
+            return {
+                **self.observed({**ws, "accepted_risk": True}, "promise_at_risk"),
+                "accepted_risk": True,
+            }
+
+        def offer(ws: dict[str, Any]) -> dict[str, Any]:
+            order = order_of(ws)
+            options = self.substitute_options(
+                order, ws["order_id"], alternatives(self.store, order)
+            )
+            if not options:
+                raise ApiError(409, "nothing to offer")
+            if self.store.offers.get(order.id) is None:
+                reason = (
+                    order.cancellation_note or f"{', '.join(self.missing_items(order))} ran out"
+                )
+                offer_substitutes(self.store, order, options, reason)
+            keys = ("substitute_answer", "substitute_available", *self.LATENESS)
+            while True:  # the customer's answer, or the deadline, ends the wait
+                interrupt({"waiting": "await_customer", "orderId": ws["order_id"]})
+                fresh = self.observed(ws, "substitute_answer", "substitute_available")
+                if any(fresh[k] != ws.get(k) for k in keys):
+                    return fresh
+
+        def apply_substitute(ws: dict[str, Any]) -> dict[str, Any]:
+            order = order_of(ws)
+            chosen = self.store.offers.get(order.id)
+            if chosen is None or chosen.chosen is None:
+                raise ApiError(409, "the customer has not accepted a substitute")
+            replacement = replace(self.store, order, chosen.chosen, chosen.reason)
+            self.threads[replacement.id] = self.threads.get(order.id, ws["order_id"])
+            fresh = self.observed(
+                ws, "current_order_id", "kitchen", "delivery", "alternative", "substitute_answer"
+            )
+            return {**fresh, "accepted_delay": False, "accepted_wait": False}
+
+        def offer_cost(world_state: dict[str, Any]) -> float:
+            options = self._substitutes.get(world_state.get("current_order_id") or "", [])
+            try:
+                order = order_of(world_state)
+                extra = max(0.0, float(options[0].difference(order))) if options else 0.0
+            except ApiError:
+                extra = 0.0
+            return 3.0 + extra
+
+        def switch_cost(world_state: dict[str, Any]) -> float:
+            """A faster kitchen's price difference, prep and distance; the route's jam is the
+            same for both kitchens, so it does not count against the switch."""
+            try:
+                order = order_of(world_state)
+            except ApiError:
+                return 50.0
+            choice = self.faster_kitchen(order, alternatives(self.store, order))
+            if choice is None:
+                return 50.0
+            extra = max(0.0, float(choice.difference(order)))
+            return 3.0 + extra + choice.restaurant.prep_minutes / 10 + (choice.distance_km or 1.0)
 
         def widen_cost(world_state: dict[str, Any]) -> float:
             return 1.0 if world_state.get("rain") or world_state.get("drivers_thin") else 2.0
@@ -637,6 +900,58 @@ class GoapEngine:
                 execute=wait("await_dropoff"),
             ),
             ActionSpec(
+                "pre_dispatch",
+                {
+                    "kitchen": "cooking",
+                    "delivery": "none",
+                    "promise_at_risk": True,
+                    "kitchen_slow": False,
+                },
+                {"delivery": "searching", "promise_at_risk": False, "accepted_risk": True},
+                cost=2.0,
+                execute=pre_dispatch,
+            ),
+            ActionSpec(
+                "reroute",
+                {"corridor_closed": True, "rerouted": False, "on_the_road": True},
+                {"rerouted": True, "promise_at_risk": False, "accepted_risk": True},
+                cost=1.0,
+                execute=do_reroute,
+            ),
+            ActionSpec(
+                "switch_kitchen_early",
+                {
+                    "kitchen": "cooking",
+                    "promise_at_risk": True,
+                    "alternative_faster": True,
+                    "approval_ok": True,
+                },
+                {"kitchen": "cooking", "delivery": "none", "promise_at_risk": False},
+                cost=switch_cost,
+                execute=switch_early,
+            ),
+            ActionSpec(
+                "accept_late_risk",
+                {"promise_at_risk": True},
+                {"promise_at_risk": False, "accepted_risk": True},
+                cost=9.0,  # nothing better: carry on and make it up with a credit if late
+                execute=accept_risk,
+            ),
+            ActionSpec(
+                "offer_substitutes",
+                {"kitchen": "failed", "substitute_available": True, "substitute_answer": "none"},
+                {"substitute_answer": "accepted"},
+                cost=offer_cost,
+                execute=offer,
+            ),
+            ActionSpec(
+                "replace_with_substitute",
+                {"substitute_answer": "accepted"},
+                {"kitchen": "cooking", "delivery": "none", "substitute_answer": "done"},
+                cost=1.0,
+                execute=apply_substitute,
+            ),
+            ActionSpec(
                 "issue_credit",
                 {"late": True, "credited": False},
                 {"credited": True, "compensated_if_late": True},
@@ -697,6 +1012,15 @@ class GoapEngine:
         self.drain()
 
     def tick(self) -> None:
+        moment = now()
+        for order_id, offer in list(self.store.offers.items()):
+            if (
+                offer.status == "OPEN"
+                and (moment - offer.offered_at).total_seconds() >= CUSTOMER_DEADLINE
+            ):
+                order = self.store.orders.get(order_id)
+                if order is not None:
+                    answer_substitution(self.store, order, None, by="deadline")
         for thread in set(self.threads.values()):
             waiting = self.waiting_at(thread)
             if waiting not in TIMED_WAITS:
@@ -715,8 +1039,19 @@ class GoapEngine:
                 config = self._config(thread)
                 self.tracer.order_id = thread
                 if event["kind"] == "start":
-                    goal = GoalSpec(conditions={"delivered": True, "compensated_if_late": True})
-                    world = {"order_id": thread, "accepted_delay": False, "accepted_wait": False}
+                    goal = GoalSpec(
+                        conditions={
+                            "delivered": True,
+                            "compensated_if_late": True,
+                            "promise_at_risk": False,
+                        }
+                    )
+                    world = {
+                        "order_id": thread,
+                        "accepted_delay": False,
+                        "accepted_wait": False,
+                        "accepted_risk": False,
+                    }
                     world.update(self.sense(world))
                     state = self.graph.invoke(self.goap.initial_state(goal, world), config)
                 else:

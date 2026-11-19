@@ -245,6 +245,31 @@ facts, and a `world.changed` event wakes every waiting thread, so a storm or a
 closed corridor is a re-plan from the real state, not a surprise at the next
 failure. Decision calls stay at zero; the world calls are in the results.
 
+### Planning ahead, and the model as a sensor
+
+The goal now reads `delivered`, `compensated_if_late` and `promise_at_risk:
+False`, so a promise at risk is something the planner must address, not
+something it notices once it is late. The actions for it: `pre_dispatch` sends
+a courier to the kitchen before the food is ready when the ride, not the
+kitchen, is the trouble; `switch_kitchen_early` moves the order to a kitchen
+that would have it at the door sooner, by prep time and the ride from it now;
+`reroute` tells a courier already on the road the way round a closure; and
+`accept_late_risk`, dear, carries on when nothing better exists and leaves the
+credit to settle it. None of these is a transition anyone drew; they are
+preconditions, effects and costs, and the planner finds them.
+
+The one place a model belongs inside the planner is perception. With the
+roster's `classify` model, a kitchen's free-text note becomes the fact
+`reason_kind` (a dish ran out, or the kitchen is down), read once per order
+and recorded with the model that read it. When a dish ran out and no other
+kitchen makes the same food, the `suggest` model proposes substitutes from
+what open kitchens can make, the platform keeps what is on a menu and prices
+it, and `offer_substitutes` puts them to the customer and waits (three minutes
+of silence is a decline); `replace_with_substitute` carries out the accepted
+one. Both calls are perception, counted apart from decisions, which stay at
+zero. `offer_pickup`, a customer collecting the food when no courier can come,
+needs a pickup flow the platform does not have and is not in this pass.
+
 ## Support, the human in the loop
 
 The customer app has no approval screen and the apps stay unchanged, so when an
