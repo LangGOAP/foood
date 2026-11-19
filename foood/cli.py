@@ -108,17 +108,30 @@ def bench(
 
 @app.command(name="bench-all")
 def bench_all(
-    engines: str = typer.Option("hand-wired,langgraph,langgoap", help="Comma-separated engines."),
+    engines: str = typer.Option(
+        "hand-wired,llm,langgraph,langgoap", help="Comma-separated engines."
+    ),
     seeds: str = typer.Option("7,11,13", help="Comma-separated seeds."),
+    repeats: int = typer.Option(
+        10, help="The incident evening this many times per engine (0 skips)."
+    ),
+    matrix_models: bool = typer.Option(
+        True, "--matrix/--no-matrix", help="The langgraph engine with one model in every node."
+    ),
+    suggest: bool = typer.Option(
+        True, "--suggest/--no-suggest", help="The substitution fixture, once per matrix model."
+    ),
 ) -> None:
-    """Every bundled scenario against every engine under every seed, then the table."""
+    """Every bundled scenario against every engine under every seed, the incident evening
+    repeated, the model matrix and the substitution fixture; then the tables."""
     import subprocess
     import sys
 
-    from foood.bench import matrix
+    from foood.bench import MATRIX_MODELS, matrix, model_matrix, repeats_all
 
     _load_dotenv()
-    results = matrix(engines=engines.split(","), seeds=[int(s) for s in seeds.split(",")])
+    chosen = engines.split(",")
+    results = matrix(engines=chosen, seeds=[int(s) for s in seeds.split(",")])
     for result in results:
         summary = result["summary"]
         typer.echo(
@@ -127,6 +140,27 @@ def bench_all(
             f"{summary['consistent']} consistent, llm {summary['llmCalls']}, "
             f"not recovered: {', '.join(summary['unrecovered']) or 'none'}"
         )
+    if repeats > 1:
+        for one in repeats_all(engines=chosen, times=repeats):
+            typer.echo(
+                f"repeats {one['engine']:11} x{one['times']}: identical "
+                f"{'yes' if one['distribution']['identical'] else 'no'}"
+            )
+    if matrix_models and os.environ.get("OPENAI_API_KEY"):
+        for result in model_matrix():
+            summary = result["summary"]
+            typer.echo(
+                f"matrix {result['modelMatrix']:13}: {summary['delivered']}/{summary['orders']} "
+                f"delivered, llm {summary['llmCalls']}, cost {summary['cost']}"
+            )
+    if suggest and os.environ.get("OPENAI_API_KEY"):
+        from foood.suggest import OpenAISuggester
+        from foood.suggest_eval import evaluate, write
+
+        for model in MATRIX_MODELS:
+            scored = evaluate(OpenAISuggester(model=model), model)
+            write(scored)
+            typer.echo(f"substitutes {model:13}: {scored['passed']}/{scored['cases']} acceptable")
     subprocess.run([sys.executable, "scripts/bench_table.py"], check=True)
 
 

@@ -39,7 +39,7 @@ bench:  ## run every bundled scenario against ENGINE under SEED, then regenerate
 	for s in happy-path kitchen-trouble delivery-trouble payment-trouble storm bridge-closed incident; do uv run foood bench --scenario $$s --engine $(ENGINE) --seed $(SEED) || exit 1; done
 	uv run python scripts/bench_table.py
 
-bench-all:  ## every bundled scenario x every engine x seeds 7, 11, 13; then BENCH.md and the README table
+bench-all:  ## 7 scenarios x 4 engines x seeds 7, 11, 13, the incident evening x10 per engine, the model matrix, the substitution fixture; then BENCH.md and the README table
 	uv run foood bench-all
 
 bench-table:

@@ -388,6 +388,22 @@ evening, seven orders, six different failures), against every engine under
 seeds 7, 11 and 13; an engine that calls a model is labelled with the model and
 shown per seed so its variation is visible rather than averaged away.
 
+`make bench-all` is the whole second-pass measurement: every bundled scenario
+(`storm` and `bridge-closed` included) against the four engines under seeds 7,
+11 and 13; the incident evening ten times per engine under one seed; the model
+matrix, the langgraph engine's incident evening with one model in every node
+(`FOOOD_MODEL_ALL`) for gpt-5.4-nano, gpt-5.4-mini and gpt-5.4 in turn; and the
+substitution fixture (`tests/fixtures/substitutes.toml`), out-of-stock cases
+with the dishes a person would accept, every one answerable from the pool (a
+test checks it). The model's proposals are grounded one at a time in the
+model's order, and a case passes when the first that is really on an open menu
+within reach is an acceptable dish; the same dish at another kitchen counts as
+itself. An order the engine leaves mid-flight with no failure to blame shows
+in the tables as `stalled <status>`, and a delivery is judged against the
+promise the customer was first given, however often an engine moved it since
+(the moves are counted in "Promises moved"). `BENCH.md` carries all four
+tables, generated from `results/`, never typed.
+
 <!-- bench:start -->
 | Scenario | Engine | Seed | Orders | Delivered | Within promise | Cancelled | Consistent | Mean min | p95 min | Recovery decisions | Human prompts | LLM calls, decisions | LLM calls, language | LLM tokens | Cost (USD) | Planner ms | Model ms, decisions | Re-plans | Plan steps | Wall s | Not recovered |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|

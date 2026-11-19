@@ -6,6 +6,8 @@ import json
 import sys
 from pathlib import Path
 
+from foood.bench import unrecovered_of
+
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
 OUT = ROOT / "BENCH.md"
@@ -16,6 +18,7 @@ COLUMNS = [
     ("Orders", lambda r: r["summary"]["orders"]),
     ("Delivered", lambda r: r["summary"]["delivered"]),
     ("Within promise", lambda r: r["summary"]["deliveredWithinPromise"]),
+    ("Promises moved", lambda r: sum(o.get("promiseRevisions", 0) for o in r["orders"])),
     ("Cancelled", lambda r: r["summary"]["cancelled"]),
     ("Consistent", lambda r: f"{r['summary']['consistent']}/{r['summary']['orders']}"),
     (
@@ -28,6 +31,7 @@ COLUMNS = [
     ),
     ("Recovery decisions", lambda r: r["summary"]["recoveryDecisions"]),
     ("Human prompts", lambda r: r["summary"]["humanPrompts"]),
+    ("Fallbacks", lambda r: r["summary"].get("fallbacks", 0)),
     ("LLM calls, decisions", lambda r: _role(r, "decision")),
     ("LLM calls, perception", lambda r: _role(r, "perception")),
     ("LLM calls, language", lambda r: _role(r, "language")),
@@ -44,7 +48,7 @@ COLUMNS = [
         ),
     ),
     ("Wall s", lambda r: r.get("timing", {}).get("wallSeconds", "-")),
-    ("Not recovered", lambda r: ", ".join(r["summary"]["unrecovered"]) or "-"),
+    ("Not recovered", lambda r: ", ".join(unrecovered_of(r["orders"])) or "-"),
 ]
 
 
@@ -160,6 +164,46 @@ def render(results_dir: Path = RESULTS) -> str:
         for one in sorted(sets, key=lambda r: (r["scenario"], r["engine"], r["seed"])):
             lines.append("| " + " | ".join(str(fn(one)) for _, fn in REPEAT_COLUMNS) + " |")
         lines += ["", f"{len(sets)} set(s)."]
+    matrix_runs = [
+        json.loads(p.read_text(encoding="utf-8"))
+        for p in sorted((results_dir / "matrix").glob("*.json"))
+    ]
+    if matrix_runs:
+        lines += [
+            "",
+            "## Model matrix",
+            "",
+            "The langgraph engine's evening with one model in every node (FOOOD_MODEL_ALL), for",
+            "each model in turn: the same seed, the same failures, only the model changes.",
+            "",
+            "| " + " | ".join(name for name, _ in MATRIX_COLUMNS) + " |",
+            "|" + "|".join("---" for _ in MATRIX_COLUMNS) + "|",
+        ]
+        for one in sorted(matrix_runs, key=lambda r: (r["scenario"], r["modelMatrix"])):
+            lines.append("| " + " | ".join(str(fn(one)) for _, fn in MATRIX_COLUMNS) + " |")
+    scored = [
+        json.loads(p.read_text(encoding="utf-8"))
+        for p in sorted((results_dir / "suggest").glob("*.json"))
+    ]
+    if scored:
+        lines += [
+            "",
+            "## Substitutes",
+            "",
+            "The substitution fixture (`tests/fixtures/substitutes.toml`): out-of-stock cases",
+            "with the dishes a person would accept instead, written by hand, every one",
+            "answerable from the pool. The model's proposals are grounded one at a time in the",
+            "model's order; a case passes when the first that is really on an open menu within",
+            "reach is an acceptable dish. The same dish at another kitchen counts as itself.",
+            "",
+            "| Model | Cases | Acceptable | Grounded | Cost (USD) |",
+            "|---|---|---|---|---|",
+        ]
+        for one in sorted(scored, key=lambda r: r["model"]):
+            lines.append(
+                f"| {one['model']} | {one['cases']} | {one['passed']} | {one['grounded']} | "
+                f"{one['cost']} |"
+            )
     return "\n".join(lines) + "\n"
 
 
@@ -171,6 +215,21 @@ def _triple(spread: dict | None) -> str:
     return "-" if not spread else f"{spread['min']} / {spread['median']} / {spread['max']}"
 
 
+MATRIX_COLUMNS = [
+    ("Scenario", lambda r: r["scenario"]),
+    ("Every node", lambda r: r["modelMatrix"]),
+    ("Seed", lambda r: r["seed"]),
+    ("Delivered", lambda r: f"{r['summary']['delivered']}/{r['summary']['orders']}"),
+    ("Within promise", lambda r: r["summary"]["deliveredWithinPromise"]),
+    ("Promises moved", lambda r: sum(o.get("promiseRevisions", 0) for o in r["orders"])),
+    ("LLM calls, decisions", lambda r: _role(r, "decision")),
+    ("LLM calls, perception", lambda r: _role(r, "perception")),
+    ("LLM calls, language", lambda r: _role(r, "language")),
+    ("Model ms, decisions", lambda r: r.get("timing", {}).get("modelMs", 0)),
+    ("Cost (USD)", lambda r: r["summary"]["cost"] if r["summary"].get("llmPriced") else "unpriced"),
+    ("Not recovered", lambda r: ", ".join(unrecovered_of(r["orders"])) or "-"),
+]
+
 REPEAT_COLUMNS = [
     ("Scenario", lambda r: r["scenario"]),
     ("Engine", lambda r: f"{r['engine']} + {r['model']}" if r.get("model") else r["engine"]),
@@ -179,6 +238,7 @@ REPEAT_COLUMNS = [
     ("Delivered", lambda r: _counts(r["distribution"]["delivered"])),
     ("LLM calls, decisions", lambda r: _counts(r["distribution"]["llmCalls"])),
     ("Human prompts", lambda r: _counts(r["distribution"]["humanPrompts"])),
+    ("Fallbacks", lambda r: _counts(r["distribution"].get("fallbacks", {"0": r["times"]}))),
     ("Decisions taken", lambda r: _counts(r["distribution"]["decisionsTaken"])),
     ("Model ms (min / median / max)", lambda r: _triple(r["distribution"]["modelMs"])),
     (
