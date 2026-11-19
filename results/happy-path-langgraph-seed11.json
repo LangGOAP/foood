@@ -1,0 +1,191 @@
+{
+  "scenario": "happy-path",
+  "engine": "langgraph",
+  "seed": 11,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-18T23:57:46.657682Z",
+  "model": null,
+  "virtualMinutes": 12.9,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5,
+    "perModel": {
+      "gpt-5.4": {
+        "in": 2.5,
+        "out": 15.0
+      },
+      "gpt-5.4-mini": {
+        "in": 0.75,
+        "out": 4.5
+      },
+      "gpt-5.4-nano": {
+        "in": 0.2,
+        "out": 1.25
+      }
+    }
+  },
+  "summary": {
+    "orders": 2,
+    "delivered": 2,
+    "deliveredWithinPromise": 2,
+    "cancelled": 0,
+    "consistent": 2,
+    "meanMinutes": 11.8,
+    "p95Minutes": 11.8,
+    "recoveryDecisions": 0,
+    "humanPrompts": 0,
+    "llmCalls": 10,
+    "llmCallsByRole": {
+      "decision": 0,
+      "perception": 0,
+      "language": 10
+    },
+    "llmCallsDeciding": 0,
+    "llmByModel": {
+      "gpt-5.4-nano": {
+        "calls": 10,
+        "tokens": 2104,
+        "cost": 0.001
+      }
+    },
+    "llmByNode": {
+      "phrase": {
+        "calls": 10,
+        "tokens": 2104,
+        "cost": 0.001,
+        "latencyMs": 11519,
+        "models": [
+          "gpt-5.4-nano"
+        ]
+      }
+    },
+    "llmTokens": 2104,
+    "worldCalls": 0,
+    "cost": 0.0007,
+    "llmPriced": true,
+    "failuresFired": [],
+    "unrecovered": []
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "26b1adc3-08ba-4389-9741-fa6761b1002f",
+      "finalOrderId": "26b1adc3-08ba-4389-9741-fa6761b1002f",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:19:46.657682Z",
+      "deliveredAt": "2026-11-19T00:09:36.657682Z",
+      "withinPromise": true,
+      "minutes": 11.8,
+      "consistent": true,
+      "problems": [],
+      "failures": [],
+      "recovered": false,
+      "decisions": 8,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 5,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 5
+      },
+      "modelMsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 6123
+      },
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 5,
+          "tokens": 1058,
+          "cost": 0.0005
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 5,
+          "tokens": 1058,
+          "cost": 0.0005,
+          "latencyMs": 6123,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 1058,
+      "worldCalls": 0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0004,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "1dee8af4-df85-45e4-9056-a581d997e4bd",
+      "finalOrderId": "1dee8af4-df85-45e4-9056-a581d997e4bd",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:20:46.657682Z",
+      "deliveredAt": "2026-11-19T00:10:36.657682Z",
+      "withinPromise": true,
+      "minutes": 11.8,
+      "consistent": true,
+      "problems": [],
+      "failures": [],
+      "recovered": false,
+      "decisions": 8,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 5,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 5
+      },
+      "modelMsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 5396
+      },
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 5,
+          "tokens": 1046,
+          "cost": 0.0005
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 5,
+          "tokens": 1046,
+          "cost": 0.0005,
+          "latencyMs": 5396,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 1046,
+      "worldCalls": 0,
+      "decisionNames": [
+        "phrase",
+        "confirm",
+        "phrase",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0003,
+      "notes": []
+    }
+  ]
+}
