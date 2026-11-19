@@ -223,6 +223,21 @@ resumes every thread after a restart. In the `langgoap` rows of
 [`BENCH.md`](BENCH.md), decision calls are zero; the other call columns count
 the model's language and perception calls.
 
+### The planner reads the world
+
+The sensor reads the world through the same MCP tools the other engines use,
+once per tick, counted against the order: the kitchen's and the door's zone,
+rain or a storm, a slow or closed route, the ride's minutes now, whether the
+promise is at risk (a courier leaving now could not make it) and whether the
+driver pool is thin. These enter as facts and costs: a replacement's cost
+includes the traffic on the new route; widening the driver search is the
+cheapest action in rain or with a thin pool; waiting for a driver or accepting a
+slow kitchen costs more once the promise is at risk; a credit for weather-caused
+lateness is cheap. Every wait watches `promise_at_risk` with its own facts, and
+a `world.changed` event wakes every waiting thread; a storm or a closed corridor
+triggers a re-plan. Decision calls remain zero; world calls are counted in the
+results.
+
 ## Support console
 
 The customer app has no approval screen; an engine that needs a person asks
