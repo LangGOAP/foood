@@ -262,3 +262,45 @@ async def test_admin_creates_and_assigns_by_hand(client) -> None:
         f"/api/deliveries/{delivery['id']}/assign", json={"driverId": me["id"]}, headers=admin
     )
     assert taken.status_code == 409 and taken.json()["error"] == "InvalidTransition"
+
+
+async def test_a_pickup_before_the_kitchen_is_ready_is_refused_whole(client) -> None:
+    """A courier sent ahead of the kitchen may arrive early; the refusal must leave the delivery
+    exactly as it was, not picked up on paper with the food still cooking."""
+    from foood.deliveries import create_delivery, dispatch_pending
+
+    sara = await login(client, "demo.customer@example.com")
+    owner = await login(client, QA_OWNER)
+    driver = await login(client, "driver@example.com")
+    restaurants = (await client.get("/api/restaurants?search=QA Kitchen")).json()["items"]
+    menu = (await client.get(f"/api/menus/restaurants/{restaurants[0]['id']}/menu")).json()
+    pasta = next(i for i in menu["items"] if i["name"] == "QA Pasta")
+    await client.post(
+        "/api/cart/items", json={"menuItemId": pasta["id"], "quantity": 1}, headers=sara
+    )
+    order = (await client.post("/api/orders", json={}, headers=sara)).json()
+    payment = (
+        await client.post("/api/payments", json={"orderId": order["id"]}, headers=sara)
+    ).json()
+    await client.post(f"/api/payments/{payment['id']}/process", json={}, headers=sara)
+    await client.patch(
+        f"/api/orders/{order['id']}/status", json={"status": "PREPARING"}, headers=owner
+    )
+    await client.post("/api/drivers/me/online", json={}, headers=driver)
+    create_delivery(client.store, client.store.orders[order["id"]])
+    dispatch_pending(client.store)
+    delivery = (await client.get(f"/api/deliveries/by-order/{order['id']}", headers=sara)).json()
+    assert delivery["status"] == "DRIVER_ASSIGNED"
+    early = await client.post(f"/api/deliveries/{delivery['id']}/pickup", json={}, headers=driver)
+    assert early.status_code == 409
+    again = (await client.get(f"/api/deliveries/by-order/{order['id']}", headers=sara)).json()
+    assert again["status"] == "DRIVER_ASSIGNED"
+    assert (await client.get(f"/api/orders/{order['id']}", headers=sara)).json()[
+        "status"
+    ] == "PREPARING"
+    await client.patch(
+        f"/api/orders/{order['id']}/status", json={"status": "READY_FOR_PICKUP"}, headers=owner
+    )
+    assert (
+        await client.post(f"/api/deliveries/{delivery['id']}/pickup", json={}, headers=driver)
+    ).status_code == 201

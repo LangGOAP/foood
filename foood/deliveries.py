@@ -206,11 +206,17 @@ def perform(store: Store, delivery: Delivery, action: str) -> Delivery:
             409, f"A {delivery.status} delivery cannot {action}", error="InvalidTransition"
         )
     moment = now()
+    order = get_order(store, delivery.order_id)
+    if action == "pickup" and order.status not in {"READY_FOR_PICKUP", "DRIVER_ASSIGNED"}:
+        raise ApiError(  # a courier sent ahead may arrive early; nothing changes until it is ready
+            409, "The kitchen has not readied this order yet", error="InvalidTransition"
+        )
     delivery.status = ACTION_RESULT[action]
     delivery.updated_at = moment
-    order = get_order(store, delivery.order_id)
     if action == "pickup":
         delivery.picked_up_at = moment
+        if order.status == "READY_FOR_PICKUP":  # a courier sent ahead was assigned before this
+            transition(store, order, "DRIVER_ASSIGNED")
         transition(store, order, "PICKED_UP")
     elif action == "complete":
         delivery.delivered_at = moment
