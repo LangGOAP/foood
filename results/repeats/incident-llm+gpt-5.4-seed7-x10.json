@@ -1,0 +1,708 @@
+{
+  "scenario": "incident",
+  "engine": "llm",
+  "model": "gpt-5.4",
+  "seed": 7,
+  "times": 10,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-19T01:30:34.657391Z",
+  "distribution": {
+    "identical": false,
+    "delivered": {
+      "5": 9,
+      "6": 1
+    },
+    "deliveredWithinPromise": {
+      "3": 10
+    },
+    "cancelled": {
+      "0": 10
+    },
+    "llmCalls": {
+      "127": 1,
+      "128": 1,
+      "129": 1,
+      "130": 3,
+      "131": 1,
+      "146": 1,
+      "148": 1,
+      "153": 1
+    },
+    "humanPrompts": {
+      "0": 9,
+      "1": 1
+    },
+    "unrecovered": {
+      "-": 8,
+      "gateway_down": 2
+    },
+    "decisionsTaken": {
+      "keep waiting": 184,
+      "widen dispatch": 62,
+      "replace order": 23,
+      "revise promise": 11,
+      "act: retry_backup_card": 10,
+      "issue credit": 7,
+      "ask support": 1
+    },
+    "modelMs": {
+      "min": 127041.0,
+      "median": 133856.0,
+      "max": 160949.0
+    },
+    "cost": {
+      "min": 0.3115,
+      "median": 0.3266,
+      "max": 0.3842
+    },
+    "llmPriced": true
+  },
+  "runs": [
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 21.6,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 31,
+      "humanPrompts": 1,
+      "llmCalls": 130,
+      "llmCallsByRole": {
+        "decision": 92,
+        "perception": 0,
+        "language": 38
+      },
+      "llmCallsDeciding": 92,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 38,
+          "tokens": 8472,
+          "cost": 0.0038
+        },
+        "gpt-5.4": {
+          "calls": 92,
+          "tokens": 114044,
+          "cost": 0.317
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 38,
+          "tokens": 8472,
+          "cost": 0.0038,
+          "latencyMs": 42769,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 92,
+          "tokens": 114044,
+          "cost": 0.317,
+          "latencyMs": 132536,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 122516,
+      "worldCalls": 7,
+      "cost": 0.3195,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 21.8,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 28,
+      "humanPrompts": 0,
+      "llmCalls": 130,
+      "llmCallsByRole": {
+        "decision": 92,
+        "perception": 0,
+        "language": 38
+      },
+      "llmCallsDeciding": 92,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 38,
+          "tokens": 8435,
+          "cost": 0.0038
+        },
+        "gpt-5.4": {
+          "calls": 92,
+          "tokens": 116105,
+          "cost": 0.3231
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 38,
+          "tokens": 8435,
+          "cost": 0.0038,
+          "latencyMs": 42935,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 92,
+          "tokens": 116105,
+          "cost": 0.3231,
+          "latencyMs": 133656,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 124540,
+      "worldCalls": 9,
+      "cost": 0.3254,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 21.8,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 29,
+      "humanPrompts": 0,
+      "llmCalls": 130,
+      "llmCallsByRole": {
+        "decision": 91,
+        "perception": 0,
+        "language": 39
+      },
+      "llmCallsDeciding": 91,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 39,
+          "tokens": 8794,
+          "cost": 0.0039
+        },
+        "gpt-5.4": {
+          "calls": 91,
+          "tokens": 116931,
+          "cost": 0.3251
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 39,
+          "tokens": 8794,
+          "cost": 0.0039,
+          "latencyMs": 46593,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 91,
+          "tokens": 116931,
+          "cost": 0.3251,
+          "latencyMs": 129465,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 125725,
+      "worldCalls": 11,
+      "cost": 0.3278,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 22.4,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 35,
+      "humanPrompts": 0,
+      "llmCalls": 153,
+      "llmCallsByRole": {
+        "decision": 109,
+        "perception": 0,
+        "language": 44
+      },
+      "llmCallsDeciding": 109,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 44,
+          "tokens": 10048,
+          "cost": 0.0044
+        },
+        "gpt-5.4": {
+          "calls": 109,
+          "tokens": 136183,
+          "cost": 0.3808
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 44,
+          "tokens": 10048,
+          "cost": 0.0044,
+          "latencyMs": 49714,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 109,
+          "tokens": 136183,
+          "cost": 0.3808,
+          "latencyMs": 160949,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 146231,
+      "worldCalls": 19,
+      "cost": 0.3842,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "gateway_down"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 22.8,
+      "p95Minutes": 36.2,
+      "recoveryDecisions": 32,
+      "humanPrompts": 0,
+      "llmCalls": 146,
+      "llmCallsByRole": {
+        "decision": 104,
+        "perception": 0,
+        "language": 42
+      },
+      "llmCallsDeciding": 104,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 42,
+          "tokens": 9410,
+          "cost": 0.0042
+        },
+        "gpt-5.4": {
+          "calls": 104,
+          "tokens": 131038,
+          "cost": 0.3658
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 42,
+          "tokens": 9410,
+          "cost": 0.0042,
+          "latencyMs": 44695,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 104,
+          "tokens": 131038,
+          "cost": 0.3658,
+          "latencyMs": 154482,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 140448,
+      "worldCalls": 19,
+      "cost": 0.3692,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "driver_drops",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": [
+        "gateway_down"
+      ]
+    },
+    {
+      "orders": 7,
+      "delivered": 6,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 6,
+      "meanMinutes": 27.7,
+      "p95Minutes": 57.0,
+      "recoveryDecisions": 31,
+      "humanPrompts": 0,
+      "llmCalls": 148,
+      "llmCallsByRole": {
+        "decision": 104,
+        "perception": 0,
+        "language": 44
+      },
+      "llmCallsDeciding": 104,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 44,
+          "tokens": 9815,
+          "cost": 0.0044
+        },
+        "gpt-5.4": {
+          "calls": 104,
+          "tokens": 132791,
+          "cost": 0.3698
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 44,
+          "tokens": 9815,
+          "cost": 0.0044,
+          "latencyMs": 49165,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 104,
+          "tokens": 132791,
+          "cost": 0.3698,
+          "latencyMs": 147970,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 142606,
+      "worldCalls": 11,
+      "cost": 0.3729,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 21.8,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 29,
+      "humanPrompts": 0,
+      "llmCalls": 129,
+      "llmCallsByRole": {
+        "decision": 92,
+        "perception": 0,
+        "language": 37
+      },
+      "llmCallsDeciding": 92,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 37,
+          "tokens": 8181,
+          "cost": 0.0037
+        },
+        "gpt-5.4": {
+          "calls": 92,
+          "tokens": 113810,
+          "cost": 0.3185
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 37,
+          "tokens": 8181,
+          "cost": 0.0037,
+          "latencyMs": 46950,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 92,
+          "tokens": 113810,
+          "cost": 0.3185,
+          "latencyMs": 134056,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 121991,
+      "worldCalls": 14,
+      "cost": 0.3211,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 21.8,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 27,
+      "humanPrompts": 0,
+      "llmCalls": 128,
+      "llmCallsByRole": {
+        "decision": 90,
+        "perception": 0,
+        "language": 38
+      },
+      "llmCallsDeciding": 90,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 38,
+          "tokens": 8572,
+          "cost": 0.0038
+        },
+        "gpt-5.4": {
+          "calls": 90,
+          "tokens": 110472,
+          "cost": 0.3092
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 38,
+          "tokens": 8572,
+          "cost": 0.0038,
+          "latencyMs": 42756,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 90,
+          "tokens": 110472,
+          "cost": 0.3092,
+          "latencyMs": 127041,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 119044,
+      "worldCalls": 11,
+      "cost": 0.3115,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 21.8,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 27,
+      "humanPrompts": 0,
+      "llmCalls": 127,
+      "llmCallsByRole": {
+        "decision": 91,
+        "perception": 0,
+        "language": 36
+      },
+      "llmCallsDeciding": 91,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 36,
+          "tokens": 7802,
+          "cost": 0.0036
+        },
+        "gpt-5.4": {
+          "calls": 91,
+          "tokens": 112251,
+          "cost": 0.3128
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 36,
+          "tokens": 7802,
+          "cost": 0.0036,
+          "latencyMs": 39654,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 91,
+          "tokens": 112251,
+          "cost": 0.3128,
+          "latencyMs": 131372,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 120053,
+      "worldCalls": 14,
+      "cost": 0.315,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    },
+    {
+      "orders": 7,
+      "delivered": 5,
+      "deliveredWithinPromise": 3,
+      "cancelled": 0,
+      "consistent": 5,
+      "meanMinutes": 21.8,
+      "p95Minutes": 34.8,
+      "recoveryDecisions": 29,
+      "humanPrompts": 0,
+      "llmCalls": 131,
+      "llmCallsByRole": {
+        "decision": 93,
+        "perception": 0,
+        "language": 38
+      },
+      "llmCallsDeciding": 93,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 38,
+          "tokens": 8392,
+          "cost": 0.0038
+        },
+        "gpt-5.4": {
+          "calls": 93,
+          "tokens": 118838,
+          "cost": 0.3305
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 38,
+          "tokens": 8392,
+          "cost": 0.0038,
+          "latencyMs": 41132,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 93,
+          "tokens": 118838,
+          "cost": 0.3305,
+          "latencyMs": 134526,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 127230,
+      "worldCalls": 11,
+      "cost": 0.3334,
+      "replans": 0,
+      "meanPlanSteps": null,
+      "llmPriced": true,
+      "failuresFired": [
+        "accepts_then_cancels",
+        "gateway_down",
+        "no_driver",
+        "payment_declines",
+        "restaurant_rejects"
+      ],
+      "unrecovered": []
+    }
+  ]
+}

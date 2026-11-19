@@ -5,7 +5,7 @@
   "seed": 7,
   "times": 10,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T19:57:23.413822Z",
+  "startedAt": "2026-11-19T01:25:53.130617Z",
   "distribution": {
     "identical": true,
     "delivered": {
@@ -18,7 +18,7 @@
       "5": 10
     },
     "llmCalls": {
-      "0": 10
+      "25": 10
     },
     "humanPrompts": {
       "0": 10
@@ -36,9 +36,9 @@
       "max": 0.0
     },
     "cost": {
-      "min": 0.0076,
-      "median": 0.0077,
-      "max": 0.0079
+      "min": 0.0017,
+      "median": 0.0019,
+      "max": 0.002
     },
     "llmPriced": true
   },
@@ -53,10 +53,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6727,
-      "cost": 0.0079,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5398,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5398,
+          "cost": 0.0025,
+          "latencyMs": 26177,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5398,
+      "worldCalls": 0,
+      "cost": 0.0017,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -87,10 +111,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6632,
-      "cost": 0.0076,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5458,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5458,
+          "cost": 0.0025,
+          "latencyMs": 28182,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5458,
+      "worldCalls": 0,
+      "cost": 0.0017,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -121,10 +169,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6694,
-      "cost": 0.0078,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5392,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5392,
+          "cost": 0.0025,
+          "latencyMs": 28467,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5392,
+      "worldCalls": 0,
+      "cost": 0.0018,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -155,10 +227,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6660,
-      "cost": 0.0077,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5463,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5463,
+          "cost": 0.0025,
+          "latencyMs": 26159,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5463,
+      "worldCalls": 0,
+      "cost": 0.002,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -189,10 +285,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6660,
-      "cost": 0.0078,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5482,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5482,
+          "cost": 0.0025,
+          "latencyMs": 28448,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5482,
+      "worldCalls": 0,
+      "cost": 0.0019,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -223,10 +343,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6687,
-      "cost": 0.0077,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5610,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5610,
+          "cost": 0.0025,
+          "latencyMs": 27786,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5610,
+      "worldCalls": 0,
+      "cost": 0.002,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -257,10 +401,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6711,
-      "cost": 0.0078,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5462,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5462,
+          "cost": 0.0025,
+          "latencyMs": 27391,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5462,
+      "worldCalls": 0,
+      "cost": 0.0019,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -291,10 +459,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6680,
-      "cost": 0.0078,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5430,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5430,
+          "cost": 0.0025,
+          "latencyMs": 28472,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5430,
+      "worldCalls": 0,
+      "cost": 0.0019,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -325,10 +517,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6642,
-      "cost": 0.0077,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5412,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5412,
+          "cost": 0.0025,
+          "latencyMs": 28496,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5412,
+      "worldCalls": 0,
+      "cost": 0.0018,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,
@@ -359,10 +575,34 @@
       "p95Minutes": 15.8,
       "recoveryDecisions": 6,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 25,
-      "llmTokens": 6619,
-      "cost": 0.0076,
+      "llmCalls": 25,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 0,
+        "language": 25
+      },
+      "llmCallsDeciding": 0,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 25,
+          "tokens": 5512,
+          "cost": 0.0025
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 25,
+          "tokens": 5512,
+          "cost": 0.0025,
+          "latencyMs": 28363,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 5512,
+      "worldCalls": 0,
+      "cost": 0.002,
       "replans": 0,
       "meanPlanSteps": null,
       "llmPriced": true,

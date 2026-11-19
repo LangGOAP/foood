@@ -3,7 +3,12 @@
   "engine": "langgraph",
   "seed": 13,
   "foood": "0.1.0",
-  "startedAt": "2026-11-19T00:00:51.857034Z",
+  "machine": {
+    "platform": "macOS-26.6.2-x86_64-i386-64bit-Mach-O",
+    "python": "3.13.14",
+    "processor": "i386"
+  },
+  "startedAt": "2026-11-19T00:27:30.621742Z",
   "model": null,
   "virtualMinutes": 12.9,
   "llmPrices": {
@@ -23,6 +28,13 @@
         "out": 1.25
       }
     }
+  },
+  "timing": {
+    "planningMs": 0,
+    "modelMs": 0.0,
+    "perceptionMs": 0.0,
+    "languageMs": 10935.0,
+    "wallSeconds": 11.2
   },
   "summary": {
     "orders": 2,
@@ -44,24 +56,26 @@
     "llmByModel": {
       "gpt-5.4-nano": {
         "calls": 10,
-        "tokens": 2092,
+        "tokens": 2100,
         "cost": 0.001
       }
     },
     "llmByNode": {
       "phrase": {
         "calls": 10,
-        "tokens": 2092,
+        "tokens": 2100,
         "cost": 0.001,
-        "latencyMs": 11284,
+        "latencyMs": 10935,
         "models": [
           "gpt-5.4-nano"
         ]
       }
     },
-    "llmTokens": 2092,
+    "llmTokens": 2100,
     "worldCalls": 0,
-    "cost": 0.0008,
+    "cost": 0.0007,
+    "replans": 0,
+    "meanPlanSteps": null,
     "llmPriced": true,
     "failuresFired": [],
     "unrecovered": []
@@ -69,11 +83,11 @@
   "orders": [
     {
       "number": 1,
-      "orderId": "a7606710-7d27-4123-8543-2f8a8c8bb063",
-      "finalOrderId": "a7606710-7d27-4123-8543-2f8a8c8bb063",
+      "orderId": "e5cdaaaa-1249-4ebc-998e-b94cf72913d7",
+      "finalOrderId": "e5cdaaaa-1249-4ebc-998e-b94cf72913d7",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-19T00:22:51.857034Z",
-      "deliveredAt": "2026-11-19T00:12:41.857034Z",
+      "promisedAt": "2026-11-19T00:49:30.621742Z",
+      "deliveredAt": "2026-11-19T00:39:20.621742Z",
       "withinPromise": true,
       "minutes": 11.8,
       "consistent": true,
@@ -92,27 +106,27 @@
       "modelMsByRole": {
         "decision": 0,
         "perception": 0,
-        "language": 5663
+        "language": 5230
       },
       "llmByModel": {
         "gpt-5.4-nano": {
           "calls": 5,
-          "tokens": 1047,
+          "tokens": 1043,
           "cost": 0.0005
         }
       },
       "llmByNode": {
         "phrase": {
           "calls": 5,
-          "tokens": 1047,
+          "tokens": 1043,
           "cost": 0.0005,
-          "latencyMs": 5663,
+          "latencyMs": 5230,
           "models": [
             "gpt-5.4-nano"
           ]
         }
       },
-      "llmTokens": 1047,
+      "llmTokens": 1043,
       "worldCalls": 0,
       "decisionNames": [
         "phrase",
@@ -124,16 +138,22 @@
         "phrase",
         "phrase"
       ],
-      "cost": 0.0004,
+      "cost": 0.0003,
+      "planningMs": 0,
+      "modelMs": 0.0,
+      "perceptionMs": 0.0,
+      "languageMs": 5230.0,
+      "replans": 0,
+      "planSteps": null,
       "notes": []
     },
     {
       "number": 2,
-      "orderId": "ea8acbbe-2699-4b22-bd0a-14e5fcef58eb",
-      "finalOrderId": "ea8acbbe-2699-4b22-bd0a-14e5fcef58eb",
+      "orderId": "722d385a-0d32-4f78-b88c-a6e337c94049",
+      "finalOrderId": "722d385a-0d32-4f78-b88c-a6e337c94049",
       "status": "DELIVERED",
-      "promisedAt": "2026-11-19T00:23:51.857034Z",
-      "deliveredAt": "2026-11-19T00:13:41.857034Z",
+      "promisedAt": "2026-11-19T00:50:30.621742Z",
+      "deliveredAt": "2026-11-19T00:40:20.621742Z",
       "withinPromise": true,
       "minutes": 11.8,
       "consistent": true,
@@ -152,27 +172,27 @@
       "modelMsByRole": {
         "decision": 0,
         "perception": 0,
-        "language": 5621
+        "language": 5705
       },
       "llmByModel": {
         "gpt-5.4-nano": {
           "calls": 5,
-          "tokens": 1045,
+          "tokens": 1057,
           "cost": 0.0005
         }
       },
       "llmByNode": {
         "phrase": {
           "calls": 5,
-          "tokens": 1045,
+          "tokens": 1057,
           "cost": 0.0005,
-          "latencyMs": 5621,
+          "latencyMs": 5705,
           "models": [
             "gpt-5.4-nano"
           ]
         }
       },
-      "llmTokens": 1045,
+      "llmTokens": 1057,
       "worldCalls": 0,
       "decisionNames": [
         "phrase",
@@ -185,6 +205,12 @@
         "phrase"
       ],
       "cost": 0.0004,
+      "planningMs": 0,
+      "modelMs": 0.0,
+      "perceptionMs": 0.0,
+      "languageMs": 5705.0,
+      "replans": 0,
+      "planSteps": null,
       "notes": []
     }
   ]

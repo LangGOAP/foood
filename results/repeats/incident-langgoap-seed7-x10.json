@@ -5,9 +5,9 @@
   "seed": 7,
   "times": 10,
   "foood": "0.1.0",
-  "startedAt": "2026-11-17T20:43:26.833148Z",
+  "startedAt": "2026-11-22T05:48:22.690387Z",
   "distribution": {
-    "identical": true,
+    "identical": false,
     "delivered": {
       "7": 10
     },
@@ -18,30 +18,41 @@
       "0": 10
     },
     "llmCalls": {
-      "0": 10
+      "53": 10
     },
     "humanPrompts": {
       "0": 10
     },
+    "fallbacks": {
+      "0": 10
+    },
+    "fallbackReasons": [],
     "unrecovered": {
       "-": 10
     },
     "decisionsTaken": {
-      "replan": 90,
-      "act: replace_after_kitchen_failure": 20,
+      "replan": 130,
       "act: issue_credit": 20,
+      "sense: reason kitchen_down": 10,
+      "act: replace_after_kitchen_failure": 10,
+      "sense: reason item_out": 10,
+      "sense: substitutes": 10,
+      "act: offer_substitutes": 10,
+      "act: replace_with_substitute": 10,
       "act: retry_backup_card": 10,
-      "act: replace_lost_order": 10
+      "act: replace_lost_order": 10,
+      "act: pre_dispatch": 10
     },
+    "departures": [],
     "modelMs": {
       "min": 0.0,
       "median": 0.0,
       "max": 0.0
     },
     "cost": {
-      "min": 0.0148,
-      "median": 0.0151,
-      "max": 0.0155
+      "min": 0.0044,
+      "median": 0.0044,
+      "max": 0.0048
     },
     "llmPriced": true
   },
@@ -50,17 +61,67 @@
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 24.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 13177,
-      "cost": 0.0155,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11405,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 646,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10969,
+          "cost": 0.005,
+          "latencyMs": 46880,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 2175,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 646,
+          "cost": 0.0007,
+          "latencyMs": 959,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 12051,
+      "worldCalls": 239,
+      "cost": 0.0045,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -72,23 +133,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 23.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 12976,
-      "cost": 0.015,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11300,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 633,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10864,
+          "cost": 0.005,
+          "latencyMs": 46773,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 1518,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 633,
+          "cost": 0.0007,
+          "latencyMs": 792,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 11933,
+      "worldCalls": 239,
+      "cost": 0.0046,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -100,23 +285,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 23.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 12978,
-      "cost": 0.0151,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11271,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 643,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10835,
+          "cost": 0.005,
+          "latencyMs": 46495,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 1702,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 643,
+          "cost": 0.0007,
+          "latencyMs": 924,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 11914,
+      "worldCalls": 239,
+      "cost": 0.0044,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -128,23 +437,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 23.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 13113,
-      "cost": 0.0154,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11382,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 633,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10946,
+          "cost": 0.005,
+          "latencyMs": 45591,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 1687,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 633,
+          "cost": 0.0007,
+          "latencyMs": 1126,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 12015,
+      "worldCalls": 239,
+      "cost": 0.0044,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -156,23 +589,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 24.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 13047,
-      "cost": 0.0152,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11268,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 639,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10832,
+          "cost": 0.005,
+          "latencyMs": 46750,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 2043,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 639,
+          "cost": 0.0007,
+          "latencyMs": 988,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 11907,
+      "worldCalls": 239,
+      "cost": 0.0044,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -184,23 +741,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 23.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 13087,
-      "cost": 0.0151,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11353,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 626,
+          "cost": 0.0006
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10917,
+          "cost": 0.005,
+          "latencyMs": 45853,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 1784,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 626,
+          "cost": 0.0006,
+          "latencyMs": 972,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 11979,
+      "worldCalls": 239,
+      "cost": 0.0044,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -212,23 +893,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 24.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 13076,
-      "cost": 0.0152,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11411,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 633,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10975,
+          "cost": 0.005,
+          "latencyMs": 47416,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 1777,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 633,
+          "cost": 0.0007,
+          "latencyMs": 927,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 12044,
+      "worldCalls": 239,
+      "cost": 0.0045,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -240,23 +1045,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 24.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 12996,
-      "cost": 0.0151,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11279,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 634,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10843,
+          "cost": 0.005,
+          "latencyMs": 44634,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 1609,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 634,
+          "cost": 0.0007,
+          "latencyMs": 985,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 11913,
+      "worldCalls": 239,
+      "cost": 0.0044,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -268,23 +1197,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 23.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 12954,
-      "cost": 0.0148,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11403,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 632,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10967,
+          "cost": 0.005,
+          "latencyMs": 46966,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 1649,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 632,
+          "cost": 0.0007,
+          "latencyMs": 923,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 12035,
+      "worldCalls": 239,
+      "cost": 0.0048,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -296,23 +1349,147 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     },
     {
       "orders": 7,
       "delivered": 7,
       "deliveredWithinPromise": 4,
+      "promisesMoved": 0,
       "cancelled": 0,
       "consistent": 7,
-      "meanMinutes": 24.1,
+      "meanMinutes": 23.2,
       "p95Minutes": 42.8,
-      "recoveryDecisions": 15,
+      "recoveryDecisions": 24,
       "humanPrompts": 0,
-      "llmCalls": 0,
-      "messageCalls": 49,
-      "llmTokens": 13057,
-      "cost": 0.0151,
-      "replans": 9,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "llmCalls": 53,
+      "llmCallsByRole": {
+        "decision": 0,
+        "perception": 3,
+        "language": 50
+      },
+      "llmCallsDeciding": 3,
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 52,
+          "tokens": 11243,
+          "cost": 0.0052
+        },
+        "gpt-5.4-mini": {
+          "calls": 1,
+          "tokens": 643,
+          "cost": 0.0007
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 50,
+          "tokens": 10807,
+          "cost": 0.005,
+          "latencyMs": 45570,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "classify": {
+          "calls": 2,
+          "tokens": 436,
+          "cost": 0.0002,
+          "latencyMs": 3232,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "suggest": {
+          "calls": 1,
+          "tokens": 643,
+          "cost": 0.0007,
+          "latencyMs": 1132,
+          "models": [
+            "gpt-5.4-mini"
+          ]
+        }
+      },
+      "llmTokens": 11886,
+      "worldCalls": 239,
+      "cost": 0.0045,
+      "replans": 13,
       "meanPlanSteps": 6.0,
       "llmPriced": true,
       "failuresFired": [
@@ -324,7 +1501,81 @@
         "payment_declines",
         "restaurant_rejects"
       ],
-      "unrecovered": []
+      "unrecovered": [],
+      "courses": {
+        "1": [
+          "plan",
+          "confirm",
+          "sense: reason kitchen_down",
+          "replan",
+          "act: replace_after_kitchen_failure",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "2": [
+          "plan",
+          "confirm",
+          "sense: reason item_out",
+          "sense: substitutes",
+          "replan",
+          "act: offer_substitutes",
+          "plan skips ahead",
+          "act: replace_with_substitute",
+          "plan skips ahead",
+          "assign driver",
+          "act: dispatch",
+          "plan skips ahead"
+        ],
+        "3": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: retry_backup_card",
+          "plan skips ahead",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "4": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "assign driver"
+        ],
+        "5": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: replace_lost_order",
+          "replan",
+          "act: pre_dispatch",
+          "assign driver"
+        ],
+        "6": [
+          "plan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "replan",
+          "act: issue_credit"
+        ],
+        "7": [
+          "plan",
+          "replan",
+          "confirm",
+          "act: dispatch",
+          "replan",
+          "assign driver",
+          "replan",
+          "act: issue_credit"
+        ]
+      }
     }
   ]
 }

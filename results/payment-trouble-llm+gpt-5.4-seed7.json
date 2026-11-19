@@ -1,0 +1,408 @@
+{
+  "scenario": "payment-trouble",
+  "engine": "llm",
+  "seed": 7,
+  "foood": "0.1.0",
+  "machine": {
+    "platform": "macOS-26.6.2-x86_64-i386-64bit-Mach-O",
+    "python": "3.13.14",
+    "processor": "i386"
+  },
+  "startedAt": "2026-11-19T00:44:25.462889Z",
+  "model": "gpt-5.4",
+  "virtualMinutes": 36.8,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5,
+    "perModel": {
+      "gpt-5.4": {
+        "in": 2.5,
+        "out": 15.0
+      },
+      "gpt-5.4-mini": {
+        "in": 0.75,
+        "out": 4.5
+      },
+      "gpt-5.4-nano": {
+        "in": 0.2,
+        "out": 1.25
+      }
+    }
+  },
+  "timing": {
+    "planningMs": 0,
+    "modelMs": 67458.0,
+    "perceptionMs": 0.0,
+    "languageMs": 19290.0,
+    "wallSeconds": 87.0
+  },
+  "summary": {
+    "orders": 3,
+    "delivered": 3,
+    "deliveredWithinPromise": 2,
+    "cancelled": 0,
+    "consistent": 3,
+    "meanMinutes": 19.7,
+    "p95Minutes": 34.8,
+    "recoveryDecisions": 15,
+    "humanPrompts": 0,
+    "llmCalls": 62,
+    "llmCallsByRole": {
+      "decision": 45,
+      "perception": 0,
+      "language": 17
+    },
+    "llmCallsDeciding": 45,
+    "llmByModel": {
+      "gpt-5.4-nano": {
+        "calls": 17,
+        "tokens": 3642,
+        "cost": 0.0017
+      },
+      "gpt-5.4": {
+        "calls": 45,
+        "tokens": 54475,
+        "cost": 0.1508
+      }
+    },
+    "llmByNode": {
+      "phrase": {
+        "calls": 17,
+        "tokens": 3642,
+        "cost": 0.0017,
+        "latencyMs": 19290,
+        "models": [
+          "gpt-5.4-nano"
+        ]
+      },
+      "decision": {
+        "calls": 45,
+        "tokens": 54475,
+        "cost": 0.1508,
+        "latencyMs": 67458,
+        "models": [
+          "gpt-5.4"
+        ]
+      }
+    },
+    "llmTokens": 58117,
+    "worldCalls": 2,
+    "cost": 0.1522,
+    "replans": 0,
+    "meanPlanSteps": null,
+    "llmPriced": true,
+    "failuresFired": [
+      "gateway_down",
+      "payment_declines"
+    ],
+    "unrecovered": []
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "cc1663bc-2a1e-42d2-ae0b-18e19a5b64a6",
+      "finalOrderId": "cc1663bc-2a1e-42d2-ae0b-18e19a5b64a6",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T01:06:25.462889Z",
+      "deliveredAt": "2026-11-19T00:56:30.462889Z",
+      "withinPromise": true,
+      "minutes": 12.1,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "payment_declines"
+      ],
+      "recovered": true,
+      "decisions": 16,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 12,
+      "llmCallsByRole": {
+        "decision": 6,
+        "perception": 0,
+        "language": 6
+      },
+      "modelMsByRole": {
+        "decision": 8218,
+        "perception": 0,
+        "language": 7273
+      },
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 6,
+          "tokens": 1294,
+          "cost": 0.0006
+        },
+        "gpt-5.4": {
+          "calls": 6,
+          "tokens": 7031,
+          "cost": 0.0187
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 6,
+          "tokens": 1294,
+          "cost": 0.0006,
+          "latencyMs": 7273,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 6,
+          "tokens": 7031,
+          "cost": 0.0187,
+          "latencyMs": 8218,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 8325,
+      "worldCalls": 0,
+      "decisionNames": [
+        "phrase",
+        "llm: retry_backup_card",
+        "phrase",
+        "llm: confirm_payment",
+        "confirm",
+        "phrase",
+        "llm: done",
+        "act: retry_backup_card",
+        "llm: done",
+        "llm: create_delivery",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "llm: done",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0191,
+      "planningMs": 0,
+      "modelMs": 8218.0,
+      "perceptionMs": 0.0,
+      "languageMs": 7273.0,
+      "replans": 0,
+      "planSteps": null,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "1176415c-7783-41bc-83f3-506ccf827524",
+      "finalOrderId": "1176415c-7783-41bc-83f3-506ccf827524",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T01:07:25.462889Z",
+      "deliveredAt": "2026-11-19T00:57:30.462889Z",
+      "withinPromise": true,
+      "minutes": 12.1,
+      "consistent": true,
+      "problems": [],
+      "failures": [],
+      "recovered": false,
+      "decisions": 12,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 9,
+      "llmCallsByRole": {
+        "decision": 4,
+        "perception": 0,
+        "language": 5
+      },
+      "modelMsByRole": {
+        "decision": 4678,
+        "perception": 0,
+        "language": 5869
+      },
+      "llmByModel": {
+        "gpt-5.4-nano": {
+          "calls": 5,
+          "tokens": 1023,
+          "cost": 0.0005
+        },
+        "gpt-5.4": {
+          "calls": 4,
+          "tokens": 4679,
+          "cost": 0.0123
+        }
+      },
+      "llmByNode": {
+        "phrase": {
+          "calls": 5,
+          "tokens": 1023,
+          "cost": 0.0005,
+          "latencyMs": 5869,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        },
+        "decision": {
+          "calls": 4,
+          "tokens": 4679,
+          "cost": 0.0123,
+          "latencyMs": 4678,
+          "models": [
+            "gpt-5.4"
+          ]
+        }
+      },
+      "llmTokens": 5702,
+      "worldCalls": 0,
+      "decisionNames": [
+        "phrase",
+        "llm: confirm_payment",
+        "confirm",
+        "phrase",
+        "llm: done",
+        "llm: create_delivery",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "llm: done",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0128,
+      "planningMs": 0,
+      "modelMs": 4678.0,
+      "perceptionMs": 0.0,
+      "languageMs": 5869.0,
+      "replans": 0,
+      "planSteps": null,
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "f3f11aea-1baa-4ee6-8158-ae4f39f58132",
+      "finalOrderId": "f3f11aea-1baa-4ee6-8158-ae4f39f58132",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T01:08:25.462889Z",
+      "deliveredAt": "2026-11-19T01:21:10.462889Z",
+      "withinPromise": false,
+      "minutes": 34.8,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "gateway_down"
+      ],
+      "recovered": true,
+      "decisions": 58,
+      "recoveryDecisions": 14,
+      "humanPrompts": 0,
+      "llmCalls": 41,
+      "llmCallsByRole": {
+        "decision": 35,
+        "perception": 0,
+        "language": 6
+      },
+      "modelMsByRole": {
+        "decision": 54562,
+        "perception": 0,
+        "language": 6148
+      },
+      "llmByModel": {
+        "gpt-5.4": {
+          "calls": 35,
+          "tokens": 42765,
+          "cost": 0.1198
+        },
+        "gpt-5.4-nano": {
+          "calls": 6,
+          "tokens": 1325,
+          "cost": 0.0006
+        }
+      },
+      "llmByNode": {
+        "decision": {
+          "calls": 35,
+          "tokens": 42765,
+          "cost": 0.1198,
+          "latencyMs": 54562,
+          "models": [
+            "gpt-5.4"
+          ]
+        },
+        "phrase": {
+          "calls": 6,
+          "tokens": 1325,
+          "cost": 0.0006,
+          "latencyMs": 6148,
+          "models": [
+            "gpt-5.4-nano"
+          ]
+        }
+      },
+      "llmTokens": 44090,
+      "worldCalls": 2,
+      "decisionNames": [
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: retry_payment",
+        "phrase",
+        "llm: confirm_payment",
+        "confirm",
+        "phrase",
+        "llm: done",
+        "llm: done",
+        "llm: ride_eta, drivers_online",
+        "llm: widen_dispatch",
+        "widen dispatch",
+        "llm: done",
+        "llm: ride_eta, drivers_online",
+        "llm: create_delivery",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "llm: issue_credit",
+        "phrase",
+        "issue credit",
+        "llm: done",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.1203,
+      "planningMs": 0,
+      "modelMs": 54562.0,
+      "perceptionMs": 0.0,
+      "languageMs": 6148.0,
+      "replans": 0,
+      "planSteps": null,
+      "notes": []
+    }
+  ]
+}
