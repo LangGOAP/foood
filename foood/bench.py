@@ -15,6 +15,7 @@ import asyncio
 import dataclasses
 import json
 import math
+import os
 import platform
 import statistics
 import time
@@ -34,7 +35,7 @@ from foood.deliveries import ACTIVE, current_delivery
 from foood.drivers import driver_of
 from foood.engine import make_engine
 from foood.llm_prices import prices
-from foood.orders import TERMINAL
+from foood.orders import TERMINAL, Order
 from foood.scenario import Kitchen, Scenario, load
 from foood.store import CLOCK, PASSWORD, QA_PASSWORD, Store, iso, now
 from foood.support import expire_due
@@ -440,13 +441,7 @@ class Run:
                     "orderId": order.id,
                     "finalOrderId": final.id,
                     "status": final.status,
-                    "promisedAt": iso(order.promised_at) if order.promised_at else None,
-                    "deliveredAt": iso(final.delivered_at) if final.delivered_at else None,
-                    "withinPromise": bool(
-                        final.delivered_at
-                        and order.promised_at
-                        and final.delivered_at <= order.promised_at
-                    ),
+                    **promise_kept(order, final),
                     "minutes": round(minutes, 1) if minutes is not None else None,
                     "consistent": ok,
                     "problems": problems,
@@ -471,6 +466,16 @@ class Run:
                     "worldCalls": store.world.calls_by_order.get(order.id, 0)
                     + (store.world.calls_by_order.get(final.id, 0) if final is not order else 0),
                     "decisionNames": [d["decision"] for d in decisions],
+                    # a model engine that could not reach its model falls back to the hand-wired
+                    # reaction and says why; the evening then measures the API as much as the model
+                    "fallbacks": sum(1 for d in decisions if d["decision"] == "fallback"),
+                    "fallbackReasons": sorted(
+                        {
+                            str(d.get("because", ""))[:120]
+                            for d in decisions
+                            if d["decision"] == "fallback"
+                        }
+                    ),
                     # money is spent only where a model was called; a planner's decisions
                     # carry a plan cost under their own key, not dollars
                     "cost": round(
@@ -485,9 +490,7 @@ class Run:
         prices = llm_prices()
         durations: list[float] = [r["minutes"] for r in placed_rows if r["minutes"] is not None]
         steps = [r["planSteps"] for r in placed_rows if r["planSteps"] is not None]
-        unrecovered = sorted(
-            {f for r in placed_rows if r["status"] != "DELIVERED" for f in r["failures"]}
-        )
+        unrecovered = unrecovered_of(placed_rows)
         return {
             "scenario": self.scenario.name,
             "engine": self.engine_name,
@@ -511,6 +514,7 @@ class Run:
                 "orders": len(placed_rows),
                 "delivered": sum(r["status"] == "DELIVERED" for r in placed_rows),
                 "deliveredWithinPromise": sum(r["withinPromise"] for r in placed_rows),
+                "promisesMoved": sum(r["promiseRevisions"] for r in placed_rows),
                 "cancelled": sum(r["status"] in {"CANCELLED", "FAILED"} for r in placed_rows),
                 "consistent": sum(r["consistent"] for r in placed_rows),
                 "meanMinutes": round(statistics.fmean(durations), 1) if durations else None,
@@ -521,6 +525,8 @@ class Run:
                 ),
                 "recoveryDecisions": sum(r["recoveryDecisions"] for r in placed_rows),
                 "humanPrompts": sum(r["humanPrompts"] for r in placed_rows),
+                "fallbacks": sum(r["fallbacks"] for r in placed_rows),
+                "fallbackReasons": sorted({x for r in placed_rows for x in r["fallbackReasons"]}),
                 "llmCalls": sum(r["llmCalls"] for r in placed_rows),
                 "llmCallsByRole": {
                     role: sum(r["llmCallsByRole"][role] for r in placed_rows) for role in ROLES
@@ -545,6 +551,46 @@ class Run:
             },
             "orders": rows,
         }
+
+
+def promise_kept(order: Order, final: Order) -> dict[str, Any]:
+    """The promise as judged for the table: against the time the customer was first given.
+
+    An engine may move a promise (``revise_promise``); the customer then has a later time,
+    and ``withinRevisedPromise`` says whether that one was kept. ``withinPromise`` is always
+    against the first promise, so engines that move promises and engines that do not are
+    measured alike, and ``promiseRevisions`` counts the moves.
+    """
+    first = order.promised_at
+    if order.promise_revisions:
+        first = datetime.fromisoformat(order.promise_revisions[0]["from"].replace("Z", "+00:00"))
+    delivered = final.delivered_at
+    return {
+        "promisedAt": iso(first) if first else None,
+        "revisedPromisedAt": (
+            iso(order.promised_at) if order.promise_revisions and order.promised_at else None
+        ),
+        "promiseRevisions": len(order.promise_revisions),
+        "deliveredAt": iso(delivered) if delivered else None,
+        "withinPromise": bool(delivered and first and delivered <= first),
+        "withinRevisedPromise": bool(
+            delivered and order.promised_at and delivered <= order.promised_at
+        ),
+    }
+
+
+def unrecovered_of(rows: list[dict[str, Any]]) -> list[str]:
+    """What the evening did not recover from: the injected failures of orders that did not
+    arrive, and an order left mid-flight with no failure to blame (``stalled <status>``), as
+    the one-model engine does when it says it is done and nothing wakes it again."""
+    names: set[str] = set()
+    for row in rows:
+        if not row["orderId"] or row["status"] == "DELIVERED":
+            continue
+        names.update(row["failures"])
+        if not row["failures"] and not row["consistent"]:
+            names.add(f"stalled {row['status']}")
+    return sorted(names)
 
 
 def run(
@@ -612,6 +658,26 @@ def same_outcomes(summaries: list[dict[str, Any]]) -> bool:
     return all(s == strip[0] for s in strip)
 
 
+def courses_of(run: dict[str, Any]) -> dict[str, list[str]]:
+    """Each order's course through an evening: its decisions in order, phrasing left out."""
+    return {
+        str(o["number"]): [n for n in o["decisionNames"] if n != "phrase"] for o in run["orders"]
+    }
+
+
+def departures_of(courses: list[dict[str, list[str]]]) -> list[dict[str, Any]]:
+    """Every order of a later run whose course differs from the first run's, both courses shown."""
+    if not courses:
+        return []
+    first = courses[0]
+    return [
+        {"run": i, "order": int(number), "first": first.get(number), "this": course[number]}
+        for i, course in enumerate(courses[1:], start=1)
+        for number in course
+        if course[number] != first.get(number)
+    ]
+
+
 def repeat(
     scenario: str,
     engine: str = "hand-wired",
@@ -625,11 +691,16 @@ def repeat(
     run's summary and the distribution of what differed: outcomes, decision calls, human
     prompts, the recovery decisions taken, model time and cost. An engine without a model
     is the control: its runs must be identical, and ``identical`` says whether they were.
+    Each run keeps every order's course (its decisions, phrasing left out), and
+    ``departures`` lists each order of a later run whose course differs from the first run's,
+    so a run that differed can be explained from the file.
     """
     if times < 1:
         raise ValueError("times must be at least 1")
     runs = [asyncio.run(Run(load(scenario), engine, seed).execute()) for _ in range(times)]
     summaries = [r["summary"] for r in runs]
+    courses = [courses_of(r) for r in runs]
+    departures = departures_of(courses)
     taken = Counter(
         name
         for r in runs
@@ -657,13 +728,19 @@ def repeat(
             "cancelled": _histogram(s["cancelled"] for s in summaries),
             "llmCalls": _histogram(s["llmCalls"] for s in summaries),
             "humanPrompts": _histogram(s["humanPrompts"] for s in summaries),
+            "fallbacks": _histogram(s.get("fallbacks", 0) for s in summaries),
+            "fallbackReasons": sorted({x for s in summaries for x in s.get("fallbackReasons", [])}),
             "unrecovered": _histogram(", ".join(s["unrecovered"]) or "-" for s in summaries),
             "decisionsTaken": dict(taken.most_common()),
+            "departures": departures,
             "modelMs": _spread(model_ms),
             "cost": _spread([float(s["cost"]) for s in summaries]),
             "llmPriced": any(bool(s.get("llmPriced")) for s in summaries),
         },
-        "runs": summaries,
+        "runs": [
+            {**summary, "courses": course}
+            for summary, course in zip(summaries, courses, strict=True)
+        ],
     }
     folder = (out_dir or RESULTS) / "repeats"
     folder.mkdir(parents=True, exist_ok=True)
@@ -675,7 +752,16 @@ def repeat(
 
 __all__ = ["Kitchen", "Run", "repeat", "run", "same_outcomes"]
 __all__ = ["Kitchen", "Run", "repeat", "run"]
-SCENARIOS_ALL = ["happy-path", "kitchen-trouble", "delivery-trouble", "payment-trouble", "incident"]
+SCENARIOS_ALL = [
+    "happy-path",
+    "kitchen-trouble",
+    "delivery-trouble",
+    "payment-trouble",
+    "storm",
+    "bridge-closed",
+    "incident",
+]
+MATRIX_MODELS = ("gpt-5.4-nano", "gpt-5.4-mini", "gpt-5.4")
 ENGINES_ALL = ["hand-wired", "llm", "langgraph", "langgoap"]
 SEEDS_ALL = [7, 11, 13]
 
@@ -692,6 +778,50 @@ def matrix(
         for engine in engines or ENGINES_ALL:
             for seed in seeds or SEEDS_ALL:
                 results.append(run(scenario, engine, seed, out_dir))
+    return results
+
+
+def repeats_all(
+    scenario: str = "incident",
+    engines: list[str] | None = None,
+    seed: int = 7,
+    times: int = 10,
+    out_dir: Path | None = None,
+) -> list[dict[str, Any]]:
+    """The incident evening ten times per engine under one seed: the model is the only variation."""
+    return [repeat(scenario, engine, seed, times, out_dir) for engine in engines or ENGINES_ALL]
+
+
+def model_matrix(
+    models: tuple[str, ...] = MATRIX_MODELS,
+    scenario: str = "incident",
+    seed: int = 7,
+    out_dir: Path | None = None,
+) -> list[dict[str, Any]]:
+    """The langgraph engine's evening with one model in every node, for each model in turn.
+
+    FOOOD_MODEL_ALL overrides the roster for the run and is restored afterwards. Files go to
+    ``results/matrix/<scenario>-langgraph-all-<model>-seed<seed>.json`` with ``modelMatrix``
+    naming the model, so the table can set the models side by side.
+    """
+    folder = out_dir or RESULTS / "matrix"
+    folder.mkdir(parents=True, exist_ok=True)
+    before = os.environ.get("FOOOD_MODEL_ALL")
+    results = []
+    try:
+        for model in models:
+            os.environ["FOOOD_MODEL_ALL"] = model
+            result = asyncio.run(Run(load(scenario), "langgraph", seed).execute())
+            result["modelMatrix"] = model
+            path = folder / f"{scenario}-langgraph-all-{model}-seed{seed}.json"
+            path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+            result["path"] = str(path)
+            results.append(result)
+    finally:
+        if before is None:
+            os.environ.pop("FOOOD_MODEL_ALL", None)
+        else:
+            os.environ["FOOOD_MODEL_ALL"] = before
     return results
 
 
