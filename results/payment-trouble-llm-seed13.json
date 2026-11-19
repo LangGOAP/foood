@@ -1,0 +1,282 @@
+{
+  "scenario": "payment-trouble",
+  "engine": "llm",
+  "seed": 13,
+  "foood": "0.1.0",
+  "startedAt": "2026-11-19T00:12:36.301167Z",
+  "model": "gpt-5.4",
+  "virtualMinutes": 24.8,
+  "llmPrices": {
+    "inputPerMillionUsd": 0.75,
+    "outputPerMillionUsd": 4.5,
+    "perModel": {
+      "gpt-5.4": {
+        "in": 2.5,
+        "out": 15.0
+      },
+      "gpt-5.4-mini": {
+        "in": 0.75,
+        "out": 4.5
+      },
+      "gpt-5.4-nano": {
+        "in": 0.2,
+        "out": 1.25
+      }
+    }
+  },
+  "summary": {
+    "orders": 3,
+    "delivered": 3,
+    "deliveredWithinPromise": 2,
+    "cancelled": 0,
+    "consistent": 3,
+    "meanMinutes": 15.7,
+    "p95Minutes": 22.8,
+    "recoveryDecisions": 16,
+    "humanPrompts": 0,
+    "llmCalls": 66,
+    "llmCallsByRole": {
+      "decision": 49,
+      "perception": 0,
+      "language": 17
+    },
+    "llmCallsDeciding": 49,
+    "llmByModel": {
+      "gpt-5.4": {
+        "calls": 66,
+        "tokens": 63451,
+        "cost": 0.1796
+      }
+    },
+    "llmTokens": 63451,
+    "worldCalls": 4,
+    "cost": 0.1796,
+    "llmPriced": true,
+    "failuresFired": [
+      "gateway_down",
+      "payment_declines"
+    ],
+    "unrecovered": []
+  },
+  "orders": [
+    {
+      "number": 1,
+      "orderId": "687db08a-d1b0-4e86-84a6-18b12f418b25",
+      "finalOrderId": "687db08a-d1b0-4e86-84a6-18b12f418b25",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:34:36.301167Z",
+      "deliveredAt": "2026-11-19T00:24:41.301167Z",
+      "withinPromise": true,
+      "minutes": 12.1,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "payment_declines"
+      ],
+      "recovered": true,
+      "decisions": 16,
+      "recoveryDecisions": 1,
+      "humanPrompts": 0,
+      "llmCalls": 12,
+      "llmCallsByRole": {
+        "decision": 6,
+        "perception": 0,
+        "language": 6
+      },
+      "modelMsByRole": {
+        "decision": 7432,
+        "perception": 0,
+        "language": 10353
+      },
+      "llmByModel": {
+        "gpt-5.4": {
+          "calls": 12,
+          "tokens": 8272,
+          "cost": 0.0235
+        }
+      },
+      "llmTokens": 8272,
+      "worldCalls": 0,
+      "decisionNames": [
+        "phrase",
+        "llm: retry_backup_card",
+        "phrase",
+        "llm: confirm_payment",
+        "confirm",
+        "phrase",
+        "llm: done",
+        "act: retry_backup_card",
+        "llm: done",
+        "llm: create_delivery",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "llm: done",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0234,
+      "notes": []
+    },
+    {
+      "number": 2,
+      "orderId": "f6541fee-5c92-419d-aa9f-99e7b01528c0",
+      "finalOrderId": "f6541fee-5c92-419d-aa9f-99e7b01528c0",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:35:36.301167Z",
+      "deliveredAt": "2026-11-19T00:25:41.301167Z",
+      "withinPromise": true,
+      "minutes": 12.1,
+      "consistent": true,
+      "problems": [],
+      "failures": [],
+      "recovered": false,
+      "decisions": 13,
+      "recoveryDecisions": 0,
+      "humanPrompts": 0,
+      "llmCalls": 10,
+      "llmCallsByRole": {
+        "decision": 5,
+        "perception": 0,
+        "language": 5
+      },
+      "modelMsByRole": {
+        "decision": 6358,
+        "perception": 0,
+        "language": 5662
+      },
+      "llmByModel": {
+        "gpt-5.4": {
+          "calls": 10,
+          "tokens": 6999,
+          "cost": 0.0197
+        }
+      },
+      "llmTokens": 6999,
+      "worldCalls": 1,
+      "decisionNames": [
+        "phrase",
+        "llm: confirm_payment",
+        "confirm",
+        "phrase",
+        "llm: done",
+        "llm: ride_eta",
+        "llm: create_delivery",
+        "create delivery",
+        "phrase",
+        "assign driver",
+        "llm: done",
+        "phrase",
+        "phrase"
+      ],
+      "cost": 0.0197,
+      "notes": []
+    },
+    {
+      "number": 3,
+      "orderId": "437fdd91-d46c-4326-80d0-d8cd2e1bf7c1",
+      "finalOrderId": "437fdd91-d46c-4326-80d0-d8cd2e1bf7c1",
+      "status": "DELIVERED",
+      "promisedAt": "2026-11-19T00:36:36.301167Z",
+      "deliveredAt": "2026-11-19T00:37:21.301167Z",
+      "withinPromise": false,
+      "minutes": 22.8,
+      "consistent": true,
+      "problems": [],
+      "failures": [
+        "gateway_down"
+      ],
+      "recovered": true,
+      "decisions": 63,
+      "recoveryDecisions": 15,
+      "humanPrompts": 0,
+      "llmCalls": 44,
+      "llmCallsByRole": {
+        "decision": 38,
+        "perception": 0,
+        "language": 6
+      },
+      "modelMsByRole": {
+        "decision": 58393,
+        "perception": 0,
+        "language": 6940
+      },
+      "llmByModel": {
+        "gpt-5.4": {
+          "calls": 44,
+          "tokens": 48180,
+          "cost": 0.1364
+        }
+      },
+      "llmTokens": 48180,
+      "worldCalls": 3,
+      "decisionNames": [
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: wait",
+        "keep waiting",
+        "llm: done",
+        "llm: retry_payment",
+        "phrase",
+        "llm: confirm_payment",
+        "confirm",
+        "phrase",
+        "llm: done",
+        "llm: confirm_payment",
+        "confirm",
+        "llm: done",
+        "llm: ride_eta",
+        "llm: create_delivery",
+        "create delivery",
+        "llm: widen_dispatch",
+        "widen dispatch",
+        "llm: done",
+        "llm: ride_eta, widen_dispatch",
+        "widen dispatch",
+        "llm: done",
+        "phrase",
+        "assign driver",
+        "phrase",
+        "llm: ride_eta, order_facts",
+        "llm: issue_credit",
+        "phrase",
+        "issue credit",
+        "llm: done",
+        "phrase"
+      ],
+      "cost": 0.1365,
+      "notes": []
+    }
+  ]
+}
