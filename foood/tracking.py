@@ -237,7 +237,7 @@ def simulate_step(store: Store, seconds: float = SIM_TICK_SECONDS) -> None:
         step = (
             step_km
             * store.speed_factors.get(driver.user_id, 1.0)
-            * speed_factor(store, leg_start, target)
+            * speed_factor(store, leg_start, target, delivery.id in store.world.rerouted)
         )
         position = _step_towards(here, target, step)
         location = Location(

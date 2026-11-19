@@ -373,3 +373,51 @@ async def test_the_world_page_and_the_control_api(client) -> None:
         "/api/_world/weather", json={"zone": "nowhere", "kind": "rain"}, headers=admin
     )
     assert bad.status_code == 400
+
+
+async def test_a_rerouted_courier_takes_the_known_detour(client) -> None:
+    """A closed corridor costs a courier who wanders into it the full detour; one told of the
+    closure takes the known way round, slower than a clear day but not by as much."""
+    from foood.store import now
+    from foood.tracking import Location, simulate_step
+    from foood.world import DETOUR_FACTOR, REROUTED_FACTOR, reroute
+
+    sara = await login(client, "demo.customer@example.com")
+    owner = await login(client, QA_OWNER)
+    driver = await login(client, "driver@example.com")
+    order = await _ready_order(
+        client, sara, owner, deliveryLatitude=THE_DOOR[0], deliveryLongitude=THE_DOOR[1]
+    )
+    await client.post("/api/drivers/me/online", json={}, headers=driver)
+    delivery = (await client.get(f"/api/deliveries/by-order/{order['id']}", headers=sara)).json()
+    for _ in range(80):
+        simulate_step(client.store)
+    await client.post(f"/api/deliveries/{delivery['id']}/pickup", json={}, headers=driver)
+    await client.post(f"/api/deliveries/{delivery['id']}/start", json={}, headers=driver)
+    uid = client.store.user_by_email("driver@example.com").id
+    moment = now()
+    client.store.locations[uid] = Location(
+        uid, 37.7760, -122.4150, recorded_at=moment, received_at=moment, simulated=True
+    )
+    assert speed_factor(client.store, QA_KITCHEN, THE_DOOR) == 1.0
+    close_road(client.store, "market-street")
+    assert speed_factor(client.store, QA_KITCHEN, THE_DOOR) == 1.0 / DETOUR_FACTOR
+    assert speed_factor(client.store, QA_KITCHEN, THE_DOOR, rerouted=True) == 1.0 / REROUTED_FACTOR
+    assert REROUTED_FACTOR < DETOUR_FACTOR
+
+    async def position() -> tuple[float, float]:
+        snap = (await client.get(f"/api/tracking/delivery/{delivery['id']}", headers=sara)).json()
+        return snap["location"]["latitude"], snap["location"]["longitude"]
+
+    from foood.catalog import distance_km
+
+    a = await position()
+    simulate_step(client.store)
+    lost_km = distance_km(*a, *(await position()))
+    rerouted = reroute(client.store, delivery["id"])
+    assert rerouted["rerouted"] is True and delivery["id"] in client.store.world.rerouted
+    assert client.store.world.log[-1]["event"] == "reroute"
+    b = await position()
+    simulate_step(client.store)
+    known_km = distance_km(*b, *(await position()))
+    assert lost_km < known_km < lost_km * DETOUR_FACTOR
