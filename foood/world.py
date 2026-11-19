@@ -51,7 +51,8 @@ WEATHER: dict[str, tuple[float, float]] = {
     "storm": (0.6, 1.5),
     "heat": (1.0, 1.1),
 }
-DETOUR_FACTOR = 2.5  # a closed corridor, driven around
+DETOUR_FACTOR = 2.5  # a closed corridor, found closed and driven around
+REROUTED_FACTOR = 1.6  # a closed corridor known in advance: the way round, taken from the start
 READ_TOOLS = ("get_weather", "get_traffic", "eta", "forecast", "zones")
 PAGE = Path(__file__).with_name("world.html")
 
@@ -81,13 +82,15 @@ def kind_in(world: World, zone: str) -> str:
 # --- reading ----------------------------------------------------------------------------------
 
 
-def speed_factor(store: Store, start: Point, end: Point) -> float:
-    """How fast a courier moves on this route relative to a clear day (1.0)."""
+def speed_factor(store: Store, start: Point, end: Point, rerouted: bool = False) -> float:
+    """How fast a courier moves on this route relative to a clear day (1.0); a courier told of
+    a closure takes the known way round instead of finding the corridor closed."""
     world = world_of(store)
     za, zb = zone_of(*start), zone_of(*end)
     weather = min(WEATHER[kind_in(world, za)][0], WEATHER[kind_in(world, zb)][0])
     traffic = max(world.traffic.get(za, 1.0), world.traffic.get(zb, 1.0))
-    detour = DETOUR_FACTOR if any(c in world.closed for c in corridors_between(za, zb)) else 1.0
+    closed = any(c in world.closed for c in corridors_between(za, zb))
+    detour = (REROUTED_FACTOR if rerouted else DETOUR_FACTOR) if closed else 1.0
     return weather / traffic / detour
 
 
@@ -236,6 +239,14 @@ def close_road(
         "zones": list(CORRIDORS[corridor]),
         "until": iso(until) if until else None,
     }
+
+
+def reroute(store: Store, delivery_id: str) -> dict[str, Any]:
+    """Tell a delivery's courier the way round a closure; the ride slows less from then on."""
+    world = world_of(store)
+    world.rerouted.add(delivery_id)
+    _note(store, {"event": "reroute", "deliveryId": delivery_id})
+    return {"deliveryId": delivery_id, "rerouted": True}
 
 
 def apply(store: Store, change: dict[str, Any]) -> dict[str, Any]:

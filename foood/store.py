@@ -149,6 +149,7 @@ class World:
     log: list[dict[str, Any]] = field(default_factory=list)
     calls: Counter[str] = field(default_factory=Counter)  # read tool -> times asked
     calls_by_order: Counter[str] = field(default_factory=Counter)
+    rerouted: set[str] = field(default_factory=set)  # deliveries told of a closure's way round
 
 
 @dataclass
