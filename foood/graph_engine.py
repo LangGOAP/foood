@@ -12,12 +12,13 @@ step puts a model there under controls, with this as the fallback.
 from __future__ import annotations
 
 import json
+import operator
 import sqlite3
 from collections import deque
 from collections.abc import Callable
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.base import BaseCheckpointSaver
@@ -25,7 +26,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.types import Command, interrupt
+from langgraph.types import Command, StateSnapshot, interrupt
 
 from foood.agent_engine import mcp_payload
 from foood.credits import balance, issue_credit
@@ -102,7 +103,8 @@ class OrderState(TypedDict, total=False):
     entry: str  # the node a thread starts at: wait_payment, or wait_kitchen for a paid order
     event: dict[str, Any]  # the last platform event fed to a wait node
     failure: str  # the failure recover is handling
-    handled: list[str]  # failures handled once: tick (prep_overrun, no_driver), gateway
+    # failures handled once: tick (prep_overrun, no_driver), gateway; nodes append, never replace
+    handled: Annotated[list[str], operator.add]
     recoveries: int
     support_question: str  # the question recover is waiting on
     support_answer: str  # what support picked, for the next recover step
@@ -147,6 +149,10 @@ class LangGraphEngine:
         self.draining = False
         self._subscriptions: list[tuple[str, Callable[..., None]]] = []
         self._ticker: Callable[[], None] | None = None
+        self.routes: dict[str, Callable[[OrderState], str]] = {}
+        # the last snapshot of each thread: only this engine advances a thread, so a snapshot
+        # holds until the engine invokes it again (a new process starts empty and reads)
+        self._snapshots: dict[str, StateSnapshot] = {}
 
     # wiring ----------------------------------------------------------------------------
 
@@ -258,27 +264,34 @@ class LangGraphEngine:
         for order in list(self.store.orders.values()):
             if order.status in TERMINAL or not order.promise_breached:
                 continue
-            state = self.graph.get_state(self._config(order.id))
-            if not state.values or not state.next:
-                continue
-            if state.next[0] not in {"wait_kitchen", "wait_driver"}:
-                continue  # only the kitchen's and the search's waits act on time
+            state = self.snapshot(order.id)
             if "tick" in state.values.get("handled", []):
                 continue
-            self.push(order.id, {"kind": "tick", "at": iso(now())})
+            if state.next and state.next[0] in {"wait_kitchen", "wait_driver"}:
+                # only the kitchen's and the search's waits act on time
+                self.push(order.id, {"kind": "tick", "at": iso(now())})
 
     # threads -----------------------------------------------------------------------------
 
     def _config(self, order_id: str) -> RunnableConfig:
         return {"configurable": {"thread_id": order_id}}
 
+    def snapshot(self, order_id: str) -> StateSnapshot:
+        """The thread's checkpointed state, read once per change."""
+        cached = self._snapshots.get(order_id)
+        if cached is None:
+            cached = self._snapshots[order_id] = self.graph.get_state(self._config(order_id))
+        return cached
+
+    def _invoke(self, order_id: str, graph_input: Any) -> None:
+        self._snapshots.pop(order_id, None)
+        self.graph.invoke(graph_input, self._config(order_id))
+
     def start(self, order_id: str, entry: str) -> None:
         self.pending.append((order_id, {"kind": "start", "entry": entry}))
         self.drain()
 
     def push(self, order_id: str, event: dict[str, Any]) -> None:
-        if not self.graph.get_state(self._config(order_id)).values:
-            return  # not an order this engine runs (placed before it was installed)
         self.pending.append((order_id, event))
         self.drain()
 
@@ -290,25 +303,28 @@ class LangGraphEngine:
         try:
             while self.pending:
                 order_id, event = self.pending.popleft()
-                config = self._config(order_id)
                 if event["kind"] == "start":
-                    self.graph.invoke(
-                        {
-                            "order_id": order_id,
-                            "entry": event["entry"],
-                            "handled": [],
-                            "recoveries": 0,
-                        },
-                        config,
+                    self._invoke(
+                        order_id,
+                        {"order_id": order_id, "entry": event["entry"], "recoveries": 0},
                     )
-                elif self.graph.get_state(config).next:
-                    self.graph.invoke(Command(resume=event), config)
+                    continue
+                paused = self.snapshot(order_id)
+                if not paused.next:
+                    continue  # finished, or not an order this engine runs
+                wait = paused.next[0]
+                route = self.routes.get(wait)
+                asked = OrderState(**paused.values)  # type: ignore[typeddict-item]
+                asked["event"] = event
+                if route is not None and route(asked) == wait:
+                    continue  # the wait would only loop back: nothing to resume
+                self._invoke(order_id, Command(resume=event))
         finally:
             self.draining = False
 
     def waiting_at(self, order_id: str) -> str | None:
         """The wait node an order's thread is paused at, or None when it is over."""
-        state = self.graph.get_state(self._config(order_id))
+        state = self.snapshot(order_id)
         return state.next[0] if state.next else None
 
     # recovery ------------------------------------------------------------------------------
@@ -929,13 +945,14 @@ def build(engine: LangGraphEngine) -> Builder:
 
     def recover(state: OrderState) -> OrderState:
         outcome = engine.recover(order_of(state), state["failure"], state)
-        handled = list(state.get("handled", []))
-        if state["failure"] in {"prep_overrun", "no_driver"} and "tick" not in handled:
+        seen = state.get("handled", [])
+        handled: list[str] = []
+        if state["failure"] in {"prep_overrun", "no_driver"} and "tick" not in seen:
             handled.append("tick")
         if (
             state["failure"] == "payment_gateway_down"
             and outcome["next"] == "wait_payment"
-            and "gateway" not in handled
+            and "gateway" not in seen
         ):
             handled.append("gateway")  # one decision per outage: later refused taps are not news
         return {
@@ -1054,6 +1071,18 @@ def build(engine: LangGraphEngine) -> Builder:
 
         mark.__name__ = f"failure_{failure}"
         return mark
+
+    # the waits' routing, also asked by the engine before it resumes a thread: an event the
+    # wait would only loop back on is not fed in at all (no super-step, no checkpoint)
+    engine.routes = {
+        "wait_payment": after_payment,
+        "wait_kitchen": after_kitchen,
+        "wait_driver": after_driver,
+        "wait_pickup": after_pickup,
+        "wait_dropoff": after_dropoff,
+        "wait_support": after_support,
+        "wait_customer": after_customer,
+    }
 
     graph: Builder = StateGraph(OrderState)
     graph.add_node("begin", begin)

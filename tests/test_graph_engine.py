@@ -176,3 +176,38 @@ async def test_time_based_failures_fire_once() -> None:
         ]
         assert [d["decision"] for d in decisions] == ["confirm", "keep waiting"]
         assert client.engine.waiting_at(order["id"]) == "wait_kitchen"
+
+
+async def test_an_event_the_wait_would_loop_back_on_is_not_resumed() -> None:
+    """A resume that routes a wait straight back to itself costs a super-step and checkpoint
+    writes for nothing; the engine asks the wait's own routing first and skips it."""
+    async with _app() as client:
+        order = await _paid(client, await login(client, "demo.customer@example.com"))
+        engine = client.engine
+        assert engine.waiting_at(order["id"]) == "wait_kitchen"
+        config = engine._config(order["id"])
+        checkpoints = len(list(engine.graph.get_state_history(config)))
+        for _ in range(5):  # the courier's search has nothing to do with the kitchen
+            engine.push(order["id"], {"kind": "delivery.status", "status": "CREATED"})
+        assert len(list(engine.graph.get_state_history(config))) == checkpoints
+        assert engine.waiting_at(order["id"]) == "wait_kitchen"
+
+
+async def test_a_paused_thread_is_read_once_until_it_moves() -> None:
+    async with _app() as client:
+        order = await _paid(client, await login(client, "demo.customer@example.com"))
+        engine = client.engine
+        reads = 0
+        get_state = engine.graph.get_state
+
+        def counted(*args, **kwargs):
+            nonlocal reads
+            reads += 1
+            return get_state(*args, **kwargs)
+
+        engine.graph.get_state = counted
+        for _ in range(5):
+            engine.waiting_at(order["id"])
+            engine.push(order["id"], {"kind": "delivery.status", "status": "CREATED"})
+            engine.tick()
+        assert reads <= 1
