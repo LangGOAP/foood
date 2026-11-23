@@ -81,7 +81,8 @@ def test_every_app_is_built_in_english_and_dollars() -> None:
 
 
 def test_the_three_apps_come_from_the_forks() -> None:
-    """Upstream labels every amount EGP; our forks add EXPO_PUBLIC_CURRENCY (offered upstream)."""
+    """Upstream formats each amount in the currency its response carries, EGP when none; our forks
+    default to the build's EXPO_PUBLIC_CURRENCY."""
     from configparser import ConfigParser
 
     from foood.launch import ROOT

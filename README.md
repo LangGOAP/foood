@@ -46,12 +46,14 @@ can refund payments and cancel deliveries.
 
 `make serve` runs the API alone with auto-reload; `make down` stops a `foood up`
 left running in another terminal. The apps live in `apps/` as git submodules
-from our forks, which add a build-time currency setting and a map that opens on
-the configured city (both offered upstream), and read the API address from
-`EXPO_PUBLIC_API_BASE_URL`. The web builds use English and dollars and fixed
-browser positions in San Francisco (the customer by Union Square, the driver
-near the kitchens); no app asks for geolocation; the API's simulated driver
-phone moves the driver on the customer's map.
+from our forks of upstream `dev` (branch `foood/dev`), which add one change: the
+build's `EXPO_PUBLIC_CURRENCY` is the default for amounts whose response carries
+no currency. Upstream took the map that opens on the build's fixed location and
+formats each amount in the currency its response carries, EGP when none. The
+apps read the API address from `EXPO_PUBLIC_API_BASE_URL`. The web builds use
+English and dollars and fixed browser positions in San Francisco (the customer
+by Union Square, the driver near the kitchens); no app asks for geolocation; the
+API's simulated driver phone moves the driver on the customer's map.
 
 Every order placed in the customer app flows through payment, the restaurant
 app's kitchen board, dispatch to an online driver, the driver app's pickup and
